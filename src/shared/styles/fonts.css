@@ -1,11 +1,10 @@
-/* فونت self-host — وزیرمتن متغیر (وزن ۱۰۰–۹۰۰). بدون CDN، بدون درخواست شخص ثالث. */
+/* فونت self-host — وزیرمتن متغیر (وزن ۱۰۰–۹۰۰). بدون CDN، بدون درخواست شخص ثالث.
+   بدون unicode-range: فونت کامل یک‌بار لود می‌شود و هم فارسی و هم لاتین را می‌پوشاند؛
+   ساب‌ست کردن دستیِ دامنه‌ها ریسک «فونت نامناسب برای بعضی نویسه‌ها» را دارد. */
 @font-face {
   font-family: "Vazirmatn";
-  src: url("/fonts/vazirmatn-variable.woff2") format("woff2-variations");
+  src: url("/fonts/vazirmatn-variable.woff2") format("woff2");
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
-  unicode-range:
-    U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF, U+0000-00FF, U+200C-200E, U+2010-2011,
-    U+204F, U+2E41, U+FB50-FDFF, U+FE70-FEFF, U+0000-007F;
 }
