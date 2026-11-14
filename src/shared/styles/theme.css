@@ -1,0 +1,33 @@
+/* ⚠️ فایل تولیدی — دست نزنید.
+   منبع: tokens/kaveh185.tokens.json
+   تولید: pnpm run tokens      بررسی drift: pnpm run tokens:check */
+
+/* پل توکن‌ها به Tailwind v4 (CSS-first) */
+@theme inline {
+  --color-canvas: var(--c-canvas);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-sunken: var(--c-sunken);
+  --color-text: var(--c-text);
+  --color-text-muted: var(--c-text-muted);
+  --color-text-subtle: var(--c-text-subtle);
+  --color-border: var(--c-border);
+  --color-border-strong: var(--c-border-strong);
+  --color-brand: var(--c-brand);
+  --color-brand-hover: var(--c-brand-hover);
+  --color-on-brand: var(--c-on-brand);
+  --color-gold: var(--c-gold);
+  --color-gold-strong: var(--c-gold-strong);
+  --color-gold-soft: var(--c-gold-soft);
+  --color-on-gold: var(--c-on-gold);
+  --color-verde: var(--c-verde);
+  --color-verde-soft: var(--c-verde-soft);
+  --color-brick: var(--c-brick);
+  --color-brick-soft: var(--c-brick-soft);
+  --color-focus: var(--c-focus);
+  --radius-sm: var(--radius-sm); --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg); --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}

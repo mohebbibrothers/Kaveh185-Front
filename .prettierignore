@@ -1,0 +1,13 @@
+.next
+node_modules
+coverage
+pnpm-lock.yaml
+src/shared/api/schema.d.ts
+src/shared/styles/tokens.css
+playwright-report
+test-results
+
+# خروجی تولیدشده توسط اسکریپت توکن‌ها — فرمت آن تابع دروازهٔ تضاد رنگ است
+src/shared/styles/tokens.css
+src/shared/styles/theme.css
+src/shared/api/schema.d.ts

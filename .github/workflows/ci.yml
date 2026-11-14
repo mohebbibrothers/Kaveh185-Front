@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: lint · types · tests · build · budget
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: نصب وابستگی‌ها
+        run: pnpm install --frozen-lockfile
+
+      - name: دروازهٔ تضاد رنگ (WCAG AA)
+        run: pnpm run tokens:check
+
+      - name: رانش قرارداد API
+        run: pnpm run api:types -- --check
+
+      - name: لینت
+        run: pnpm run lint
+
+      - name: بررسی فرمت
+        run: pnpm run format:check
+
+      - name: تایپ‌چک (TS 5.9)
+        run: pnpm run typecheck:ts5
+
+      - name: تایپ‌چک (TS 7)
+        run: pnpm run typecheck:ts7
+        continue-on-error: true
+
+      - name: تست واحد + پوشش
+        run: pnpm run test:coverage
+
+      - name: بیلد
+        run: pnpm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+
+      - name: بودجهٔ حجم (gzip)
+        run: pnpm run budget

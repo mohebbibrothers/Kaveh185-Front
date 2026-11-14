@@ -1,0 +1,5 @@
+User-Agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Sitemap: https://kaveh185.ir/sitemap.xml

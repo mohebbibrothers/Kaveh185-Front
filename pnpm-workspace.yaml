@@ -1,0 +1,8 @@
+# تک‌ریپوی کاوه ۱۸۵ — فقط یک اپ، ولی ساختار آماده برای بستهٔ مشترک آینده
+packages:
+  - "."
+onlyBuiltDependencies:
+  - sharp
+  - esbuild
+  - "@tailwindcss/oxide"
+  - unrs-resolver
