@@ -1,5 +1,5 @@
 /* ⚠️ فایل تولیدی — دست نزنید.
-   منبع: /home/user/kaveh185/front/src/shared/api/openapi.yaml
+   منبع: src/shared/api/openapi.yaml
    تولید: pnpm run api:types
    این فایل کامیت می‌شود تا بیلد به شبکه وابسته نباشد. */
 /**

@@ -8,6 +8,8 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    // jsdom + undici آدرس مطلق می‌خواهد؛ این پرچم فقط در تست فعال است
+    env: { K185_ABSOLUTE_BASE: "1", NEXT_PUBLIC_API_ORIGIN: "http://localhost:8000" },
     include: ["src/**/*.test.{ts,tsx}"],
     coverage: {
       provider: "v8",
