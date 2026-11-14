@@ -27,7 +27,7 @@ function Row({ e, max }: { e: LeaderboardEntry; max: number }) {
     >
       <span
         className={`grid size-7 place-items-center rounded-md text-[12px] font-extrabold tabular-nums ${
-          isTop ? "bg-gold text-on-gold" : "text-on-brand/80 bg-white/10"
+          isTop ? "bg-gold text-on-gold" : "text-on-stage/80 bg-white/10"
         }`}
       >
         {toFa(e.rank)}
@@ -35,7 +35,7 @@ function Row({ e, max }: { e: LeaderboardEntry; max: number }) {
       <span className="min-w-0">
         <span className="block truncate text-[13px] font-semibold">{e.name}</span>
         {e.tier_label ? (
-          <span className="text-on-brand/55 block text-[10.5px]">{e.tier_label}</span>
+          <span className="text-on-stage/55 block text-[10.5px]">{e.tier_label}</span>
         ) : null}
       </span>
       <Bar value={pct} />
@@ -55,7 +55,7 @@ export function Leaderboard({ board }: { board: Board }) {
     <section
       id="board"
       aria-labelledby="board-title"
-      className="bg-brand text-on-brand relative overflow-hidden rounded-2xl p-5 sm:p-7"
+      className="bg-stage text-on-stage relative overflow-hidden rounded-2xl p-5 sm:p-7"
     >
       <PersianPattern className="text-gold absolute inset-0" opacity={0.08} />
 
@@ -66,7 +66,7 @@ export function Leaderboard({ board }: { board: Board }) {
             مسجد شما در چه جایگاهی است؟
           </h2>
         </div>
-        <div className="text-on-brand/70 flex items-center gap-3 text-[11.5px]">
+        <div className="text-on-stage/70 flex items-center gap-3 text-[11.5px]">
           <span className="inline-flex items-center gap-1.5">
             <span
               className="bg-verde inline-block size-1.5 animate-pulse rounded-full"
@@ -86,7 +86,7 @@ export function Leaderboard({ board }: { board: Board }) {
             <Star size={18} />
           </span>
           <p className="mt-3 text-[13.5px] font-extrabold">جدول از نخستین مشارکت‌ها پر می‌شود</p>
-          <p className="text-on-brand/65 mx-auto mt-1.5 max-w-[38ch] text-[12px] leading-6">
+          <p className="text-on-stage/65 mx-auto mt-1.5 max-w-[38ch] text-[12px] leading-6">
             به‌محض ثبت اولین کارنامه، رتبهٔ هر مسجد در همین‌جا زنده به‌روزرسانی می‌شود. نام مسجدت را
             به بالای جدول برسان.
           </p>
@@ -94,7 +94,7 @@ export function Leaderboard({ board }: { board: Board }) {
       ) : null}
 
       {top ? (
-        <p className="border-gold/25 bg-gold/[0.1] text-on-brand/85 relative mb-3 rounded-lg border px-3 py-2 text-[12px]">
+        <p className="border-gold/25 bg-gold/[0.1] text-on-stage/85 relative mb-3 rounded-lg border px-3 py-2 text-[12px]">
           پیشتاز فعلی: <strong className="text-gold font-extrabold">{top.name}</strong> با{" "}
           {faNumber(top.completed_participants_count)} مشارکت
           {top.participation_share_percent
@@ -112,7 +112,7 @@ export function Leaderboard({ board }: { board: Board }) {
       ) : null}
 
       {board.leaderboard.length > rows.length ? (
-        <p className="text-on-brand/60 relative mt-3 text-center text-[11.5px]">
+        <p className="text-on-stage/60 relative mt-3 text-center text-[11.5px]">
           و {toFa(board.leaderboard.length - rows.length)} مسجد دیگر در جدول کامل
         </p>
       ) : null}

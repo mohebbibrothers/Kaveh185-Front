@@ -36,7 +36,7 @@ export function Mosques({ mosques, totalActive }: { mosques: Mosque[]; totalActi
             >
               <span
                 aria-hidden="true"
-                className="bg-surface-2 text-gold-strong group-hover:bg-brand group-hover:text-gold grid size-8 shrink-0 place-items-center rounded-md transition-colors"
+                className="bg-surface-2 text-gold-strong group-hover:bg-stage group-hover:text-gold grid size-8 shrink-0 place-items-center rounded-md transition-colors"
               >
                 <Star size={12} />
               </span>

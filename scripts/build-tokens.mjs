@@ -60,6 +60,10 @@ const PAIRS = [
   ["text", "gold-soft", 4.5],
   ["text", "verde-soft", 4.5],
   ["text", "brick-soft", 4.5],
+  // سطح نمایشی (قهرمان/جدول/فوتر) — همیشه تیره، در هر دو تم
+  ["on-stage", "stage", 7],
+  ["on-stage-muted", "stage", 4.5],
+  ["gold", "stage", 4.5],
 ];
 const fails = [];
 for (const theme of ["light", "dark"]) {

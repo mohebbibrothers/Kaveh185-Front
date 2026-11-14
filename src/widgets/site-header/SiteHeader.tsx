@@ -37,7 +37,7 @@ export function SiteHeader() {
           </Link>
           <Link
             href="/register"
-            className="bg-brand text-on-brand shadow-1 hover:bg-brand-hover inline-flex h-9 items-center rounded-md px-4 text-[13px] font-bold transition-colors"
+            className="bg-stage text-on-stage shadow-1 hover:bg-stage-2 inline-flex h-9 items-center rounded-md px-4 text-[13px] font-bold transition-colors"
           >
             ثبت‌نام و شرکت
           </Link>

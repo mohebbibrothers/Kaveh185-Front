@@ -40,7 +40,7 @@ export function HowItWorks({ status }: { status: ExamStatus }) {
             key={s.n}
             className="border-border bg-surface shadow-1 ease-standard rounded-xl border p-4 transition-transform duration-200 hover:-translate-y-0.5 sm:p-5"
           >
-            <span className="bg-brand text-gold grid size-9 place-items-center rounded-lg text-[14px] font-extrabold">
+            <span className="bg-stage text-gold grid size-9 place-items-center rounded-lg text-[14px] font-extrabold">
               {toFa(s.n)}
             </span>
             <h3 className="mt-3 text-[15px] font-extrabold">{s.title}</h3>

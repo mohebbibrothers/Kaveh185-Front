@@ -25,6 +25,10 @@
   --color-brick: var(--c-brick);
   --color-brick-soft: var(--c-brick-soft);
   --color-focus: var(--c-focus);
+  --color-stage: var(--c-stage);
+  --color-stage-2: var(--c-stage-2);
+  --color-on-stage: var(--c-on-stage);
+  --color-on-stage-muted: var(--c-on-stage-muted);
   --radius-sm: var(--radius-sm); --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg); --radius-xl: var(--radius-xl);
   --radius-2xl: var(--radius-2xl);

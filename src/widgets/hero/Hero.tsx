@@ -25,7 +25,7 @@ function Frame() {
       ].map((pos) => (
         <span
           key={pos}
-          className={`bg-brand text-gold absolute grid size-6 place-items-center ${pos}`}
+          className={`bg-stage-2 text-gold absolute grid size-6 place-items-center ${pos}`}
         >
           <Star size={11} />
         </span>
@@ -42,7 +42,7 @@ export function Hero({ status, leaderboard }: { status: ExamStatus; leaderboard:
   const questionPreview = status.active_question_bank_size || 0;
 
   return (
-    <section className="bg-brand text-on-brand relative overflow-hidden">
+    <section className="bg-stage text-on-stage relative overflow-hidden">
       <PersianPattern className="text-gold absolute inset-0" opacity={0.13} />
       <div
         aria-hidden="true"
@@ -67,7 +67,7 @@ export function Hero({ status, leaderboard }: { status: ExamStatus; leaderboard:
                 </span>
                 {status.window_state_label || state.text}
               </span>
-              <span className="text-on-brand/65 text-[12px] font-semibold tracking-tight">
+              <span className="text-on-stage/65 text-[12px] font-semibold tracking-tight">
                 {toFa(status.starts_at_jalali)} تا {toFa(status.ends_at_jalali)}
               </span>
             </div>
@@ -85,7 +85,7 @@ export function Hero({ status, leaderboard }: { status: ExamStatus; leaderboard:
               در یک رقابت.
             </h1>
 
-            <p className="text-on-brand/78 mt-3.5 max-w-[48ch] text-[13.5px] leading-[2.05] sm:text-[15px]">
+            <p className="text-on-stage/78 mt-3.5 max-w-[48ch] text-[13.5px] leading-[2.05] sm:text-[15px]">
               {status.description}
             </p>
 
@@ -112,7 +112,7 @@ export function Hero({ status, leaderboard }: { status: ExamStatus; leaderboard:
               </Link>
               <Link
                 href="/rules"
-                className="text-on-brand hover:border-gold/45 inline-flex h-12 items-center rounded-lg border border-white/22 px-5 text-[13.5px] font-bold transition-colors hover:bg-white/[0.07]"
+                className="text-on-stage hover:border-gold/45 inline-flex h-12 items-center rounded-lg border border-white/22 px-5 text-[13.5px] font-bold transition-colors hover:bg-white/[0.07]"
               >
                 قوانین در ۳۰ ثانیه
               </Link>
@@ -131,9 +131,9 @@ export function Hero({ status, leaderboard }: { status: ExamStatus; leaderboard:
                 <div key={x.k} className="px-2 first:pr-0">
                   <dd className="flex items-baseline gap-1 tabular-nums">
                     <span className="text-gold text-[19px] font-extrabold">{x.v}</span>
-                    <span className="text-on-brand/55 text-[10.5px]">{x.suffix}</span>
+                    <span className="text-on-stage/55 text-[10.5px]">{x.suffix}</span>
                   </dd>
-                  <dt className="text-on-brand/55 mt-0.5 text-[10.5px]">{x.k}</dt>
+                  <dt className="text-on-stage/55 mt-0.5 text-[10.5px]">{x.k}</dt>
                 </div>
               ))}
             </dl>
@@ -146,7 +146,7 @@ export function Hero({ status, leaderboard }: { status: ExamStatus; leaderboard:
               className="from-gold/12 absolute -inset-3 rounded-2xl bg-gradient-to-b to-transparent blur-xl"
             />
             <div className="relative rounded-xl border border-white/[0.14] bg-white/[0.06] p-4 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.55)] backdrop-blur-md sm:p-5">
-              <div className="text-on-brand/65 flex items-center justify-between text-[11px]">
+              <div className="text-on-stage/65 flex items-center justify-between text-[11px]">
                 <span className="inline-flex items-center gap-1.5">
                   <Star size={8} className="text-gold" />
                   نمونهٔ جلسهٔ آزمون
@@ -156,7 +156,7 @@ export function Hero({ status, leaderboard }: { status: ExamStatus; leaderboard:
                 </span>
               </div>
 
-              <div className="mt-3 flex gap-1" aria-hidden="true">
+              <div className="mt-3 flex gap-1 overflow-hidden" aria-hidden="true">
                 {Array.from({ length: status.questions_per_attempt }).map((_, i) => (
                   <span
                     key={i}
@@ -171,7 +171,7 @@ export function Hero({ status, leaderboard }: { status: ExamStatus; leaderboard:
                 ))}
               </div>
 
-              <p className="text-on-brand mt-3.5 text-[13px] leading-7 font-bold">
+              <p className="text-on-stage mt-3.5 text-[13px] leading-7 font-bold">
                 فرمان تاریخی تشکیل بسیج مستضعفین در چه تاریخی و توسط چه کسی صادر شد؟
               </p>
 
@@ -190,17 +190,17 @@ export function Hero({ status, leaderboard }: { status: ExamStatus; leaderboard:
                   >
                     <span
                       className={`grid size-5 shrink-0 place-items-center rounded text-[10.5px] font-extrabold ${
-                        o.sel ? "bg-gold text-on-gold" : "text-on-brand/65 bg-white/10"
+                        o.sel ? "bg-gold text-on-gold" : "text-on-stage/65 bg-white/10"
                       }`}
                     >
                       {o.n}
                     </span>
-                    <span className="text-on-brand/90">{o.t}</span>
+                    <span className="text-on-stage/90 min-w-0 flex-1 break-words">{o.t}</span>
                   </li>
                 ))}
               </ul>
 
-              <div className="text-on-brand/55 mt-3 flex items-center justify-between border-t border-white/10 pt-2.5 text-[10px]">
+              <div className="text-on-stage/55 mt-3 flex items-center justify-between border-t border-white/10 pt-2.5 text-[10px]">
                 <span>ترتیب گزینه‌ها برای هر شرکت‌کننده تصادفی است</span>
                 <span className="tabular-nums">
                   نمونهٔ نمایشی — {toFa(questionPreview || "—")} سؤال در بانک

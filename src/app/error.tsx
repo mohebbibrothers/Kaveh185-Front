@@ -11,7 +11,7 @@ export default function ErrorPage({ reset }: { error: Error; reset: () => void }
         </p>
         <button
           onClick={reset}
-          className="bg-brand text-on-brand hover:bg-brand-hover mt-6 inline-flex h-11 items-center rounded-md px-6 text-[14px] font-bold"
+          className="bg-stage text-on-stage hover:bg-stage-2 mt-6 inline-flex h-11 items-center rounded-md px-6 text-[14px] font-bold"
         >
           تلاش دوباره
         </button>
