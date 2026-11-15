@@ -7,7 +7,16 @@ import {
   jalaliToGregorian,
   ageFromJalali,
 } from "../validate";
-import { toFa, toEn, faNumber, faClock, faDuration, normalizeFa } from "../fa";
+import {
+  toFa,
+  toEn,
+  faNumber,
+  faClock,
+  faDuration,
+  normalizeFa,
+  faJalali,
+  faJalaliDateTime,
+} from "../fa";
 
 describe("کد ملی (mod 11)", () => {
   it("کدهای معتبر را می‌پذیرد", () => {
@@ -90,5 +99,38 @@ describe("ابزارهای فارسی", () => {
   it("نرمال‌سازی جست‌وجوی فارسی", () => {
     expect(normalizeFa("علي  كاظمي")).toBe("علی کاظمی");
     expect(normalizeFa("مسجد\u200cجامع")).toBe("مسجد جامع");
+  });
+});
+
+describe("تاریخ جلالی خوانا (faJalali)", () => {
+  /**
+   * باگ واقعی: بک‌اند `1405/08/29 00:00:00` می‌دهد و نسخهٔ قبلی همان را
+   * عیناً نشان می‌داد. روی موبایل به دو خط می‌شکست و ثانیه‌ای داشت که هیچ
+   * معنایی برای کاربر نداشت.
+   */
+  it("تاریخ خالص را به نام ماه تبدیل می‌کند", () => {
+    expect(faJalali("1405/08/29")).toBe("۲۹ آبان ۱۴۰۵");
+    expect(faJalali("1405/09/05")).toBe("۵ آذر ۱۴۰۵");
+    expect(faJalali("1405/01/01")).toBe("۱ فروردین ۱۴۰۵");
+    expect(faJalali("1405/12/29")).toBe("۲۹ اسفند ۱۴۰۵");
+  });
+
+  it("ساعت و ثانیه را از تاریخ جدا می‌کند", () => {
+    expect(faJalali("1405/08/29 00:00:00")).toBe("۲۹ آبان ۱۴۰۵");
+    expect(faJalali("1405/09/05 23:59:59")).toBe("۵ آذر ۱۴۰۵");
+  });
+
+  it("جداکنندهٔ خط تیره را هم می‌پذیرد", () => {
+    expect(faJalali("1405-08-29")).toBe("۲۹ آبان ۱۴۰۵");
+  });
+
+  it("ورودی نامعتبر را خراب نمی‌کند", () => {
+    // به‌جای پرتاب خطا، همان ورودی را با ارقام فارسی برمی‌گرداند
+    expect(faJalali("نامعلوم")).toBe("نامعلوم");
+  });
+
+  it("ساعت را وقتی داده شده نگه می‌دارد", () => {
+    expect(faJalaliDateTime("1405/08/29 08:30:00")).toBe("۲۹ آبان ۱۴۰۵ — ۰۸:۳۰");
+    expect(faJalaliDateTime("1405/08/29")).toBe("۲۹ آبان ۱۴۰۵");
   });
 });

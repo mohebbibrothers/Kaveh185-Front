@@ -1,212 +1,140 @@
+import Image from "next/image";
 import Link from "next/link";
-import { PersianPattern } from "@/shared/ui/PersianPattern";
-import { Star } from "@/shared/ui/Ornament";
 import { Countdown } from "@/widgets/countdown/Countdown";
-import { faNumber, toFa } from "@/shared/lib/fa";
-import type { ExamStatus, Leaderboard } from "@/shared/api/landing";
+import { faJalali, faNumber, toFa } from "@/shared/lib/fa";
+import type { ExamStatus } from "@/shared/api/landing";
 
-const STATE: Record<ExamStatus["window_state"], { text: string; cls: string }> = {
-  upcoming: { text: "به‌زودی آغاز می‌شود", cls: "border-gold/45 bg-gold/15 text-gold" },
-  open: { text: "آزمون فعال است", cls: "border-verde/45 bg-verde/15 text-verde-soft" },
-  ended: { text: "مهلت پایان یافت", cls: "border-brick/45 bg-brick/15 text-brick-soft" },
-};
+/**
+ * هیروی صفحهٔ اول — یک تصویر، یک پیام، دو دکمه.
+ *
+ * چرا این ساختار؟
+ * ────────────────
+ * نسخهٔ قبلی سه لایهٔ تزئین روی هم داشت (الگوی هندسی + قاب دوتایی + چهار
+ * شمسه) و کنارش یک «شبیه‌ساز جلسهٔ آزمون» با سؤال ساختگی می‌گذاشت. نتیجه:
+ * صفحه شلوغ بود و کاربر نمی‌دانست اول کجا را بخواند.
+ *
+ * این نسخه بر پایهٔ تصویر رسمی رویداد ساخته شده و چهار چیز را به ترتیب
+ * چشم می‌چیند: چهره → نام رویداد → زمان → دکمه. هر چیز دیگری حذف شد.
+ * عدد و آمار واقعی از API می‌آید؛ هیچ سؤال یا آمار ساختگی نمایش داده نمی‌شود.
+ */
+export function Hero({ status }: { status: ExamStatus }) {
+  const state = status.window_state;
+  const secondsLeft = state === "upcoming" ? status.seconds_until_start : status.seconds_until_end;
 
-/** قاب تشریفاتی: خط طلایی دوتایی با شمسه در گوشه‌ها — امضای صفحه‌آرایی ایرانی */
-function Frame() {
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden sm:block">
-      <div className="border-gold/25 absolute inset-4 rounded-xl border lg:inset-6" />
-      <div className="border-gold/10 absolute inset-[22px] rounded-lg border lg:inset-[30px]" />
-      {[
-        "top-4 left-4 -translate-x-1/2 -translate-y-1/2 lg:top-6 lg:left-6",
-        "top-4 right-4 translate-x-1/2 -translate-y-1/2 lg:top-6 lg:right-6",
-        "bottom-4 left-4 -translate-x-1/2 translate-y-1/2 lg:bottom-6 lg:left-6",
-        "bottom-4 right-4 translate-x-1/2 translate-y-1/2 lg:bottom-6 lg:right-6",
-      ].map((pos) => (
-        <span
-          key={pos}
-          className={`bg-stage-2 text-gold absolute grid size-6 place-items-center ${pos}`}
-        >
-          <Star size={11} />
-        </span>
-      ))}
-    </div>
-  );
-}
-
-export function Hero({ status, leaderboard }: { status: ExamStatus; leaderboard: Leaderboard }) {
-  const state = STATE[status.window_state];
-  const secondsLeft =
-    status.window_state === "upcoming" ? status.seconds_until_start : status.seconds_until_end;
-  const total = leaderboard.total_completed_participants;
-  const questionPreview = status.active_question_bank_size || 0;
+  const stateChip =
+    state === "upcoming"
+      ? "border-gold/45 bg-gold-soft text-gold-strong"
+      : state === "open"
+        ? "border-verde/40 bg-verde-soft text-verde"
+        : "border-brick/35 bg-brick-soft text-brick";
 
   return (
-    <section className="bg-stage text-on-stage relative overflow-hidden">
-      <PersianPattern className="text-gold absolute inset-0" opacity={0.13} />
+    <section className="bg-surface-2/60 border-border/70 relative overflow-hidden border-b">
+      {/* کاغذ کرم با بافتِ خیلی ملایم — بدون الگوی شلوغ */}
       <div
         aria-hidden="true"
-        className="via-gold/60 absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent to-transparent"
+        className="from-gold-soft/50 pointer-events-none absolute inset-0 bg-gradient-to-bl via-transparent to-transparent"
       />
-      <div
-        aria-hidden="true"
-        className="bg-gold/[0.09] absolute -top-40 left-1/2 size-[520px] -translate-x-1/2 rounded-full blur-3xl"
-      />
-      <Frame />
 
-      <div className="relative mx-auto w-full max-w-6xl px-4 py-9 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
-        <div className="grid gap-9 lg:grid-cols-[1.1fr_.9fr] lg:items-center lg:gap-12">
-          <div>
-            <div className="flex flex-wrap items-center gap-2.5">
+      <div className="relative mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:py-16">
+        <div className="grid items-center gap-9 md:grid-cols-[1fr_auto] md:gap-12">
+          {/* ── متن: راست در RTL ── */}
+          <div className="order-2 md:order-1">
+            <div className="flex flex-wrap items-center gap-2">
               <span
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11.5px] font-extrabold ${state.cls}`}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11.5px] font-bold ${stateChip}`}
               >
                 <span className="relative flex size-1.5" aria-hidden="true">
-                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-current opacity-60" />
+                  {state === "open" && (
+                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-current opacity-70" />
+                  )}
                   <span className="relative inline-flex size-1.5 rounded-full bg-current" />
                 </span>
-                {status.window_state_label || state.text}
+                {status.window_state_label}
               </span>
-              <span className="text-on-stage/65 text-[12px] font-semibold tracking-tight">
-                {toFa(status.starts_at_jalali)} تا {toFa(status.ends_at_jalali)}
+              <span className="text-text-subtle text-[12px] font-medium">
+                {faJalali(status.starts_at_jalali)} تا {faJalali(status.ends_at_jalali)}
               </span>
             </div>
 
-            <h1 className="mt-4 text-[clamp(27px,4.8vw,47px)] leading-[1.24] font-extrabold tracking-[-0.02em]">
-              پنج سؤال، یک کتاب،
+            <h1 className="text-text mt-4 text-[clamp(26px,4.2vw,42px)] leading-[1.3] font-extrabold tracking-tight">
+              مسابقهٔ کتابخوانی
               <br />
-              <span className="relative inline-block">
-                <span className="text-gold relative z-10">هفده مسجد</span>
-                <span
-                  aria-hidden="true"
-                  className="bg-gold/18 absolute inset-x-0 bottom-1 z-0 h-[7px] sm:h-[9px]"
-                />
-              </span>{" "}
-              در یک رقابت.
+              <span className="text-brick">هفتهٔ بسیج</span> — کاوه ۱۸۵
             </h1>
 
-            <p className="text-on-stage/78 mt-3.5 max-w-[48ch] text-[13.5px] leading-[2.05] sm:text-[15px]">
+            <p className="text-text-muted mt-3.5 max-w-[46ch] text-[13.5px] leading-[2.05] sm:text-[14.5px]">
               {status.description}
             </p>
 
-            <div className="mt-6 max-w-[380px]">
-              <p className="text-gold/90 mb-2 flex items-center gap-1.5 text-[11.5px] font-bold">
-                <Star size={8} />
-                {status.window_state === "upcoming" ? "تا آغاز آزمون" : "تا پایان مهلت"}
+            {/* ── شمارش معکوس: یک ردیف تمیز ── */}
+            <div className="mt-6 max-w-[340px]">
+              <p className="text-text-subtle mb-2 text-[11px] font-bold">
+                {state === "upcoming" ? "تا آغاز مهلت آزمون" : "تا پایان مهلت آزمون"}
               </p>
-              <Countdown targetSeconds={Math.max(0, secondsLeft)} label="زمان باقی‌مانده" />
+              <Countdown
+                targetSeconds={Math.max(0, secondsLeft)}
+                label="زمان باقی‌مانده"
+                variant="light"
+              />
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center gap-2.5">
+            <div className="mt-7 flex flex-wrap items-center gap-2.5">
               <Link
                 href="/register"
-                className="group bg-gold text-on-gold shadow-2 hover:bg-gold-strong inline-flex h-12 items-center gap-2.5 rounded-lg px-6 text-[14.5px] font-extrabold transition-all duration-200 hover:shadow-[0_10px_30px_-8px_oklch(66%_0.135_80/0.55)]"
+                className="bg-brick text-on-brand hover:bg-brand inline-flex h-12 items-center rounded-lg px-6 text-[14.5px] font-extrabold shadow-sm transition-colors"
               >
-                {status.can_participate ? "ورود به آزمون" : "ثبت‌نام و رزرو جای من"}
-                <span
-                  className="transition-transform duration-200 group-hover:-translate-x-0.5"
-                  aria-hidden="true"
-                >
-                  ←
-                </span>
+                {state === "open" ? "ورود به آزمون" : "ثبت‌نام و شرکت"}
               </Link>
               <Link
                 href="/rules"
-                className="text-on-stage hover:border-gold/45 inline-flex h-12 items-center rounded-lg border border-white/22 px-5 text-[13.5px] font-bold transition-colors hover:bg-white/[0.07]"
+                className="border-border-strong text-text hover:bg-surface inline-flex h-12 items-center rounded-lg border px-5 text-[13.5px] font-bold transition-colors"
               >
-                قوانین در ۳۰ ثانیه
+                قوانین مسابقه
               </Link>
             </div>
 
-            <dl className="mt-7 grid max-w-lg grid-cols-3 divide-x divide-white/12 border-t border-white/12 pt-4">
+            {/* ── سه عدد واقعی، بدون تزئین ── */}
+            <dl className="border-border/80 mt-8 grid max-w-md grid-cols-3 gap-4 border-t pt-4">
               {[
-                { k: "مشارکت‌کننده", v: faNumber(total), suffix: "نفر" },
-                { k: "مسجد", v: faNumber(leaderboard.total_active_mosques), suffix: "مسجد" },
-                {
-                  k: "فرصت پاسخ",
-                  v: toFa(Math.round(status.duration_seconds / 60)),
-                  suffix: "دقیقه",
-                },
+                { k: "سؤال در هر آزمون", v: faNumber(status.questions_per_attempt) },
+                { k: "فرصت پاسخ", v: `${toFa(Math.round(status.duration_seconds / 60))} دقیقه` },
+                { k: "هزینهٔ شرکت", v: "رایگان" },
               ].map((x) => (
-                <div key={x.k} className="px-2 first:pr-0">
-                  <dd className="flex items-baseline gap-1 tabular-nums">
-                    <span className="text-gold text-[19px] font-extrabold">{x.v}</span>
-                    <span className="text-on-stage/55 text-[10.5px]">{x.suffix}</span>
-                  </dd>
-                  <dt className="text-on-stage/55 mt-0.5 text-[10.5px]">{x.k}</dt>
+                <div key={x.k}>
+                  <dd className="text-text text-[15px] font-extrabold tabular-nums">{x.v}</dd>
+                  <dt className="text-text-subtle mt-0.5 text-[11px]">{x.k}</dt>
                 </div>
               ))}
             </dl>
           </div>
 
-          {/* پیش‌نمایش واقعی جلسهٔ آزمون */}
-          <div className="relative">
-            <div
-              aria-hidden="true"
-              className="from-gold/12 absolute -inset-3 rounded-2xl bg-gradient-to-b to-transparent blur-xl"
-            />
-            <div className="relative rounded-xl border border-white/[0.14] bg-white/[0.06] p-4 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.55)] backdrop-blur-md sm:p-5">
-              <div className="text-on-stage/65 flex items-center justify-between text-[11px]">
-                <span className="inline-flex items-center gap-1.5">
-                  <Star size={8} className="text-gold" />
-                  نمونهٔ جلسهٔ آزمون
-                </span>
-                <span className="text-gold rounded bg-white/10 px-1.5 py-0.5 font-extrabold tabular-nums">
-                  {toFa(String(Math.floor(status.duration_seconds / 60)).padStart(2, "0"))}:۰۰
-                </span>
+          {/* ── تصویر رسمی رویداد ── */}
+          <div className="order-1 md:order-2 md:w-[318px] lg:w-[356px]">
+            <figure className="relative">
+              {/* هالهٔ نرم طلایی پشت تصویر — نه قاب دوتایی */}
+              <div
+                aria-hidden="true"
+                className="bg-gold/12 absolute -inset-4 rounded-[28px] blur-2xl"
+              />
+              <div className="ring-gold/35 relative overflow-hidden rounded-2xl shadow-[0_18px_50px_-20px_oklch(35%_0.06_60/0.35)] ring-1">
+                <Image
+                  src="/media/kaveh-hero.jpg"
+                  alt="تصویر شهید محمود کاوه، فرمانده لشکر ویژهٔ ۱۵۵ شهدا، در قاب تزئینی با پرچم ایران"
+                  width={900}
+                  height={1286}
+                  priority
+                  sizes="(max-width: 767px) 80vw, 356px"
+                  className="h-auto w-full"
+                />
+                <figcaption className="from-stage via-stage/80 absolute inset-x-0 bottom-0 bg-gradient-to-t to-transparent px-4 pt-14 pb-3.5 backdrop-blur-[1px]">
+                  <p className="text-on-stage text-[12.5px] font-extrabold">شهید محمود کاوه</p>
+                  <p className="text-on-stage-muted text-[10.5px]">
+                    فرماندهٔ لشکر ویژهٔ ۱۵۵ شهدا — ۱۳۴۱ تا ۱۳۶۵
+                  </p>
+                </figcaption>
               </div>
-
-              <div className="mt-3 flex gap-1 overflow-hidden" aria-hidden="true">
-                {Array.from({ length: status.questions_per_attempt }).map((_, i) => (
-                  <span
-                    key={i}
-                    className={`h-[3px] flex-1 rounded-full ${
-                      i === 0
-                        ? "bg-gold"
-                        : i === 1
-                          ? "from-gold/60 bg-gradient-to-l to-white/20"
-                          : "bg-white/15"
-                    }`}
-                  />
-                ))}
-              </div>
-
-              <p className="text-on-stage mt-3.5 text-[13px] leading-7 font-bold">
-                فرمان تاریخی تشکیل بسیج مستضعفین در چه تاریخی و توسط چه کسی صادر شد؟
-              </p>
-
-              <ul className="mt-2.5 space-y-1.5 text-[12px] leading-6">
-                {[
-                  { n: "۱", t: "۵ آذر ۱۳۵۸ — حضرت امام خمینی (ره)", sel: true },
-                  { n: "۲", t: "۲۲ بهمن ۱۳۵۷ — شورای انقلاب", sel: false },
-                  { n: "۳", t: "۳ خرداد ۱۳۶۱ — ستاد کل نیروهای مسلح", sel: false },
-                  { n: "۴", t: "۱۴ اسفند ۱۳۵۷ — شورای انقلاب اسلامی", sel: false },
-                ].map((o) => (
-                  <li
-                    key={o.n}
-                    className={`flex items-start gap-2.5 rounded-md border px-2.5 py-2 transition-colors ${
-                      o.sel ? "border-gold/50 bg-gold/14" : "border-white/[0.09] bg-white/[0.045]"
-                    }`}
-                  >
-                    <span
-                      className={`grid size-5 shrink-0 place-items-center rounded text-[10.5px] font-extrabold ${
-                        o.sel ? "bg-gold text-on-gold" : "text-on-stage/65 bg-white/10"
-                      }`}
-                    >
-                      {o.n}
-                    </span>
-                    <span className="text-on-stage/90 min-w-0 flex-1 break-words">{o.t}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="text-on-stage/55 mt-3 flex items-center justify-between border-t border-white/10 pt-2.5 text-[10px]">
-                <span>ترتیب گزینه‌ها برای هر شرکت‌کننده تصادفی است</span>
-                <span className="tabular-nums">
-                  نمونهٔ نمایشی — {toFa(questionPreview || "—")} سؤال در بانک
-                </span>
-              </div>
-            </div>
+            </figure>
           </div>
         </div>
       </div>

@@ -25,6 +25,48 @@ export function faPercent(n: number, digits = 0): string {
   return `${toFa(n.toFixed(digits))}٪`;
 }
 
+/**
+ * تاریخ جلالیِ کوتاه — «۲۹ آبان ۱۴۰۵».
+ *
+ * چرا این تابع؟ بک‌اند تاریخ را به شکل `1405/08/29 00:00:00` می‌دهد. نمایش
+ * مستقیم آن هم فنی است و هم ثانیه‌ای دارد که هیچ معنایی برای کاربر ندارد
+ * (و روی موبایل تاریخ را به دو خط می‌شکند). اینجا فقط بخش تاریخ جدا می‌شود.
+ */
+const JALALI_MONTHS = [
+  "فروردین",
+  "اردیبهشت",
+  "خرداد",
+  "تیر",
+  "مرداد",
+  "شهریور",
+  "مهر",
+  "آبان",
+  "آذر",
+  "دی",
+  "بهمن",
+  "اسفند",
+] as const;
+
+export function faJalali(input: string): string {
+  // ورودی ممکن است `1405/08/29`، `1405/08/29 00:00:00` یا `1405-08-29` باشد
+  const m = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/.exec(input.trim());
+  if (!m) return toFa(input);
+  const y = m[1] ?? "";
+  const mo = m[2] ?? "";
+  const d = m[3] ?? "";
+  const month = JALALI_MONTHS[Number(mo) - 1];
+  if (!month) return toFa(`${y}/${mo}/${d}`);
+  return `${toFa(Number(d))} ${month} ${toFa(y)}`;
+}
+
+/** تاریخ جلالی + ساعت (بدون ثانیه) — برای بازه‌های زمانی دقیق */
+export function faJalaliDateTime(input: string): string {
+  const base = faJalali(input);
+  const t = /(\d{1,2}):(\d{2})/.exec(input);
+  if (!t) return base;
+  return `${base} — ${toFa(t[1] ?? "0")}:${toFa(t[2] ?? "00")}`;
+}
+
 /** ثانیه → «مم:ثان» با ارقام فارسی (برای تایمر آزمون) */
 export function faClock(totalSeconds: number): string {
   const s = Math.max(0, Math.floor(totalSeconds));

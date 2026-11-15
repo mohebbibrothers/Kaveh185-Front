@@ -53,16 +53,38 @@ describe("Button", () => {
 });
 
 describe("Logo", () => {
-  it("با نام دسترس‌پذیر رندر می‌شود", () => {
-    render(<Logo />);
+  /**
+   * دو حالت دارد:
+   *  · portrait (پیش‌فرض) — تصویر پرترهٔ شهید با قاب دایره‌ای؛ تصویر تزئینی
+   *    است (alt خالی) و خودِ لینک والد برچسب دسترس‌پذیری می‌دهد.
+   *  · mark — شمسهٔ SVG با role="img" که برای چاپ/تک‌رنگ استفاده می‌شود.
+   */
+  it("variant=mark با نام دسترس‌پذیر رندر می‌شود", () => {
+    render(<Logo variant="mark" />);
     expect(screen.getByRole("img", { name: "نشان کاوه ۱۸۵" })).toBeTruthy();
   });
 
-  it("اندازه دلخواه اعمال می‌شود", () => {
-    render(<Logo size={72} />);
+  it("variant=mark اندازهٔ دلخواه را روی SVG اعمال می‌کند", () => {
+    render(<Logo variant="mark" size={72} />);
     const svg = screen.getByRole("img");
     expect(svg.getAttribute("width")).toBe("72");
     expect(svg.getAttribute("height")).toBe("72");
+  });
+
+  it("variant=portrait تصویر تزئینی با alt خالی می‌دهد", () => {
+    const { container } = render(<Logo />);
+    const img = container.querySelector("img");
+    expect(img).toBeTruthy();
+    // alt خالی یعنی screen reader از آن رد می‌شود — چون متن «کاوه ۱۸۵»
+    // کنارش در هدر آمده و تکرار نام، تجربهٔ خوانندهٔ صفحه را بد می‌کند
+    expect(img?.getAttribute("alt")).toBe("");
+  });
+
+  it("variant=portrait اندازهٔ قاب را از prop می‌گیرد", () => {
+    const { container } = render(<Logo size={56} />);
+    const frame = container.querySelector("span") as HTMLElement;
+    expect(frame.style.width).toBe("56px");
+    expect(frame.style.height).toBe("56px");
   });
 });
 
