@@ -29,7 +29,8 @@
     "tokens": "node scripts/build-tokens.mjs",
     "tokens:check": "node scripts/build-tokens.mjs --check",
     "budget": "node scripts/check-budget.mjs",
-    "verify": "pnpm run tokens:check && pnpm run api:types -- --check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build && pnpm run budget"
+    "verify": "pnpm run tokens:check && pnpm run api:types -- --check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build && pnpm run budget",
+    "inspect:host": "node scripts/inspect-host.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "5.107.1",
