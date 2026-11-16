@@ -54,8 +54,11 @@ function buildJsonLd(b: Awaited<ReturnType<typeof fetchBootstrapWithMeta>>["data
       {
         "@type": "Event",
         name: b.exam_status.title,
-        startDate: b.exam_status.starts_at,
-        endDate: b.exam_status.ends_at,
+        // تاریخ‌ها فقط اگر واقعی باشند. صفحهٔ ایستا هیچ تاریخی ندارد
+        // (هیچ داده‌ای در زمان ساخت خوانده نمی‌شود)؛ `startDate: ""` یک
+        // خطای اعتبارسنجی Schema.org است و گوگل رویداد را رد می‌کند.
+        ...(b.exam_status.starts_at ? { startDate: b.exam_status.starts_at } : {}),
+        ...(b.exam_status.ends_at ? { endDate: b.exam_status.ends_at } : {}),
         eventStatus: "https://schema.org/EventScheduled",
         eventAttendanceMode: "https://schema.org/OnlineEventAttendanceMode",
         location: { "@type": "VirtualLocation", url: SITE.url },

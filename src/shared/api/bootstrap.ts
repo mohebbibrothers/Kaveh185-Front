@@ -1,5 +1,4 @@
-import { apiGet } from "./client";
-import { bootstrapSchema, type Bootstrap } from "./landing";
+import type { Bootstrap } from "./landing";
 import { FALLBACK_BOOTSTRAP } from "./fallback";
 
 /**
@@ -9,15 +8,15 @@ import { FALLBACK_BOOTSTRAP } from "./fallback";
  * می‌شود و «تازگی» را نمی‌توان به رندر سمت سرور سپرد. پس داده در دو جا
  * به‌دست می‌آید و فرانت باید بداند کدام تازه است:
  *
- *   • `build` — هنگام ساخت از API خوانده شد؛ عدد و تاریخ واقعی است، ولی
- *              ممکن است تا انتشار بعدی کهنه بماند.
+ *   • `shell` — ساختار صفحه، بدون هیچ عددی. این چیزی است که در HTML
+ *              منتشرشده می‌نشیند.
  *   • `live`  — همین حالا از مرورگر از API گرفته شد.
  *   • `stale` — API پاسخ نداد؛ آنچه نمایش می‌دهیم آخرین دادهٔ سالم است و
  *              صادقانه برچسب «آخرین به‌روزرسانی» می‌خورد.
  *
  * هیچ حالتی دادهٔ ساختگی تولید نمی‌کند.
  */
-export type DataFreshness = "build" | "live" | "stale";
+export type DataFreshness = "shell" | "live" | "stale";
 
 export interface BootstrapResult {
   data: Bootstrap;
@@ -28,45 +27,36 @@ export interface BootstrapResult {
 }
 
 /**
- * خواندن bootstrap در **زمان ساخت** (RSC؛ فقط چون سایت ایستاست).
+ * دادهٔ اولیهٔ صفحه — **همیشه** پوستهٔ خالی.
  *
- * اینجا zod سوار است و هزینه‌اش صفر است: یک‌بار هنگام `next build` اجرا
- * می‌شود، نه در مرورگر. اگر پاسخ آمد و با قرارداد نخواند، بی‌صدا رد
- * نمی‌شود — به `console.warn` می‌رود تا در خروجی ساخت دیده شود. درسِ باگ
- * قبلی: ناسازگاری قرارداد بی‌صدا به پوستهٔ خالی تبدیل شده بود و کسی
- * نفهمید.
+ * ⚠️ تاریخچهٔ این تابع مهم است. نسخهٔ قبلی هنگام `next build` از
+ * `/api/v1/core/bootstrap/` می‌خواند و آن را در HTML می‌پخت. مشکل این بود
+ * که در زمان ساخت، آدرس پایه به `127.0.0.1:3000` می‌افتد؛ در سندباکس
+ * ساخت به یک بک‌اند آزمایشی با دادهٔ seed می‌رسید و اعداد ساختگی
+ * (هر مسجد «۱ مشارکت»، سهم ۵.۹٪، «آزمون فعال») در بستهٔ منتشرشده پخته
+ * می‌شدند. بازدیدکنندهٔ واقعی این اعداد را می‌دید، در حالی که API واقعی
+ * صفر می‌گفت — نقض مستقیم اصل «هیچ دادهٔ ساختگی».
  *
- * هرگز خطا پرتاب نمی‌کند: نبودِ بک‌اند نباید ساخت را متوقف کند.
+ * راه‌حل ساختاری است، نه وصله‌ای: مرحلهٔ ساخت هیچ شبکه‌ای نمی‌زند. صفحه
+ * با ساختار و متن ثابت منتشر می‌شود و مرورگر (`LandingShell`) بلافاصله
+ * دادهٔ زندهٔ خودش را می‌گیرد. چون هیچ مسیری برای ورود داده به زمان ساخت
+ * نمانده، دیگر نمی‌تواند اتفاق بیفتد.
+ *
+ * برای به‌روزرسانیِ «زمان ساخت» هیچ نیازی به API نیست؛ محتوای ثابت
+ * (عنوان، کتاب، برگزارکننده، قوانین) در `shared/config/site.ts` است.
  */
+// eslint-disable-next-line @typescript-eslint/require-await -- قرارداد این تابع async است (فراخوان‌ها await می‌کنند) ولی عمداً هیچ awaitی ندارد؛ هر await یعنی یک fetch در زمان ساخت.
 export async function fetchBootstrap(): Promise<Bootstrap> {
-  try {
-    const raw = await apiGet("/api/v1/core/bootstrap/", {
-      next: { revalidate: 60, tags: ["bootstrap"] },
-    });
-    const parsed = bootstrapSchema.safeParse(raw);
-    if (!parsed.success) {
-      console.warn(
-        `[kaveh185] قرارداد bootstrap با انتظار فرانت نمی‌خواند (پوستهٔ خالی نمایش داده می‌شود): ${parsed.error.issues
-          .slice(0, 3)
-          .map((i) => `${i.path.join(".")}: ${i.message}`)
-          .join(" | ")}`,
-      );
-      return FALLBACK_BOOTSTRAP;
-    }
-    return parsed.data;
-  } catch {
-    // بک‌اند هنوز آنلاین نیست — صفحهٔ اول باید همیشه ساخته شود
-    return FALLBACK_BOOTSTRAP;
-  }
+  return FALLBACK_BOOTSTRAP;
 }
 
-/** همان الگوی زمان ساخت، با متادیتای تازگی برای کلاینت. */
+/** همان قرارداد، با متادیتای تازگی برای کلاینت. */
 export async function fetchBootstrapWithMeta(): Promise<BootstrapResult> {
   const data = await fetchBootstrap();
   return {
     data,
     fetchedAt: data.server_time,
-    // پوستهٔ خالی، هیچ مسجدی ندارد؛ دادهٔ واقعی همیشه دارد (۱۷ مسجد)
-    fromApi: data.mosques.length > 0,
+    // پوستهٔ خالی هیچ مسجدی ندارد؛ مقدار واقعی پس از اولین پاسخ زنده می‌آید.
+    fromApi: false,
   };
 }

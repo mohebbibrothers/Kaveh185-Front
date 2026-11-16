@@ -47,9 +47,18 @@ function Row({ e, max }: { e: LeaderboardEntry; max: number }) {
 }
 
 export function Leaderboard({ board }: { board: Board }) {
-  const rows = board.leaderboard.slice(0, 8);
+  /**
+   * فقط مساجدی که واقعاً مشارکت داشته‌اند در جدول رقابت می‌آیند.
+   *
+   * چرا صفرها حذف می‌شوند؟ چون API همهٔ ۱۷ مسجد را با عدد صفر برمی‌گرداند
+   * و api هم به هر کدام رتبه می‌دهد. نمایش «۱. مسجد … ۰» یعنی اعلام
+   * برنده‌ای که وجود ندارد. وقتی هیچ مشارکتی نیست، جدول باید صادقانه
+   * بگوید «از نخستین مشارکت‌ها پر می‌شود».
+   */
+  const active = board.leaderboard.filter((r) => r.completed_participants_count > 0);
+  const rows = active.slice(0, 8);
   const max = Math.max(1, ...rows.map((r) => r.completed_participants_count));
-  const top = board.leaderboard[0];
+  const top = rows[0];
 
   return (
     <section
@@ -61,7 +70,13 @@ export function Leaderboard({ board }: { board: Board }) {
 
       <div className="relative mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-gold text-[11.5px] font-extrabold tracking-wide">رقابت ۱۷ مسجد</p>
+          {/* تعداد مساجد از دادهٔ زنده می‌آید؛ پیش از رسیدن آن، عدد ثابت
+              نوشتن یعنی ادعای چیزی که هنوز نمی‌دانیم. */}
+          <p className="text-gold text-[11.5px] font-extrabold tracking-wide">
+            {board.total_mosques > 0
+              ? `رقابت ${faNumber(board.total_mosques)} مسجد`
+              : "رقابت مساجد"}
+          </p>
           <h2 id="board-title" className="mt-1 text-[clamp(19px,2.6vw,26px)] font-extrabold">
             مسجد شما در چه جایگاهی است؟
           </h2>
@@ -75,7 +90,10 @@ export function Leaderboard({ board }: { board: Board }) {
             به‌روزرسانی زنده
           </span>
           <span className="tabular-nums">
-            مجموع: {faNumber(board.total_completed_participants)} نفر
+            مجموع:{" "}
+            {board.total_completed_participants > 0
+              ? `${faNumber(board.total_completed_participants)} نفر`
+              : "در انتظار نخستین مشارکت"}
           </span>
         </div>
       </div>
@@ -111,9 +129,9 @@ export function Leaderboard({ board }: { board: Board }) {
         </ol>
       ) : null}
 
-      {board.leaderboard.length > rows.length ? (
+      {active.length > rows.length ? (
         <p className="text-on-stage/60 relative mt-3 text-center text-[11.5px]">
-          و {toFa(board.leaderboard.length - rows.length)} مسجد دیگر در جدول کامل
+          و {toFa(active.length - rows.length)} مسجد دیگر در جدول کامل
         </p>
       ) : null}
     </section>

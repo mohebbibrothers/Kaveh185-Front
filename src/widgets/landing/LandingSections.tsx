@@ -24,7 +24,7 @@ import type { Bootstrap } from "@/shared/api/landing";
 export function LandingSections({ initial }: { initial: Bootstrap }) {
   const { data, freshness, lastOk } = useData({
     data: initial,
-    freshness: "build",
+    freshness: "shell",
     lastOk: initial.server_time,
   });
   const status = data.exam_status;
@@ -59,13 +59,17 @@ export function LandingSections({ initial }: { initial: Bootstrap }) {
               <div>
                 <dt className="text-text-subtle">بازهٔ مسابقه</dt>
                 <dd className="text-text mt-0.5 font-bold tabular-nums">
-                  {faJalali(status.starts_at_jalali)} — {faJalali(status.ends_at_jalali)}
+                  {status.starts_at_jalali && status.ends_at_jalali
+                    ? `${faJalali(status.starts_at_jalali)} — ${faJalali(status.ends_at_jalali)}`
+                    : "در حال دریافت…"}
                 </dd>
               </div>
               <div>
                 <dt className="text-text-subtle">سؤال در بانک</dt>
                 <dd className="text-text mt-0.5 font-bold tabular-nums">
-                  {toFa(status.active_question_bank_size)} سؤال
+                  {status.active_question_bank_size > 0
+                    ? `${toFa(status.active_question_bank_size)} سؤال`
+                    : "—"}
                 </dd>
               </div>
             </dl>

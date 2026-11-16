@@ -46,7 +46,7 @@ export async function fetchBootstrapLive(): Promise<Bootstrap> {
 
 export function useLiveBootstrap(initial: Bootstrap, initialFetchedAt: string) {
   const [data, setData] = useState(initial);
-  const [freshness, setFreshness] = useState<DataFreshness>("build");
+  const [freshness, setFreshness] = useState<DataFreshness>("shell");
   const [lastOk, setLastOk] = useState(initialFetchedAt);
   const [refreshing, setRefreshing] = useState(false);
 

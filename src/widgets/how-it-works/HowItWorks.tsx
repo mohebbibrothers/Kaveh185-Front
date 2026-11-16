@@ -54,7 +54,14 @@ export function HowItWorks({ status }: { status: ExamStatus }) {
           { k: "سؤال در هر آزمون", v: toFa(status.questions_per_attempt) },
           { k: "دقیقه فرصت پاسخ", v: toFa(Math.round(status.duration_seconds / 60)) },
           { k: "بار مجاز شرکت", v: "۱" },
-          { k: "سؤال در بانک آزمون", v: faNumber(status.active_question_bank_size) },
+          {
+            k: "سؤال در بانک آزمون",
+            // صفر یعنی «هنوز از API خوانده نشده»، نه «بانک خالی است».
+            v:
+              status.active_question_bank_size > 0
+                ? faNumber(status.active_question_bank_size)
+                : "—",
+          },
         ].map((x) => (
           <div key={x.k} className="border-border bg-surface rounded-lg border p-3 text-center">
             <dt className="text-text-subtle order-2 mt-1 text-[11px]">{x.k}</dt>

@@ -57,6 +57,9 @@ export function Hero({ status, serverNow }: { status: HeroStatus; serverNow?: st
   const secondsLeft =
     absolute ?? (state === "upcoming" ? status.seconds_until_start : status.seconds_until_end);
 
+  /** آیا تاریخ‌های واقعی رسیده‌اند؟ پوستهٔ خالی تاریخ ندارد. */
+  const hasSchedule = Boolean(status.starts_at && status.ends_at);
+
   const stateChip =
     state === "upcoming"
       ? "border-gold/45 bg-gold-soft text-gold-strong"
@@ -89,7 +92,14 @@ export function Hero({ status, serverNow }: { status: HeroStatus; serverNow?: st
                 {status.window_state_label}
               </span>
               <span className="text-text-subtle text-[12px] font-medium">
-                {faJalali(status.starts_at_jalali)} تا {faJalali(status.ends_at_jalali)}
+                {/* تا وقتی API پاسخ نداده تاریخ نامعلوم است؛ «— تا —» نمی‌نویسیم. */}
+                {status.starts_at_jalali && status.ends_at_jalali ? (
+                  <>
+                    {faJalali(status.starts_at_jalali)} تا {faJalali(status.ends_at_jalali)}
+                  </>
+                ) : (
+                  <span className="text-text-subtle/80">بازهٔ زمانی در حال دریافت…</span>
+                )}
               </span>
             </div>
 
@@ -109,15 +119,24 @@ export function Hero({ status, serverNow }: { status: HeroStatus; serverNow?: st
                 هیچ کاری برای انجام‌دادن نمی‌دید. اکنون دکمه‌ها اول می‌آیند و
                 تایمر بعد از آن‌ها؛ در دسکتاپ `md:order-none` ترتیب اصلی را
                 برمی‌گرداند. */}
+            {/* شمارش معکوس فقط وقتی معنا دارد که تاریخ واقعی از سرور آمده
+                باشد. پیش از آن، «۰۰:۰۰» نمایش دادن یعنی گفتن عددی که
+                نمی‌دانیم — همان چیزی که اصل «هیچ عدد ساختگی» منع می‌کند. */}
             <div className="order-2 mt-6 max-w-[340px] md:order-none">
               <p className="text-text-subtle mb-2 text-[11px] font-bold">
                 {state === "upcoming" ? "تا آغاز مهلت آزمون" : "تا پایان مهلت آزمون"}
               </p>
-              <Countdown
-                targetSeconds={Math.max(0, secondsLeft)}
-                label="زمان باقی‌مانده"
-                variant="light"
-              />
+              {hasSchedule ? (
+                <Countdown
+                  targetSeconds={Math.max(0, secondsLeft)}
+                  label="زمان باقی‌مانده"
+                  variant="light"
+                />
+              ) : (
+                <div className="border-border/70 bg-surface/60 text-text-subtle grid h-[68px] place-items-center rounded-lg border text-[12px]">
+                  در حال دریافت زمان‌بندی از سرور…
+                </div>
+              )}
             </div>
 
             <div className="order-1 mt-7 flex flex-wrap items-center gap-2.5 md:order-none">
