@@ -13,7 +13,13 @@ import { useEffect, useState } from "react";
  * دسترس‌پذیری: aria-expanded، aria-controls، بستن با Escape، قفل اسکرول
  * هنگام باز بودن، و بستن خودکار با تغییر مسیر.
  */
-export function MobileMenu({ links }: { links: readonly { href: string; label: string }[] }) {
+export function MobileMenu({
+  links,
+  anchors = [],
+}: {
+  links: readonly { href: string; label: string }[];
+  anchors?: readonly { href: string; label: string }[];
+}) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -89,6 +95,25 @@ export function MobileMenu({ links }: { links: readonly { href: string; label: s
                 {n.label}
               </a>
             ))}
+            {anchors.length > 0 ? (
+              <div className="border-border mt-1 border-t pt-1">
+                <p className="text-text-subtle px-3 pt-2 pb-1 text-[10.5px] font-bold">
+                  بخش‌های صفحهٔ اول
+                </p>
+                {anchors.map((n) => (
+                  <a
+                    key={n.href}
+                    href={n.href}
+                    onClick={() => {
+                      setOpen(false);
+                    }}
+                    className="text-text-muted hover:bg-surface-2 block rounded-lg px-3 py-2.5 text-[13px] font-bold transition-colors"
+                  >
+                    {n.label}
+                  </a>
+                ))}
+              </div>
+            ) : null}
             <div className="border-border mt-1 border-t pt-1">
               <Link
                 href="/login"
@@ -99,15 +124,8 @@ export function MobileMenu({ links }: { links: readonly { href: string; label: s
               >
                 ورود
               </Link>
-              <Link
-                href="/receipt"
-                onClick={() => {
-                  setOpen(false);
-                }}
-                className="text-text-muted hover:bg-surface-2 block rounded-lg px-3 py-3 text-[14px] font-bold transition-colors"
-              >
-                استعلام کارنامه
-              </Link>
+              {/* «استعلام کارنامه» عمداً اینجا نیست: «کارنامه» در بالای همین
+                  منو هست و دو لینک با یک مقصد، فقط تردید می‌سازد. */}
             </div>
           </nav>
         </div>

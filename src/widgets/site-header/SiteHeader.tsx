@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { NavLink } from "./NavLink";
 import { Logo } from "@/shared/ui/Logo";
 import { ThemeToggle } from "@/shared/ui/ThemeToggle";
-import { NAV, SITE } from "@/shared/config/site";
+import { ANCHORS, PRIMARY, SITE } from "@/shared/config/site";
 import { MobileMenu } from "./MobileMenu";
 
 /**
@@ -20,7 +21,10 @@ import { MobileMenu } from "./MobileMenu";
  *   محتوا زیرش زنده بماند.
  */
 export function SiteHeader() {
-  const links = NAV.filter((n) => n.href.startsWith("/#"));
+  // دسکتاپ: فقط مقصدهای واقعی. لنگرهای صفحهٔ اول در منوی موبایل می‌آیند
+  // تا نوار بالا شلوغ نشود و روی صفحه‌های داخلی هم لینکِ بی‌ربط نباشد.
+  const links = PRIMARY;
+  const anchors = ANCHORS;
 
   return (
     <header className="border-border/70 bg-canvas/80 sticky top-0 z-40 border-b backdrop-blur-xl">
@@ -46,13 +50,7 @@ export function SiteHeader() {
 
         <nav aria-label="ناوبری اصلی" className="hidden items-center gap-0.5 lg:flex">
           {links.map((n) => (
-            <a
-              key={n.href}
-              href={n.href}
-              className="text-text-muted hover:text-text after:bg-brand relative rounded-md px-3 py-2 text-[13px] font-semibold transition-colors after:absolute after:inset-x-3 after:-bottom-0.5 after:h-[2px] after:origin-right after:scale-x-0 after:rounded-full after:transition-transform hover:after:scale-x-100"
-            >
-              {n.label}
-            </a>
+            <NavLink key={n.href} href={n.href} label={n.label} />
           ))}
         </nav>
 
@@ -70,7 +68,7 @@ export function SiteHeader() {
           >
             ثبت‌نام و شرکت
           </Link>
-          <MobileMenu links={links} />
+          <MobileMenu links={links} anchors={anchors} />
         </div>
       </div>
     </header>
