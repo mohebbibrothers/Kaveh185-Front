@@ -1,0 +1,113 @@
+name: Release frontend bundle
+
+# چرا این گردش‌کار؟
+# ─────────────────
+# خروجی ایستا باید **یک‌جا** ساخته شود و همان‌جا تأیید شود؛ روی هاست نه
+# Node هست نه pnpm (و نه حتی python3). پس بسته اینجا ساخته، دروازه‌زنی و
+# به‌عنوان داراییِ انتشار گیت‌هاب منتشر می‌شود.
+#
+# نتیجه برای اپراتور روی هاست، فقط یک فرمان:
+#
+#   bash ~/Kaveh185-Back/deploy/front-deploy.sh --url \
+#     https://github.com/mohebbibrothers/Kaveh185-Front/releases/latest/download/frontend.tar.gz
+#
+# نام دارایی عمداً ثابت است (frontend.tar.gz) تا لازم نباشد هش را در نشانی
+# بنویسید؛ شناسهٔ نسخه در سرآیند X-Frontend-Build و در BUILD_ID داخل بسته
+# هست و اسکریپت استقرار خودش تطبیق می‌دهد.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ساخت و انتشار بسته
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: نصب وابستگی‌ها
+        run: pnpm install --frozen-lockfile
+
+      - name: دروازه‌های کیفیت
+        run: |
+          pnpm run tokens:check
+          pnpm run api:types -- --check
+          pnpm run lint
+          pnpm run typecheck
+          pnpm run test
+
+      - name: ساخت خروجی ایستا
+        env:
+          # سایت و API هم‌مبدأ می‌شوند؛ فقط برای متادیتا لازم است.
+          NEXT_PUBLIC_SITE_URL: https://kaveh185.ir
+          NEXT_PUBLIC_API_ORIGIN: https://kaveh185.ir
+          # ⚠️ دادهٔ صفحهٔ اول در زمان ساخت از همین نشانی خوانده می‌شود.
+          # اگر بک‌اند در دسترس باشد، عدد و تاریخ واقعی در HTML می‌نشیند؛
+          # اگر نباشد، پوستهٔ خالیِ صادقانه می‌آید و مرورگر تازه‌اش می‌کند.
+          NEXT_PUBLIC_API_BASE: https://kaveh185.ir
+        run: |
+          pnpm run build
+          pnpm run budget
+
+      - name: بسته‌بندی + دروازهٔ محتوا
+        run: pnpm run pack:front
+
+      - name: نام ثابت دارایی
+        run: |
+          SRC="$(ls -1 release/frontend-*.tar.gz | head -1)"
+          cp "$SRC" release/frontend.tar.gz
+          cp "$SRC.sha256" release/frontend.tar.gz.sha256
+          sed -i "s|$(basename "$SRC")|frontend.tar.gz|" release/frontend.tar.gz.sha256
+          echo "── محتوای بسته ──"
+          cat release/frontend.tar.gz.sha256
+          echo "── شناسهٔ نسخه ──"
+          cat out/BUILD_ID
+
+      - name: انتشار به‌عنوان دارایی Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # برچسب «تازه‌ترین بستهٔ main». `latest` همیشه به همین اشاره می‌کند،
+          # پس نشانی دانلود در اسکریپت هاست هیچ‌وقت عوض نمی‌شود.
+          tag_name: frontend-latest
+          name: Frontend bundle (latest)
+          body: |
+            بستهٔ فرانت ایستای کاوه ۱۸۵ — ساخته‌شده از `${{ github.sha }}`.
+
+            روی هاست:
+            ```
+            bash ~/Kaveh185-Back/deploy/front-deploy.sh --url \
+              https://github.com/${{ github.repository }}/releases/latest/download/frontend.tar.gz
+            ```
+          files: |
+            release/frontend.tar.gz
+            release/frontend.tar.gz.sha256
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: نگه‌داشتن بسته برای عیب‌یابی
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-bundle
+          path: |
+            release/frontend.tar.gz
+            release/frontend.tar.gz.sha256
+            out/BUILD_ID
+          retention-days: 14

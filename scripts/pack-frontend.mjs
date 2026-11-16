@@ -188,8 +188,15 @@ const routes = htmlFiles
 const all = await walk(OUT);
 const manifest = {};
 let indexSha = "";
+/**
+ * فایل‌های «دربارهٔ خودِ بسته» از فهرست هش کنار گذاشته می‌شوند:
+ * FILES.sha256 نمی‌تواند هش خودش را داشته باشد، و BUILD_INFO/ROUTES/BUILD_ID
+ * بعد از محاسبهٔ هش نوشته می‌شوند. اسکریپت استقرار همین‌ها را استثنا می‌کند.
+ */
+const SELF = new Set(["FILES.sha256", "BUILD_INFO.json", "ROUTES.txt", "BUILD_ID"]);
+
 for (const p of all) {
-  if (p.endsWith(".br") || p.endsWith(".gz") || p.endsWith("BUILD_INFO.json")) continue;
+  if (p.endsWith(".br") || p.endsWith(".gz") || SELF.has(posix(p))) continue;
   const rel = posix(p);
   const hash = createHash("sha256");
   await pipeline(createReadStream(p), hash);
@@ -198,6 +205,18 @@ for (const p of all) {
   if (rel === "index.html") indexSha = digest;
 }
 
+/**
+ * ── چرا `FILES.sha256` و `BUILD_ID` هم نوشته می‌شوند؟ ──────────────────
+ *
+ * اسکریپت استقرار روی هاست اجرا می‌شود و آنجا **نه Node هست نه python3**
+ * (فقط bash و ابزارهای استاندارد). خواندن JSON با grep شکننده است، ولی
+ * `sha256sum -c` در هر لینوکسی هست:
+ *
+ *     FILES.sha256   ← خروجی استاندارد `sha256sum` برای بازرسی یک‌خطی
+ *     BUILD_ID       ← یک خط، فقط شناسهٔ نسخه؛ خواندنش با `cat` کافی است
+ *
+ * BUILD_INFO.json می‌ماند چون میان‌افزار جنگو و انسان‌ها آن را می‌خوانند.
+ */
 const pkg = JSON.parse(await readFile(join(ROOT, "package.json"), "utf8"));
 const info = {
   name: pkg.name,
@@ -215,6 +234,17 @@ const info = {
   },
 };
 await writeFile(join(OUT, "BUILD_INFO.json"), JSON.stringify(info, null, 2) + "\n");
+
+// قالب‌های قابل‌مصرف برای bash — بی‌هیچ مفسر زبان
+await writeFile(
+  join(OUT, "FILES.sha256"),
+  Object.entries(manifest)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([rel, m]) => `${m.sha256}  ${rel}`)
+    .join("\n") + "\n",
+);
+await writeFile(join(OUT, "BUILD_ID"), `${indexSha.slice(0, 12)}\n`);
+await writeFile(join(OUT, "ROUTES.txt"), routes.join("\n") + "\n");
 
 // ── ۵) گزارش ─────────────────────────────────────────────────────────────
 const kb = (n) => `${(n / 1024).toFixed(1)}KB`;
