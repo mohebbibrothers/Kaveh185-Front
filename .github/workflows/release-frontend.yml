@@ -55,16 +55,45 @@ jobs:
 
       - name: ساخت خروجی ایستا
         env:
-          # سایت و API هم‌مبدأ می‌شوند؛ فقط برای متادیتا لازم است.
+          # سایت و API هم‌مبدأ هستند؛ این‌ها فقط متادیتا و نشانی canonical‌اند.
           NEXT_PUBLIC_SITE_URL: https://kaveh185.ir
           NEXT_PUBLIC_API_ORIGIN: https://kaveh185.ir
-          # ⚠️ دادهٔ صفحهٔ اول در زمان ساخت از همین نشانی خوانده می‌شود.
-          # اگر بک‌اند در دسترس باشد، عدد و تاریخ واقعی در HTML می‌نشیند؛
-          # اگر نباشد، پوستهٔ خالیِ صادقانه می‌آید و مرورگر تازه‌اش می‌کند.
-          NEXT_PUBLIC_API_BASE: https://kaveh185.ir
         run: |
           pnpm run build
           pnpm run budget
+
+      # ⚠️ دروازهٔ حیاتی: بیلد ایستا نباید هیچ داده‌ای از API در خود داشته
+      # باشد. یک‌بار همین اتفاق افتاد — `next build` در زمان ساخت از یک
+      # بک‌اند آزمایشی خواند و عدد seed («۱ مشارکت» برای هر مسجد، سهم
+      # ۵.۹٪، «آزمون فعال است») در HTML منتشرشده پخت. API واقعی همان
+      # لحظه صفر می‌گفت.
+      #
+      # حالا کد هیچ fetchی در زمان ساخت ندارد؛ این گام اگر روزی کسی آن را
+      # برگرداند، انتشار را متوقف می‌کند — نه این‌که اعداد جعلی منتشر شود.
+      - name: دروازهٔ «هیچ دادهٔ پخته‌شده»
+        run: |
+          set -euo pipefail
+          fail=0
+          flat="$(tr -d '\\' < out/index.html)"
+          check() { # pattern | description
+            if printf '%s' "$flat" | grep -qE "$1"; then
+              echo "::error::$2"
+              fail=1
+            else
+              echo "OK — $2"
+            fi
+          }
+          check '"starts_at"[[:space:]]*:[[:space:]]*"[0-9]'              'تاریخ واقعی آزمون در HTML پخته شده'
+          check '"total_completed_participants"[[:space:]]*:[[:space:]]*[1-9]' 'عدد مشارکت در HTML پخته شده'
+          check 'MSQ-[0-9]{2}'                                            'فهرست مساجد در HTML پخته شده'
+          check '"total_mosques"[[:space:]]*:[[:space:]]*[1-9]'            'تعداد مساجد در HTML پخته شده'
+          if grep -qE 'apiGet[[:space:]]*\(|await fetch\(' src/app/page.tsx; then
+            echo "::error::صفحهٔ اول در زمان ساخت API صدا می‌زند"
+            fail=1
+          else
+            echo "OK — صفحهٔ اول در زمان ساخت هیچ درخواستی نمی‌زند"
+          fi
+          exit "$fail"
 
       - name: بسته‌بندی + دروازهٔ محتوا
         run: pnpm run pack:front
