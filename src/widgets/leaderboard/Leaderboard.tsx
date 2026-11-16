@@ -1,11 +1,11 @@
 import { PersianPattern } from "@/shared/ui/PersianPattern";
-import { Star } from "@/shared/ui/Ornament";
+import { Girih } from "@/shared/ui/Ornament";
 import { faNumber, faPercent, toFa } from "@/shared/lib/fa";
 import type { LeaderboardEntry, Leaderboard as Board } from "@/shared/api/landing";
 
 function Bar({ value }: { value: number }) {
   return (
-    <span className="hidden h-1.5 flex-1 overflow-hidden rounded-full bg-white/10 sm:block">
+    <span className="bg-on-stage/12 hidden h-1.5 flex-1 overflow-hidden rounded-full sm:block">
       <span
         className="from-gold-strong to-gold block h-full rounded-full bg-gradient-to-l"
         style={{ width: `${Math.min(100, Math.max(2, value))}%` }}
@@ -21,13 +21,13 @@ function Row({ e, max }: { e: LeaderboardEntry; max: number }) {
     <li
       className={`grid grid-cols-[28px_1fr_auto] items-center gap-2.5 rounded-lg px-3 py-2.5 sm:grid-cols-[28px_1fr_72px_auto] ${
         isTop
-          ? "border-gold/40 from-gold/[0.16] border bg-gradient-to-l to-white/[0.04]"
-          : "border border-white/[0.09] bg-white/[0.045]"
+          ? "border-gold/40 from-gold/[0.16] to-on-stage/[0.05] border bg-gradient-to-l"
+          : "border-on-stage/12 bg-on-stage/[0.05] border"
       }`}
     >
       <span
         className={`grid size-7 place-items-center rounded-md text-[12px] font-extrabold tabular-nums ${
-          isTop ? "bg-gold text-on-gold" : "text-on-stage/80 bg-white/10"
+          isTop ? "bg-gold text-on-gold" : "text-on-stage bg-on-stage/12"
         }`}
       >
         {toFa(e.rank)}
@@ -35,7 +35,7 @@ function Row({ e, max }: { e: LeaderboardEntry; max: number }) {
       <span className="min-w-0">
         <span className="block truncate text-[13px] font-semibold">{e.name}</span>
         {e.tier_label ? (
-          <span className="text-on-stage/55 block text-[10.5px]">{e.tier_label}</span>
+          <span className="text-on-stage-muted block text-[10.5px]">{e.tier_label}</span>
         ) : null}
       </span>
       <Bar value={pct} />
@@ -81,7 +81,7 @@ export function Leaderboard({ board }: { board: Board }) {
             مسجد شما در چه جایگاهی است؟
           </h2>
         </div>
-        <div className="text-on-stage/70 flex items-center gap-3 text-[11.5px]">
+        <div className="text-on-stage-muted flex items-center gap-3 text-[11.5px]">
           <span className="inline-flex items-center gap-1.5">
             <span
               className="bg-verde inline-block size-1.5 animate-pulse rounded-full"
@@ -99,12 +99,12 @@ export function Leaderboard({ board }: { board: Board }) {
       </div>
 
       {rows.length === 0 ? (
-        <div className="relative rounded-xl border border-dashed border-white/20 bg-white/[0.03] px-4 py-7 text-center">
+        <div className="border-on-stage/25 bg-on-stage/[0.04] relative rounded-xl border border-dashed px-4 py-7 text-center">
           <span className="border-gold/30 text-gold mx-auto grid size-11 place-items-center rounded-full border">
-            <Star size={18} />
+            <Girih size={18} />
           </span>
           <p className="mt-3 text-[13.5px] font-extrabold">جدول از نخستین مشارکت‌ها پر می‌شود</p>
-          <p className="text-on-stage/65 mx-auto mt-1.5 max-w-[38ch] text-[12px] leading-6">
+          <p className="text-on-stage-muted mx-auto mt-1.5 max-w-[38ch] text-[12px] leading-6">
             به‌محض ثبت اولین کارنامه، رتبهٔ هر مسجد در همین‌جا زنده به‌روزرسانی می‌شود. نام مسجدت را
             به بالای جدول برسان.
           </p>
@@ -112,7 +112,7 @@ export function Leaderboard({ board }: { board: Board }) {
       ) : null}
 
       {top ? (
-        <p className="border-gold/25 bg-gold/[0.1] text-on-stage/85 relative mb-3 rounded-lg border px-3 py-2 text-[12px]">
+        <p className="border-gold/25 bg-gold/[0.1] text-on-stage relative mb-3 rounded-lg border px-3 py-2 text-[12px]">
           پیشتاز فعلی: <strong className="text-gold font-extrabold">{top.name}</strong> با{" "}
           {faNumber(top.completed_participants_count)} مشارکت
           {top.participation_share_percent
@@ -130,7 +130,7 @@ export function Leaderboard({ board }: { board: Board }) {
       ) : null}
 
       {active.length > rows.length ? (
-        <p className="text-on-stage/60 relative mt-3 text-center text-[11.5px]">
+        <p className="text-on-stage-muted relative mt-3 text-center text-[11.5px]">
           و {toFa(active.length - rows.length)} مسجد دیگر در جدول کامل
         </p>
       ) : null}

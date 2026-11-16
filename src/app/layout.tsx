@@ -35,8 +35,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf7f0" },
-    { media: "(prefers-color-scheme: dark)", color: "#141a24" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f7fa" },
+    { media: "(prefers-color-scheme: dark)", color: "#141a2b" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -51,7 +51,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* رنگ‌بندی اولیه پیش از رندر — جلوگیری از پرش تم */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('k185-theme');var d=t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.setAttribute('data-theme','dark')}catch(e){}})()`,
+            // سه حالت: مقدار ذخیره‌شده (روز/شب) یا «خودکار».
+            // در حالت خودکار هیچ `data-theme` ست نمی‌شود تا مدیاکوئری
+            // `prefers-color-scheme` در tokens.css تصمیم بگیرد — این تنها
+            // راهی است که تمِ سیستم بدون جاوااسکریپت هم دنبال شود.
+            __html: `(function(){try{var t=localStorage.getItem('k185-theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);document.documentElement.style.colorScheme=t}else{document.documentElement.style.colorScheme='light dark'}}catch(e){}})()`,
           }}
         />
         <link

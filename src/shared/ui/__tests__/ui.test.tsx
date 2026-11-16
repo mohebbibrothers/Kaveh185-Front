@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Button } from "../Button";
 import { Logo } from "../Logo";
-import { Star, Divider, SectionTitle } from "../Ornament";
+import { Girih, Divider, SectionTitle, MosqueMark } from "../Ornament";
 import { PersianPattern } from "../PersianPattern";
 
 describe("Button", () => {
@@ -89,11 +89,28 @@ describe("Logo", () => {
 });
 
 describe("Ornament", () => {
-  it("Star تزئینی است و از درخت دسترس‌پذیری پنهان می‌ماند", () => {
-    const { container } = render(<Star />);
+  it("Girih تزئینی است و از درخت دسترس‌پذیری پنهان می‌ماند", () => {
+    const { container } = render(<Girih />);
     const svg = container.querySelector("svg");
     expect(svg?.getAttribute("aria-hidden")).toBe("true");
     expect(svg?.getAttribute("viewBox")).toBe("0 0 32 32");
+  });
+
+  it("MosqueMark حرف اول نام مسجد را می‌سازد", () => {
+    const { container } = render(<MosqueMark name="مسجد جامع صاحب‌الزمان" order={3} />);
+    const mark = container.firstElementChild as HTMLElement;
+    expect(mark.getAttribute("aria-hidden")).toBe("true");
+    // حرف اول پس از حذف «ال» تعریف
+    expect(mark.textContent).toContain("م");
+    // شمارهٔ ترتیب با ارقام فارسی
+    expect(mark.textContent).toContain("۳");
+  });
+
+  it("MosqueMark برای دو مسجد نام متفاوت، نشان متفاوت می‌دهد", () => {
+    const a = render(<MosqueMark name="مسجد نور" />).container.firstElementChild as HTMLElement;
+    const b = render(<MosqueMark name="حسینیه ثارالله" />).container
+      .firstElementChild as HTMLElement;
+    expect(a.textContent).not.toBe(b.textContent);
   });
 
   it("Divider درخت دسترس‌پذیری را شلوغ نمی‌کند", () => {

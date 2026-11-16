@@ -21,7 +21,7 @@ const LIMITS = {
    * سهم کد خودِ ما کوچک است. پایین‌تر از این، بدون کنارگذاشتن React یا
    * روتر ممکن نیست.
    */
-  "homepage/js": 205,
+  "homepage/js": 200,
   "homepage/css": 25,
   homepage: 225,
   "html/raw": 130, // سند کامل صفحهٔ اول، پیش از gzip (شامل JSON-LD و دادهٔ پخته)
@@ -76,7 +76,19 @@ let homepageFiles = [];
 if (existsSync(OUT_INDEX)) {
   const html = readFileSync(OUT_INDEX, "utf8");
   const resolve = (ref) => ref.replace(/^\/_next\//, ".next/");
-  const scripts = [...html.matchAll(/src="(\/_next\/static\/[^"]+)"/g)].map((m) => m[1]);
+  /**
+   * ⚠️ `noModule` یعنی «فقط مرورگرِ بدون ES Modules». این اسکریپت‌ها فقط
+   * برای مرورگرهای بسیار قدیمی (IE) دانلود می‌شوند؛ مرورگر امروزی — که
+   * `type="module"` را می‌فهمد — هرگز آن‌ها را نمی‌گیرد. سنجیدنشان یعنی
+   * نسبت‌دادن حجمی به کاربر که دریافتش نمی‌کند.
+   *
+   * این اشتباه ۸۴KB gzip به سقفِ صفحهٔ اول اضافه می‌کرد (کتابخانهٔ کامل
+   * polyfill) و بودجه را بی‌دلیل قرمز می‌کرد. اکنون فقط اسکریپت‌های
+   * واقعیِ بارگذاری‌شده شمرده می‌شوند.
+   */
+  const scripts = [...html.matchAll(/<script\b[^>]*\bsrc="(\/_next\/static\/[^"]+)"[^>]*>/g)]
+    .filter((m) => !/\bnoModule\b/.test(m[0]))
+    .map((m) => m[1]);
   const styles = [...html.matchAll(/href="(\/_next\/static\/[^"]+\.css)"/g)].map((m) => m[1]);
   for (const ref of scripts) {
     const p = resolve(ref);

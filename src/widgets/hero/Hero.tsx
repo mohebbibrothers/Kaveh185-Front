@@ -1,17 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Countdown } from "@/widgets/countdown/Countdown";
+import { Girih, MuqarnasArch } from "@/shared/ui/Ornament";
 import { faJalali, faNumber, toFa } from "@/shared/lib/fa";
 import type { ExamStatus } from "@/shared/api/landing";
 import { secondsUntil } from "@/shared/lib/time";
 
 /**
- * فقط همین چند فیلد از وضعیت آزمون لازم است.
+ * هیروی صفحهٔ اول — یک قاب، یک پیام، یک اقدام.
  *
- * چرا نوع باریک و نه `ExamStatus` کامل؟ چون این کامپوننت در بستهٔ اولیهٔ
- * صفحه می‌ماند. «باریک‌کردن ورودی» به‌تنهایی حجم JS را کم نمی‌کند، ولی
- * مرزِ وابستگی را روشن نگه می‌دارد: هر فیلد تازه باید آگاهانه اضافه شود،
- * نه اینکه با یک import از قرارداد کامل، کل ماژول به بستهٔ اولیه بچسبد.
+ * ── چه چیزی عوض شد و چرا؟ ────────────────────────────────────────────────
+ * ۱) **تصویر**: نسخهٔ قبل تصویر را با `object-cover` در یک قابِ
+ *    `rounded-2xl` می‌گذاشت و زیرنویس روی آن می‌نشست؛ نتیجه این بود که
+ *    کادر و پرچم و چهره در عرض‌های مختلف ناهم‌تراز می‌شدند. اکنون تصویر
+ *    در نسبت طبیعی خودش (`h-auto w-full`) داخل یک قابِ محرابی می‌نشیند و
+ *    زیرنویس در یک نوار مستقل **زیر** تصویر است، نه روی چهره.
+ * ۲) **سلسله‌مراتب**: نشان وضعیت → عنوان → توضیح → شمارش معکوس → دو دکمه
+ *    → سه عدد. ترتیب برای چشم است: «چی؟ کِی؟ چکار کنم؟».
+ * ۳) **شمارش معکوس**: بازطراحی کامل (← `widgets/countdown`) با وزن بصری
+ *    درست؛ «روز» بزرگ، بقیه ریز.
+ * ۴) **رنگ**: لاجورد برند به‌جای قرمز-آجری. قرمز فقط جایی می‌آید که
+ *    هشدار یا فوریت باشد.
  */
 export interface HeroStatus {
   window_state: ExamStatus["window_state"];
@@ -27,37 +36,15 @@ export interface HeroStatus {
   window_state_label: string;
 }
 
-/**
- * هیروی صفحهٔ اول — یک تصویر، یک پیام، دو دکمه.
- *
- * چرا این ساختار؟
- * ────────────────
- * نسخهٔ قبلی سه لایهٔ تزئین روی هم داشت (الگوی هندسی + قاب دوتایی + چهار
- * شمسه) و کنارش یک «شبیه‌ساز جلسهٔ آزمون» با سؤال ساختگی می‌گذاشت. نتیجه:
- * صفحه شلوغ بود و کاربر نمی‌دانست اول کجا را بخواند.
- *
- * این نسخه بر پایهٔ تصویر رسمی رویداد ساخته شده و چهار چیز را به ترتیب
- * چشم می‌چیند: چهره → نام رویداد → زمان → دکمه. هر چیز دیگری حذف شد.
- * عدد و آمار واقعی از API می‌آید؛ هیچ سؤال یا آمار ساختگی نمایش داده نمی‌شود.
- */
 export function Hero({ status, serverNow }: { status: HeroStatus; serverNow?: string }) {
   const state = status.window_state;
 
-  /**
-   * مبنای شمارش: تاریخ مطلق، نه ثانیهٔ پخته‌شده در HTML.
-   *
-   * `seconds_until_*` هنگام ساخت محاسبه می‌شود؛ اگر صفحه ساعت‌ها بعد باز
-   * شود، آن عدد عقب است. `starts_at`/`ends_at` مطلق‌اند و در برابر ساعتِ
-   * سرور سنجیده می‌شوند (← `shared/lib/time.ts`). اگر تاریخ نامعتبر بود،
-   * به همان عدد پخته برمی‌گردیم تا شمارنده هرگز خالی نماند.
-   */
   const absolute = serverNow
     ? secondsUntil(state === "upcoming" ? status.starts_at : status.ends_at, serverNow)
     : null;
   const secondsLeft =
     absolute ?? (state === "upcoming" ? status.seconds_until_start : status.seconds_until_end);
 
-  /** آیا تاریخ‌های واقعی رسیده‌اند؟ پوستهٔ خالی تاریخ ندارد. */
   const hasSchedule = Boolean(status.starts_at && status.ends_at);
 
   const stateChip =
@@ -67,19 +54,22 @@ export function Hero({ status, serverNow }: { status: HeroStatus; serverNow?: st
         ? "border-verde/40 bg-verde-soft text-verde"
         : "border-brick/35 bg-brick-soft text-brick";
 
-  return (
-    <section className="bg-surface-2/60 border-border/70 relative overflow-hidden border-b">
-      {/* کاغذ کرم با بافتِ خیلی ملایم — بدون الگوی شلوغ */}
-      <div
-        aria-hidden="true"
-        className="from-gold-soft/50 pointer-events-none absolute inset-0 bg-gradient-to-bl via-transparent to-transparent"
-      />
+  const countdownLabel =
+    state === "upcoming" ? "تا آغاز مهلت پاسخ‌گویی" : "تا پایان مهلت پاسخ‌گویی";
 
-      <div className="relative mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:py-16">
-        <div className="grid items-center gap-9 md:grid-cols-[1fr_auto] md:gap-12">
-          {/* ── متن: راست در RTL ── */}
-          <div className="order-2 flex flex-col md:order-1">
-            <div className="flex flex-wrap items-center gap-2">
+  const countdownEndMessage =
+    state === "upcoming" ? "مهلت پاسخ‌گویی آغاز شد" : "مهلت پاسخ‌گویی به پایان رسید";
+
+  return (
+    <section className="k185-tile-bg bg-canvas border-border/70 relative overflow-hidden border-b">
+      {/* خط تزئینی محرابی بالای بخش — لطیف، بی‌شلوغی */}
+      <MuqarnasArch className="text-brand/12 absolute inset-x-0 top-0 h-6 w-full" />
+
+      <div className="relative mx-auto w-full max-w-6xl px-4 pt-10 pb-12 sm:px-6 sm:pt-14 lg:pt-16 lg:pb-16">
+        <div className="grid items-center gap-9 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-14">
+          {/* ── متن ── */}
+          <div className="order-2 flex flex-col lg:order-1">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <span
                 className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11.5px] font-bold ${stateChip}`}
               >
@@ -91,121 +81,134 @@ export function Hero({ status, serverNow }: { status: HeroStatus; serverNow?: st
                 </span>
                 {status.window_state_label}
               </span>
-              <span className="text-text-subtle text-[12px] font-medium">
-                {/* تا وقتی API پاسخ نداده تاریخ نامعلوم است؛ «— تا —» نمی‌نویسیم. */}
+              <span className="text-text-muted text-[12px] font-semibold">
                 {status.starts_at_jalali && status.ends_at_jalali ? (
                   <>
-                    {faJalali(status.starts_at_jalali)} تا {faJalali(status.ends_at_jalali)}
+                    {faJalali(status.starts_at_jalali)}
+                    <span className="text-text-subtle/70 mx-1.5" aria-hidden="true">
+                      تا
+                    </span>
+                    {faJalali(status.ends_at_jalali)}
                   </>
                 ) : (
-                  <span className="text-text-subtle/80">بازهٔ زمانی در حال دریافت…</span>
+                  <span className="text-text-subtle">بازهٔ زمانی در حال دریافت…</span>
                 )}
               </span>
             </div>
 
-            <h1 className="text-text mt-4 text-[clamp(26px,4.2vw,42px)] leading-[1.3] font-extrabold tracking-tight">
-              مسابقهٔ کتابخوانی
+            <h1 className="text-text mt-4 text-[clamp(27px,4.4vw,44px)] leading-[1.22] font-extrabold tracking-tight">
+              مسابقهٔ کتاب‌خوانی
               <br />
-              <span className="text-brick">هفتهٔ بسیج</span> — کاوه ۱۸۵
+              <span className="text-brand">هفتهٔ بسیج</span>
+              <span className="text-text-subtle mx-2.5 font-light">|</span>
+              <span className="text-gold-strong">کاوه ۱۸۵</span>
             </h1>
 
-            <p className="text-text-muted mt-3.5 max-w-[46ch] text-[13.5px] leading-[2.05] sm:text-[14.5px]">
+            <p className="text-text-muted mt-4 max-w-[48ch] text-[13.5px] leading-[2.05] sm:text-[14.5px]">
               {status.description}
             </p>
 
-            {/* ── شمارش معکوس: یک ردیف تمیز ── */}
-            {/* ⚠️ شمارش معکوس در موبایل پیش از دکمه‌ها می‌آمد و دکمهٔ اصلی
-                (ثبت‌نام) را زیر خط دید می‌انداخت: کاربر صفحه را باز می‌کرد و
-                هیچ کاری برای انجام‌دادن نمی‌دید. اکنون دکمه‌ها اول می‌آیند و
-                تایمر بعد از آن‌ها؛ در دسکتاپ `md:order-none` ترتیب اصلی را
-                برمی‌گرداند. */}
-            {/* شمارش معکوس فقط وقتی معنا دارد که تاریخ واقعی از سرور آمده
-                باشد. پیش از آن، «۰۰:۰۰» نمایش دادن یعنی گفتن عددی که
-                نمی‌دانیم — همان چیزی که اصل «هیچ عدد ساختگی» منع می‌کند. */}
-            <div className="order-2 mt-6 max-w-[340px] md:order-none">
-              <p className="text-text-subtle mb-2 text-[11px] font-bold">
-                {state === "upcoming" ? "تا آغاز مهلت آزمون" : "تا پایان مهلت آزمون"}
-              </p>
-              {hasSchedule ? (
-                <Countdown
-                  targetSeconds={Math.max(0, secondsLeft)}
-                  label="زمان باقی‌مانده"
-                  variant="light"
-                />
-              ) : (
-                <div className="border-border/70 bg-surface/60 text-text-subtle grid h-[68px] place-items-center rounded-lg border text-[12px]">
-                  در حال دریافت زمان‌بندی از سرور…
-                </div>
-              )}
+            {/* ── نوار زمان و اقدام ──
+                شمارنده و سه عدد در یک ردیف، دکمه‌ها بلافاصله زیرشان. در
+                نسخهٔ اول شمارنده و دکمه‌ها هر کدام مستقل و راست‌چین بودند و
+                ستون متن نیمه‌خالی می‌ماند؛ اکنون یک «نوار» منسجم ساخته‌اند. */}
+            <div className="mt-7 grid gap-4 sm:grid-cols-[minmax(0,315px)_minmax(0,1fr)] sm:items-center">
+              <div>
+                <p className="text-text-subtle mb-2 flex items-center gap-1.5 text-[11px] font-bold">
+                  <span className="text-gold-strong" aria-hidden="true">
+                    <Girih size={10} />
+                  </span>
+                  {countdownLabel}
+                </p>
+                {hasSchedule ? (
+                  <Countdown
+                    targetSeconds={Math.max(0, secondsLeft)}
+                    label={countdownLabel}
+                    variant="light"
+                    tone={state === "upcoming" ? "upcoming" : "open"}
+                    endMessage={countdownEndMessage}
+                  />
+                ) : (
+                  <div className="border-border bg-surface/70 text-text-subtle grid h-[62px] place-items-center rounded-xl border text-[12px]">
+                    در حال دریافت زمان‌بندی از سرور…
+                  </div>
+                )}
+              </div>
+
+              {/* سه عدد واقعی — کنار شمارنده، نه زیر آن */}
+              <dl className="border-border/80 grid grid-cols-3 gap-3 border-t pt-3 sm:border-t-0 sm:border-r sm:pt-0 sm:pr-4">
+                {[
+                  { k: "پرسش در هر آزمون", v: faNumber(status.questions_per_attempt) },
+                  {
+                    k: "فرصت پاسخ",
+                    v: `${toFa(Math.round(status.duration_seconds / 60))} دقیقه`,
+                  },
+                  { k: "هزینهٔ شرکت", v: "رایگان" },
+                ].map((x) => (
+                  <div key={x.k}>
+                    <dd className="text-text text-[15.5px] font-extrabold tabular-nums">{x.v}</dd>
+                    <dt className="text-text-subtle mt-0.5 text-[10.5px] leading-4">{x.k}</dt>
+                  </div>
+                ))}
+              </dl>
             </div>
 
-            <div className="order-1 mt-7 flex flex-wrap items-center gap-2.5 md:order-none">
+            <div className="mt-5 flex flex-wrap items-center gap-2.5">
               <Link
                 href="/register"
-                className="bg-brick text-on-brand hover:bg-brand inline-flex h-12 items-center rounded-lg px-6 text-[14.5px] font-extrabold shadow-sm transition-colors"
+                className="bg-brand text-on-brand hover:bg-brand-hover inline-flex h-12 items-center gap-2 rounded-xl px-6 text-[14.5px] font-extrabold shadow-[0_1px_0_oklch(100%_0_0/0.16)_inset,0_10px_24px_-14px_oklch(30%_0.08_258/0.6)] transition-colors"
               >
                 {state === "open" ? "ورود به آزمون" : "ثبت‌نام و شرکت"}
+                <svg
+                  viewBox="0 0 24 24"
+                  width="15"
+                  height="15"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  aria-hidden="true"
+                >
+                  <path d="M14 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </Link>
               <Link
-                href="/rules"
-                className="border-border-strong text-text hover:bg-surface inline-flex h-12 items-center rounded-lg border px-5 text-[13.5px] font-bold transition-colors"
+                href="/book"
+                className="border-border-strong bg-surface text-text hover:border-brand/40 hover:bg-canvas inline-flex h-12 items-center rounded-xl border px-5 text-[13.5px] font-bold transition-colors"
               >
-                قوانین مسابقه
+                مطالعهٔ کتاب
               </Link>
             </div>
-
-            {/* ── سه عدد واقعی، بدون تزئین ── */}
-            <dl className="border-border/80 mt-8 grid max-w-md grid-cols-3 gap-4 border-t pt-4">
-              {[
-                { k: "سؤال در هر آزمون", v: faNumber(status.questions_per_attempt) },
-                { k: "فرصت پاسخ", v: `${toFa(Math.round(status.duration_seconds / 60))} دقیقه` },
-                { k: "هزینهٔ شرکت", v: "رایگان" },
-              ].map((x) => (
-                <div key={x.k}>
-                  <dd className="text-text text-[15px] font-extrabold tabular-nums">{x.v}</dd>
-                  <dt className="text-text-subtle mt-0.5 text-[11px]">{x.k}</dt>
-                </div>
-              ))}
-            </dl>
           </div>
 
-          {/* ── تصویر رسمی رویداد ──
-              ⚠️ اندازه در موبایل عمداً کوچک است. در نسخهٔ اول تصویر تمام
-              عرض و تمام قدِ صفحهٔ اول را می‌گرفت و عنوان و دکمه‌ها زیر خط
-              دید می‌افتادند؛ کاربر باید اسکرول می‌کرد تا بفهمد صفحه چیست.
-              حالا در موبایل تصویر یک «تمبر» عمودی است که هویت می‌دهد، و
-              پیام و دکمه هم در همان صفحهٔ اول دیده می‌شوند. */}
-          <div className="order-1 mx-auto w-[168px] shrink-0 sm:w-[210px] md:order-2 md:w-[318px] lg:w-[356px]">
+          {/* ── تصویر رسمی ──
+              ⚠️ نکتهٔ کلیدی: `object-cover` حذف شد. تصویر در نسبت طبیعی
+              خودش و کامل دیده می‌شود؛ قاب گرد و محرابی است ولی هیچ بخشی از
+              چهره یا تاج شمسه بریده نمی‌شود. زیرنویس زیر تصویر است، نه
+              روی آن. */}
+          <div className="order-1 mx-auto w-[196px] shrink-0 sm:w-[240px] lg:order-2 lg:w-full">
             <figure className="relative">
-              {/* هالهٔ نرم طلایی پشت تصویر — نه قاب دوتایی */}
               <div
                 aria-hidden="true"
-                className="bg-gold/12 absolute -inset-4 rounded-[28px] blur-2xl"
+                className="bg-gold/14 absolute -inset-3 rounded-[26px] blur-2xl"
               />
-              <div className="ring-gold/35 relative overflow-hidden rounded-2xl shadow-[0_18px_50px_-20px_oklch(35%_0.06_60/0.35)] ring-1">
+              <div className="ring-gold/30 bg-surface relative overflow-hidden rounded-[22px] shadow-[0_20px_50px_-24px_oklch(28%_0.06_260/0.45)] ring-1">
+                <MuqarnasArch className="text-gold/25 absolute inset-x-0 top-0 z-10 h-5 w-full" />
                 <Image
                   src="/img/kaveh-hero.jpg"
-                  alt="تصویر شهید محمود کاوه، فرمانده لشکر ویژهٔ ۱۵۵ شهدا، در قاب تزئینی با پرچم ایران"
+                  alt="تصویر شهید محمود کاوه، فرماندهٔ لشکر ویژهٔ ۱۵۵ شهدا، در قاب تزئینی با پرچم ایران"
                   width={900}
                   height={1286}
                   priority
-                  sizes="(max-width: 767px) 80vw, 356px"
+                  sizes="(max-width: 1023px) 240px, 360px"
                   className="h-auto w-full"
                 />
-                {/* ── زیرنویس تصویر: زیر آن در موبایل، روی آن در دسکتاپ ──
-                    روی تصویر ۱۶۸ پیکسلی موبایل، این متن در دو خط می‌شکست
-                    و چهره را می‌پوشاند. اکنون در موبایل زیر تصویر و
-                    کوچک‌تر می‌آید و از `md` به بالا همان نوار شیشه‌ای
-                    پایین قاب می‌شود. */}
-                <figcaption className="md:from-stage md:via-stage/80 mt-2 text-center md:absolute md:inset-x-0 md:bottom-0 md:mt-0 md:bg-gradient-to-t md:to-transparent md:px-4 md:pt-14 md:pb-3.5 md:text-right md:backdrop-blur-[1px]">
-                  <p className="text-text md:text-on-stage text-[12px] font-extrabold md:text-[12.5px]">
-                    شهید محمود کاوه
-                  </p>
-                  <p className="text-text-muted md:text-on-stage-muted text-[10px] leading-5 md:text-[10.5px]">
-                    فرماندهٔ لشکر ویژهٔ ۱۵۵ شهدا — ۱۳۴۱ تا ۱۳۶۵
-                  </p>
-                </figcaption>
               </div>
+              <figcaption className="text-center">
+                <p className="text-text mt-2.5 text-[12.5px] font-extrabold">شهید محمود کاوه</p>
+                <p className="text-text-muted mt-0.5 text-[10.5px] leading-5">
+                  فرماندهٔ لشکر ویژهٔ ۱۵۵ شهدا — ۱۳۴۱ تا ۱۳۶۵
+                </p>
+              </figcaption>
             </figure>
           </div>
         </div>

@@ -61,6 +61,40 @@
     display: none;
   }
 
+  /* ── حرکت ریزِ شمارنده ───────────────────────────────────────────────
+     هر رقم که عوض می‌شود یک پرش کوتاه می‌گیرد تا کاربر ببیند شمارنده
+     زنده است. `key` روی عدد در React باعث mount دوباره و اجرای این
+     انیمیشن می‌شود. با `prefers-reduced-motion` بالاتر خاموش است. */
+  @keyframes k185-tick {
+    0% {
+      opacity: 0.35;
+      transform: translateY(-22%);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .k185-tick {
+    animation: k185-tick var(--dur-base) var(--ease-decelerate);
+    display: inline-block;
+  }
+
+  /* ── کاشی لاجوردی: پس‌زمینهٔ محرابی هیرو ───────────────────────────── */
+  .k185-tile-bg {
+    background-image:
+      radial-gradient(
+        120% 80% at 85% -10%,
+        color-mix(in oklab, var(--c-brand) 12%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        90% 70% at 5% 105%,
+        color-mix(in oklab, var(--c-accent) 12%, transparent),
+        transparent 65%
+      );
+  }
+
   /* متن فقط برای صفحه‌خوان */
   .sr-only {
     position: absolute;
