@@ -71,7 +71,7 @@ export function Logo({
           ابعاد ثابت است؛ next/image برای این اندازه فقط یک لایهٔ resize اضافه
           می‌کند و LCP را بهتر نمی‌کند. فایل از قبل بهینه (PNG ۹۶KB، ۲۵۶px). */}
       <img
-        src="/media/icon-face.png"
+        src="/img/icon-face.png"
         alt=""
         width={size}
         height={size}

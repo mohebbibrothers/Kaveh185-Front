@@ -11,3 +11,7 @@ test-results
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+
+# خروجی ساخت و بستهٔ استقرار — روی هاست ساخته/نصب می‌شوند، نه در مخزن.
+/out/
+/release/

@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 import { PHASE_DEVELOPMENT_SERVER } from "next/constants";
 
+/**
+ * آدرس بک‌اند برای پروکسیِ محیط توسعه.
+ *
+ * در تولید هیچ پروکسی‌ای وجود ندارد: سایت ایستا از همان میزانی سرو می‌شود
+ * که API روی آن است (`https://kaveh185.ir/api/...`)، پس مرورگر هم‌مبدأ
+ * درخواست می‌دهد و نه CORS لازم است نه توکنی در HTML جاسازی می‌شود.
+ */
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://127.0.0.1:8000";
 
 export default function config(phase: string): NextConfig {
@@ -11,60 +18,64 @@ export default function config(phase: string): NextConfig {
     typedRoutes: true,
     poweredByHeader: false,
     productionBrowserSourceMaps: false,
-    trailingSlash: false,
     compress: true,
     /**
-     * هدف کامپایل صریح: مرورگرهای مدرن.
+     * ── چرا خروجی ایستا و نه سرور Node؟ ────────────────────────────────
      *
-     * Next به‌طور پیش‌فرض مجموعهٔ پلی‌فیل core-js (۳۸KB gzip) را به باندل
-     * تزریق می‌کند. برای کاربران ایرانیِ امروز — کروم اندروید ۱۰۵+ و سافاری
-     * ۱۵.۶+ — این پلی‌فیل‌ها هیچ کاری نمی‌کنند و فقط وقت و دادهٔ کاربر را
-     * تلف می‌کنند. اینجا با تعریف صریح هدف، Next فقط برای همان مرورگرها
-     * کامپایل می‌کند و پلی‌فیل را کنار می‌گذارد.
+     * میزبان cPanel (حساب `kavehir`) فرآیند Node دائمی ندارد: سقف فرآیند
+     * LVE و نبودِ systemd. چیزی که دارد Apache + Passenger + پایتون است و
+     * همان چیزی که برای بک‌اند استفاده می‌شود. راه دیگر — نگه‌داشتن یک
+     * `next start` زنده — در این میزبان با هر ری‌استارت سرویس کشته
+     * می‌شود و سایت بی‌صدا می‌افتد.
+     *
+     * پس فرانت به HTML/JS/CSS ایستا بدل می‌شود و **از درون خود جنگو** سرو
+     * می‌شود (`apps/core/frontend.py`). نتیجه:
+     *   • یک مبدأ: کوکی نشست، JWT کوکی‌محور و API بدون CORS.
+     *   • هیچ راز/توکنی در HTML نیست.
+     *   • استقرار فرانت جدا از بک‌اند و بی‌نیاز از ری‌استارت Passenger.
+     *
+     * بهایش: هیچ رندر سمت سرورِ پویا نداریم. دادهٔ صفحهٔ اول در **زمان
+     * ساخت** از API خوانده و در HTML پخته می‌شود؛ سپس کلاینت آن را هر
+     * ۶۰ ثانیه تازه می‌کند (← `src/shared/api/live.ts`). عددها و تاریخ‌ها
+     * همیشه واقعی‌اند: اگر هنگام ساخت API در دسترس نباشد، پوستهٔ خالیِ
+     * صادقانه جای دادهٔ ساختگی می‌نشیند.
      */
-    images: { formats: ["image/avif", "image/webp"] },
-    experimental: { optimizePackageImports: ["motion"] },
+    output: "export",
+    trailingSlash: true,
     /**
-     * ⚠️ چرا `trailingSlash: true` برای مسیرهای API و چرا rewrite جدا؟
-     *
-     * این تنظیم تا امروز روی `false` بود و یک حلقهٔ بی‌نهایت redirect می‌ساخت:
-     *
-     *   GET /api/v1/core/bootstrap/   → 308 → /api/v1/core/bootstrap   (Next، چون trailingSlash=false)
-     *   GET /api/v1/core/bootstrap    → 301 → /api/v1/core/bootstrap/  (Django، چون APPEND_SLASH)
-     *   → تکرار بی‌پایان؛ fetch در RSC با «۵۰ redirect» می‌شکست و صفحه
-     *     بی‌صدا به پوستهٔ خالی fallback می‌کرد — بدون هیچ خطای کنسولی.
-     *
-     * راه‌حل: مسیرهای `/api/*` را Next **پاک‌سازی نکند**. با `skipTrailingSlashRedirect`
-     * ریدایرکت خودکار Next برای این مسیرها خاموش می‌شود و درخواست همان‌طور که
-     * هست به Django می‌رسد. `trailingSlash` برای صفحات سایت روی `false` می‌ماند
-     * تا URLهای تمیز فارسی/انگلیسی بدون اسلش پایانی بمانند.
+     * بهینه‌سازی تصویر Next به یک فرآیند سرور نیاز دارد (`/_next/image`).
+     * در خروجی ایستا چنین چیزی نیست، پس تصاویر همان‌طور که ساخته شده‌اند
+     * سرو می‌شوند. اندازه‌ها از پیش بهینه شده‌اند (AVIF/WebP نه، ولی
+     * JPEG با کیفیت ۸۰ و ابعاد دقیقِ نمایش) و `sizes` می‌ماند تا مرورگر
+     * نسخهٔ کوچک را برای موبایل انتخاب کند.
      */
-    skipTrailingSlashRedirect: true,
-    ...(dev ? { allowedDevOrigins: ["127.0.0.1", "localhost", "*.e2b.app"] } : {}),
-    async rewrites() {
-      /**
-       * ⚠️ چرا دو قاعده و چرا `beforeFiles`؟
-       *
-       * قاعدهٔ سادهٔ `source: "/api/:path*"` اسلش پایانی را در تطبیق regex
-       * می‌بلعد: regex ساخته‌شده `(?:\/)?$` است، پس `/api/v1/x/` به
-       * `.../api/v1/x` پروکسی می‌شد. Django با `APPEND_SLASH` روی همان
-       * مسیر `301` به نسخهٔ با اسلش می‌داد و Next هم دوباره به نسخهٔ بدون
-       * اسلش → **حلقهٔ بی‌نهایت ۵۰ ریدایرکت** و سقوط بی‌صدای صفحه به
-       * پوستهٔ خالی (بدون هیچ خطای کنسولی — همین تشخیص را سخت کرد).
-       *
-       * اکنون قاعدهٔ اول مسیرهای دارای اسلش را **عیناً** می‌فرستد (اسلش در
-       * destination نوشته شده)، و قاعدهٔ دوم فقط مسیرهای بدون اسلش را
-       * می‌گیرد. `beforeFiles` هم تضمین می‌کند پیش از تلاش Next برای تطبیق
-       * با فایل‌های عمومی/مسیرهای اپ اجرا شود.
-       */
-      return {
-        beforeFiles: [
-          { source: "/api/:path*/", destination: `${API_BASE}/api/:path*/` },
-          { source: "/api/:path*", destination: `${API_BASE}/api/:path*` },
-        ],
-        afterFiles: [],
-        fallback: [],
-      };
-    },
+    images: { unoptimized: true },
+    ...(dev
+      ? {
+          /**
+           * فقط در توسعه: `/api` به جنگوی محلی پروکسی می‌شود تا کلاینت
+           * بتواند مسیر نسبی `/api/v1/...` بدهد و همان کدی که در تولید
+           * اجرا می‌شود، در توسعه هم بی‌تغییر بماند.
+           *
+           * دو قاعده لازم است: قاعدهٔ سادهٔ `/api/:path*` اسلش پایانی را
+           * می‌بلعد، جنگو با APPEND_SLASH آن را ۳۰۱ می‌کند و Next دوباره
+           * به نسخهٔ بی‌اسلش برمی‌گرداند ⇒ حلقهٔ ۵۰ ریدایرکتی و سقوط
+           * بی‌صدای صفحه به پوستهٔ خالی. `skipTrailingSlashRedirect`
+           * به‌تنهایی کافی نیست؛ قاعدهٔ اول اسلش را عیناً می‌فرستد.
+           */
+          skipTrailingSlashRedirect: true,
+          allowedDevOrigins: ["127.0.0.1", "localhost", "*.e2b.app"],
+          async rewrites() {
+            return {
+              beforeFiles: [
+                { source: "/api/:path*/", destination: `${API_BASE}/api/:path*/` },
+                { source: "/api/:path*", destination: `${API_BASE}/api/:path*` },
+              ],
+              afterFiles: [],
+              fallback: [],
+            };
+          },
+        }
+      : {}),
   };
 }

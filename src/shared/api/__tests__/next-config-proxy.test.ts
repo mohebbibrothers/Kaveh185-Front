@@ -37,6 +37,8 @@ describe("next.config — پیکربندی پروکسی API", () => {
     const cfgFn = await loadConfig();
     const cfg = cfgFn("phase-development-server") as unknown as {
       trailingSlash?: boolean;
+      output?: string;
+      images?: { unoptimized?: boolean };
       skipTrailingSlashRedirect?: boolean;
       rewrites: () => Promise<{
         beforeFiles: { source: string; destination: string }[];
@@ -79,9 +81,39 @@ describe("next.config — پیکربندی پروکسی API", () => {
     expect(fallback.length, "fallback باید خالی باشد — وگرنه ترتیب اشتباه است").toBe(0);
   });
 
-  it("trailingSlash برای صفحات سایت false است", async () => {
+  /**
+   * ⚠️ این انتظار در گذار به خروجی ایستا عوض شد و باید همین بماند.
+   *
+   * قبلاً `trailingSlash: false` بود چون یک سرور Node مسیرها را در لحظه
+   * حل می‌کرد. اکنون خروجی، پوشه‌ای از فایل‌های ایستاست
+   * (`register/index.html`) و بدون اسلش پایانی، سرور فایل‌های ایستا مسیر را
+   * پیدا نمی‌کند. برای همین `true` است و `apps/core/frontend.py` مسیر
+   * بی‌اسلش را با ۳۰۸ به نسخهٔ با اسلش می‌فرستد.
+   */
+  it("trailingSlash روشن است — لازمهٔ خروجی ایستای پوشه‌ای", async () => {
     const { cfg } = await load();
-    expect(cfg.trailingSlash).toBeFalsy();
+    expect(cfg.trailingSlash).toBe(true);
+  });
+
+  it("خروجی ایستاست — بدون آن استقرار روی cPanel بی‌فرآیندِ Node ممکن نیست", async () => {
+    const { cfg } = await load();
+    expect(cfg.output).toBe("export");
+  });
+
+  it("بهینه‌سازی تصویر خاموش است — /_next/image در خروجی ایستا وجود ندارد", async () => {
+    const { cfg } = await load();
+    expect(cfg.images?.unoptimized).toBe(true);
+  });
+
+  it("در تولید هیچ rewrite ای ثبت نمی‌شود — همه‌چیز هم‌مبدأ است", async () => {
+    const cfgFn = await loadConfig();
+    const prod = cfgFn("phase-production-build") as unknown as {
+      output?: string;
+      rewrites?: unknown;
+      skipTrailingSlashRedirect?: boolean;
+    };
+    expect(prod.output).toBe("export");
+    expect(prod.rewrites, "rewrite در تولید یعنی پروکسی، و پروکسی یعنی یک سرور").toBeUndefined();
   });
 
   it("skipTrailingSlashRedirect روشن است تا Next خودش اسلش را دستکاری نکند", async () => {
