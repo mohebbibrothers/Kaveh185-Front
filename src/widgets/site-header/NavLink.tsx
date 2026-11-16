@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { Route } from "next";
 
 /**
  * لینک ناوبری با نشانگر صفحهٔ جاری.
@@ -16,13 +17,13 @@ import { usePathname } from "next/navigation";
  * کجاست. این خط زیرین، جای فعلی را نشان می‌دهد و برای صفحه‌خوان هم
  * `aria-current="page"` می‌گذارد.
  */
-export function NavLink({ href, label }: { href: string; label: string }) {
+export function NavLink({ href, label }: { href: Route; label: string }) {
   const pathname = usePathname();
   const active = pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
 
   return (
     <Link
-      href={href as never}
+      href={href}
       aria-current={active ? "page" : undefined}
       className={`after:bg-brand relative rounded-md px-3 py-2 text-[13px] font-semibold transition-colors after:absolute after:inset-x-3 after:-bottom-0.5 after:h-[2px] after:origin-right after:rounded-full after:transition-transform ${
         active
