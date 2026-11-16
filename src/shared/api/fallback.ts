@@ -27,10 +27,10 @@ export const FALLBACK_BOOTSTRAP: Bootstrap = {
   mosques: [],
   exam_status: {
     title: "مسابقهٔ کتابخوانی هفتهٔ بسیج",
-    book_title: "کتاب منتخب هفتهٔ بسیج",
+    book_title: "شهادت آیه‌ها (۲)",
     organizer_name: "حوزهٔ مقاومت بسیج ۱۸۵ شهید کاوه",
     description:
-      "پنج سؤال از کتابِ معرفی‌شده، در زمان محدود. کافی است مسجد محلهٔ خودت را انتخاب کنی تا نام مسجدت در جدول مشارکت بالا برود.",
+      "پنج پرسش چهارگزینه‌ای از کتاب «شهادت آیه‌ها (۲)»؛ سی داستان کوتاه، در پنج دقیقه. مسجد محلهٔ خود را انتخاب کنید تا نام مسجدتان در جدول مشارکت بالا برود.",
     window_state: "upcoming",
     window_state_label: "وضعیت آزمون در حال دریافت است",
     can_participate: false,
@@ -49,19 +49,17 @@ export const FALLBACK_BOOTSTRAP: Bootstrap = {
     require_otp_before_exam: false,
     // صفر یعنی «بانک سؤال هنوز خوانده نشده»؛ کلاینت آن را از API می‌گیرد.
     active_question_bank_size: 0,
+    /*
+      فقط یک کانال رسمی وجود دارد: بله، خبرگزاری میدان نامجو.
+      نسخهٔ قبل سه کانال (ایتا/بله/روبیکا) با نام کاربری `kaveh185_ir` داشت
+      که هیچ‌کدام وجود نداشتند؛ لینک مرده بدتر از نبودِ لینک است.
+    */
     communication_channels: [
       {
-        platform: "eitaa",
-        title: "ایتا",
-        url: "https://eitaa.com/kaveh185_ir",
-        handle: "kaveh185_ir",
-      },
-      { platform: "bale", title: "بله", url: "https://ble.ir/kaveh185_ir", handle: "kaveh185_ir" },
-      {
-        platform: "rubika",
-        title: "روبیکا",
-        url: "https://rubika.ir/kaveh185_ir",
-        handle: "kaveh185_ir",
+        platform: "bale",
+        title: "خبرگزاری میدان نامجو",
+        url: "https://ble.ir/NamjooNewsAgency",
+        handle: "@NamjooNewsAgency",
       },
     ],
   },

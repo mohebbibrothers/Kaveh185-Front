@@ -104,3 +104,54 @@ export function ageFromJalali(
   if (todayJalali.m < jm || (todayJalali.m === jm && todayJalali.d < jd)) age--;
   return age;
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  پیام‌های فارسی — روی همان توابع بالا، بدون منطق تکراری
+// ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * چرا این پوشش؟ دو لایه داریم و هرکدام کار خودش را می‌کند:
+ *   • تشخیص (بالا) در تست‌ها و در منطق داخلی مصرف می‌شود و `boolean` است.
+ *   • پیام (اینجا) برای فرم است: کاربر باید بخواند *چه* اشکالی هست،
+ *     نه فقط اینکه «معتبر نیست». برای هر فیلد حداکثر یک پیام نشان می‌دهیم
+ *     تا فرم با دیوارِ خطا تبدیل نشود.
+ */
+export function nationalIdError(raw: string): string | undefined {
+  const v = toEn(raw).replace(/[\s-]/g, "");
+  if (!v) return "کد ملی را وارد کنید.";
+  if (v.length !== 10) return "کد ملی باید ۱۰ رقم باشد.";
+  if (/^(\d)\1{9}$/.test(v)) return "همهٔ رقم‌های کد ملی یکسان است.";
+  if (!isValidNationalId(v)) return "این کد ملی معتبر نیست؛ رقم‌ها را بررسی کنید.";
+  return undefined;
+}
+
+export function phoneError(raw: string): string | undefined {
+  const v = toEn(raw).replace(/[\s()-]/g, "");
+  if (!v) return "شمارهٔ همراه را وارد کنید.";
+  if (!isValidPhone(v)) return "شمارهٔ همراه باید ۱۱ رقم و با ۰۹ شروع شود.";
+  return undefined;
+}
+
+/** تاریخ تولد سه‌قسمتی — «سال/ماه/روز» را می‌سازد و همان اعتبارسنج بالا را می‌زند. */
+export function birthDateError(day: string, month: string, year: string): string | undefined {
+  const p = (s: string) => toEn(s).replace(/\D/g, "").padStart(2, "0");
+  if (!day || !month || !year) return "تاریخ تولد را کامل کنید.";
+  const y = toEn(year).replace(/\D/g, "");
+  if (y.length !== 4) return "سال تولد را چهاررقمی وارد کنید.";
+  const composed = `${y}/${p(month)}/${p(day)}`;
+  if (!isValidJalaliDate(composed)) return "این تاریخ وجود ندارد؛ روز و ماه را بررسی کنید.";
+  return undefined;
+}
+
+export function nameError(raw: string, kind: "نام" | "نام خانوادگی"): string | undefined {
+  const v = raw.trim();
+  if (!v) return `${kind} را وارد کنید.`;
+  if (v.length < 2) return `${kind} باید دست‌کم ۲ حرف باشد.`;
+  if (!/^[\u0600-\u06FF\u200c\s]{2,}$/.test(v)) return `${kind} را با حروف فارسی بنویسید.`;
+  return undefined;
+}
+
+export function birthDateString(day: string, month: string, year: string): string {
+  const p = (s: string) => toEn(s).replace(/\D/g, "").padStart(2, "0");
+  return `${toEn(year).replace(/\D/g, "")}/${p(month)}/${p(day)}`;
+}
