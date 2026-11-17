@@ -31,6 +31,11 @@
   --color-on-stage-muted: var(--c-on-stage-muted);
   --color-accent: var(--c-accent);
   --color-accent-soft: var(--c-accent-soft);
+  --color-band: var(--c-band);
+  --color-band-2: var(--c-band-2);
+  --color-on-band: var(--c-on-band);
+  --color-on-band-muted: var(--c-on-band-muted);
+  --color-band-accent: var(--c-band-accent);
   --radius-sm: var(--radius-sm); --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg); --radius-xl: var(--radius-xl);
   --radius-2xl: var(--radius-2xl);

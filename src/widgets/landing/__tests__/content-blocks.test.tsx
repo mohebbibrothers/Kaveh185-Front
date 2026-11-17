@@ -99,21 +99,36 @@ describe("MartyrsMarquee", () => {
     expect(screen.getAllByAltText("سیدشهدای مقاومت — شهید محمود کاوه").length).toBeGreaterThan(0);
   });
 
-  it("تعداد شهدا را با ارقام فارسی می‌نویسد", () => {
+  it("هیچ شمارنده‌ای از تعداد شهدا نشان نمی‌دهد", () => {
+    // نکتهٔ ۸ کاربر: «اون گوشه که نوشته ۴ شهید اصلاً نباشد.»
     render(
       <MartyrsMarquee items={[martyr(), martyr({ title: "دوم" }), martyr({ title: "سوم" })]} />,
     );
-    expect(screen.getByText("۳ شهید")).toBeTruthy();
+    expect(screen.queryByText("۳ شهید")).toBeNull();
+    expect(screen.queryByText(/شهید$/)).toBeNull();
   });
 
-  it("با ۳ نفر یا بیشتر، ردیف را برای حرکتِ بی‌درز تکرار می‌کند", () => {
+  it("عنوان دقیقاً «یادوارهٔ شهدا» است، نه «یاد شهیدان — به نام کاوه»", () => {
+    render(<MartyrsMarquee items={[martyr()]} />);
+    expect(screen.getByRole("heading", { level: 2, name: "یادوارهٔ شهدا" })).toBeTruthy();
+  });
+
+  it("ردیف همیشه به تعدادِ زوج تکرار می‌شود تا حلقه بی‌درز باشد", () => {
+    // با هر تعداد شهید، کلِ چهره‌های رندرشده باید زوج‌تایی از نسخهٔ کامل
+    // باشد؛ وگرنه `translateX(50%)` نیمهٔ ناقص نشان می‌دهد و لبهٔ خالی
+    // همان باگی است که در تبلت/لپ‌تاپ دیده شد.
+    for (const n of [1, 2, 3, 5, 7]) {
+      const items = Array.from({ length: n }, (_, i) => martyr({ title: `شهید ${i}` }));
+      const { container, unmount } = render(<MartyrsMarquee items={items} />);
+      const figures = container.querySelectorAll("figure");
+      expect(figures.length % (n * 2)).toBe(0);
+      expect(figures.length).toBeGreaterThanOrEqual(n * 2);
+      unmount();
+    }
+  });
+
+  it("برای صفحهٔ عریض به‌قدر کافی تکرار می‌کند (بیش از یک نسخه)", () => {
     render(<MartyrsMarquee items={[martyr(), martyr({ title: "ب" }), martyr({ title: "ج" })]} />);
-    // ۳ نفر × ۳ تکرار = ۹ چهره
-    expect(screen.getAllByRole("img").length).toBe(9);
-  });
-
-  it("با ۲ نفر، ردیف ثابت می‌ماند (تکرار مصنوعی ندارد)", () => {
-    render(<MartyrsMarquee items={[martyr(), martyr({ title: "ب" })]} />);
-    expect(screen.getAllByRole("img").length).toBe(2);
+    expect(screen.getAllByRole("img").length).toBeGreaterThan(3);
   });
 });

@@ -29,7 +29,12 @@
       "on-stage": "oklch(97% 0.008 250)",
       "on-stage-muted": "oklch(80% 0.018 250)",
       "accent": "oklch(70% 0.105 195)",
-      "accent-soft": "oklch(94.4% 0.026 198)"
+      "accent-soft": "oklch(94.4% 0.026 198)",
+      "band": "oklch(94.5% 0.017 254)",
+      "band-2": "oklch(90% 0.024 254)",
+      "on-band": "oklch(24% 0.032 258)",
+      "on-band-muted": "oklch(43% 0.028 256)",
+      "band-accent": "oklch(56% 0.108 72)"
     },
     "dark": {
       "canvas": "oklch(20% 0.030 262)",
@@ -58,13 +63,28 @@
       "on-stage": "oklch(96% 0.008 250)",
       "on-stage-muted": "oklch(79% 0.016 250)",
       "accent": "oklch(80% 0.09 196)",
-      "accent-soft": "oklch(30% 0.035 198)"
+      "accent-soft": "oklch(30% 0.035 198)",
+      "band": "oklch(22.5% 0.034 262)",
+      "band-2": "oklch(17.5% 0.028 262)",
+      "on-band": "oklch(96% 0.008 250)",
+      "on-band-muted": "oklch(79% 0.016 250)",
+      "band-accent": "oklch(82% 0.108 84)"
     }
   },
   "font": {
     "$type": "fontFamily",
-    "sans": ["Vazirmatn", "ui-sans-serif", "system-ui", "sans-serif"],
-    "mono": ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"]
+    "sans": [
+      "Vazirmatn",
+      "ui-sans-serif",
+      "system-ui",
+      "sans-serif"
+    ],
+    "mono": [
+      "ui-monospace",
+      "SFMono-Regular",
+      "Menlo",
+      "monospace"
+    ]
   },
   "size": {
     "$type": "dimension",
@@ -118,9 +138,24 @@
   },
   "easing": {
     "$type": "cubicBezier",
-    "standard": [0.2, 0.8, 0.2, 1],
-    "decelerate": [0.05, 0.7, 0.1, 1],
-    "accelerate": [0.3, 0, 0.8, 0.15]
+    "standard": [
+      0.2,
+      0.8,
+      0.2,
+      1
+    ],
+    "decelerate": [
+      0.05,
+      0.7,
+      0.1,
+      1
+    ],
+    "accelerate": [
+      0.3,
+      0,
+      0.8,
+      0.15
+    ]
   },
   "shadow": {
     "$type": "shadow",

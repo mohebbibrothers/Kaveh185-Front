@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/widgets/site-header/SiteHeader";
-import { SiteFooter } from "@/widgets/site-footer/SiteFooter";
+import { SiteFooterWithMartyrs as SiteFooter } from "@/widgets/site-footer/SiteFooterWithMartyrs";
 import { ExamRunner } from "@/widgets/exam/ExamRunner";
 
 export const metadata: Metadata = {

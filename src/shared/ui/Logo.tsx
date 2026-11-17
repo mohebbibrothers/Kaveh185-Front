@@ -1,45 +1,31 @@
 /**
- * نشان کاوه ۱۸۵ — دو حالت، یک هویت.
+ * نشان کاوه ۱۸۵ — سه حالت، یک هویت، همیشه بدون پس‌زمینه.
  *
- * ── چرا عوض شد؟ ────────────────────────────────────────────────────────
- * نسخهٔ قبل، چهرهٔ شهید را مستقیم در `object-cover` می‌گذاشت؛ نتیجه این بود
- * که در آیکون هدر، تاجِ شمسه از بالا بریده می‌شد و کادرِ گرد، وسطِ صورت
- * می‌افتاد — همان چیزی که کاربر در اسکرین‌شات نشان داد. ریشهٔ مشکل:
- * برشِ دایره‌ای روی تصویری اعمال می‌شد که خودش از قبل قابِ تزئینی داشت.
+ * ── ایرادِ نسخهٔ قبل (نکتهٔ ۱ کاربر) ──────────────────────────────────────
+ * «لوگوی هدر، لوگوی زبانهٔ مرورگر، لوگوی فوتر و لوگوی صفحهٔ ۴۰۴ باید همان
+ * تصویرِ بدون بک‌گراند باشند.» نسخهٔ قبل سه فایلِ متفاوت و بدتر: یک
+ * `icon-face.png` که خودش از قبل با کادرِ طلایی برش خورده بود، یک
+ * `emblem-portrait.jpg` که پس‌زمینهٔ کرمِ مستطیلی داشت و در هدر مثل یک
+ * «کادر عکس» دیده می‌شد، و آیکون‌های PWA که از همان پرترهٔ گرد ساخته
+ * شده بودند.
  *
- * نسخهٔ جدید دو چیز را جدا می‌کند:
- *   • **variant="portrait"** — تصویر از پیش برش‌خورده و در مرکز چهره
- *     (`/img/icon-face.png`، ۲۵۶px، تولیدشده دقیقاً برای دایره). چهرهٔ شهید
- *     کامل و وسط است. حلقهٔ طلایی، لبهٔ قابِ طلاییِ خودِ تصویر را ادامه
- *     می‌دهد، نه اینکه روی آن بیفتد.
- *   • **variant="emblem"** — شمسهٔ کامل با پرچم، برای هدر در ابعاد بزرگ‌تر
- *     و فوتر. این‌جا برش نمی‌خوریم؛ قاب دست‌نخورده می‌ماند.
- *   • **variant="mark"** — نشان هندسی تک‌رنگ (شمسهٔ هشت‌پر با «۱۸۵» مرکزی)
- *     برای جاهایی که رنگ‌پذیری با `currentColor` لازم است (چاپ، favicon
- *     تک‌رنگ، واترمارک).
+ * حالا **یک** داراییِ منبع داریم و همه از آن مشتق می‌شوند:
+ *   • `emblem-mark`  — نشانِ کامل با شفافیت (`public/img/emblem-mark.webp`)
+ *   • `emblem-head`  — برشِ پرترهٔ کادرِ گنبدی با شفافیت (`emblem-head.webp`)
+ *   • آیکون‌های ۳۲/۶۴/۱۸۰/۱۹۲/۵۱۲ و maskable — همه از همین نشان، روی
+ *     زمینهٔ لاجوردی تا در زبانهٔ کروم (که شفافیت را سفید نشان می‌دهد)
+ *     دیده شوند.
  *
- * قاعدهٔ کلی: **هرگز چهره را با `object-cover` در دایره نگذارید.** تصویر
- * باید از قبل برای همان دایره ساخته شده باشد.
+ * ── قاعده‌ای که دیگر نقض نمی‌شود ─────────────────────────────────────────
+ * **هرگز چهره را با `object-cover` در دایره نگذارید.** تصویری که خودش
+ * کادرِ تزئینی دارد، وقتی داخل دایره برش بخورد، تاجِ شمسه‌اش می‌رود.
+ * این‌جا تصویر با `object-contain` داخلِ یک قابِ گرد می‌نشیند: هیچ بخشی
+ * بریده نمی‌شود و خودِ شفافیت باعث می‌شود قاب «پس‌زمینه» نباشد.
  */
-
-/**
- * نشان کامل — **بدون هیچ برشی**.
- *
- * ── ایرادِ نسخهٔ قبل (نکتهٔ ۳ کاربر) ────────────────────────────────────
- * فایل `emblem.png` خودش از پایین بریده بود: روبانِ سه‌رنگ و دعای
- * «به یاد شهید» نصفه بودند و در هدر و فوتر همان برش دیده می‌شد — کاربر
- * دقیقاً همین را گفت: «لوگو از پایین کات شده و قسمتی از متن داخل لوگو
- * بریده». ریشهٔ مشکل در CSS نبود؛ در خودِ فایل بود.
- *
- * فایل تازه (`emblem-portrait.jpg`) از تصویر اصلیِ `kaveh-hero.jpg` با
- * ناحیهٔ وسیع‌تر ساخته شده: طاق کامل، هر دو روبان، دعا و گلبرگ‌ها. نسبت
- * ۳:۴ است، پس در قابِ مربع با `object-contain` هم نمی‌بریم — فقط دو نوارِ
- * کرم در دو طرف می‌ماند که با `rounded` و حلقهٔ طلایی، «کادرِ عکس» می‌شود،
- * نه «برش».
- */
-const EMBLEM_SRC = "/img/emblem-portrait.jpg";
-const EMBLEM_SM_SRC = "/img/emblem-portrait-sm.jpg";
-const FACE_SRC = "/img/icon-face.png";
+const AVATAR_SRC = "/img/emblem-avatar.webp";
+const AVATAR_SM_SRC = "/img/emblem-avatar-sm.webp";
+const MARK_SRC = "/img/emblem-mark.webp";
+const MARK_SM_SRC = "/img/emblem-mark-sm.webp";
 
 function GoldRing({ size }: { size: number }) {
   return (
@@ -92,7 +78,6 @@ export function Logo({
           fill="none"
           stroke="url(#k185-mark)"
           strokeWidth="1.5"
-          transform="rotate(0 24 24)"
         />
         <rect
           x="9"
@@ -128,48 +113,57 @@ export function Logo({
     );
   }
 
+  /**
+   * نشانِ کامل (شهید + پرچم + خوش‌نویسی) — **بدون کادر و بدون پس‌زمینه**.
+   *
+   * ارتفاع ثابت است و عرض از نسبت واقعی تصویر می‌آید؛ در فوتر و ۴۰۴ هم
+   * همین استفاده می‌شود. `size` یعنی «ارتفاع».
+   */
   if (variant === "emblem") {
-    // نسبت واقعی تصویر ۳:۴ است؛ اگر قاب مربع بماند، `contain` دو نوار
-    // خالی می‌گذارد و نشان کوچک می‌شود. پس خودِ قاب هم ۳:۴ است.
-    const width = Math.round(size * 0.75);
-    const height = size;
     return (
       <span
-        className={`ring-gold/30 relative inline-grid shrink-0 place-items-center overflow-hidden rounded-[26%] shadow-[0_2px_10px_-4px_oklch(28%_0.06_260/0.35)] ring-1 ${className}`}
-        style={{ width, height }}
+        className={`relative inline-grid shrink-0 place-items-center ${className}`}
+        style={{ height: size }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element -- تصویر ثابت با
-            ابعاد مشخص؛ next/image برای ۳۰px فقط یک لایهٔ resize اضافه می‌کند. */}
+        {/* eslint-disable-next-line @next/next/no-img-element -- تصویر ثابتِ
+            بهینه‌شده با ابعاد مشخص؛ next/image در خروجی ایستا فقط یک لایهٔ
+            اضافه می‌کند و این تصویر LCP هدر نیست. */}
         <img
-          src={size <= 48 ? EMBLEM_SM_SRC : EMBLEM_SRC}
+          src={size <= 64 ? MARK_SM_SRC : MARK_SRC}
           alt=""
-          width={width}
-          height={height}
-          className="size-full object-cover object-center"
+          height={size}
+          style={{ height: size, width: "auto" }}
+          className="block drop-shadow-[0_3px_10px_oklch(20%_0.04_260/0.22)]"
           decoding="async"
         />
       </span>
     );
   }
 
+  /**
+   * پرترهٔ گرد — آواتارِ هدر، منوی موبایل و صفحهٔ ۴۰۴.
+   * `object-contain` تا هیچ بخشی از کادرِ گنبدی بریده نشود.
+   */
   return (
     <span
       className={`relative inline-grid shrink-0 place-items-center ${className}`}
       style={{ width: size, height: size }}
     >
       <GoldRing size={size} />
-      {/* تصویر از پیش برش‌خورده و مرکزچین — نه `object-cover` روی قاب کامل */}
-      {/* eslint-disable-next-line @next/next/no-img-element -- تصویر ۴۰px با
-          ابعاد ثابت است؛ next/image برای این اندازه فقط یک لایهٔ resize
-          اضافه می‌کند و LCP را بهتر نمی‌کند. فایل از قبل بهینه. */}
-      <img
-        src={FACE_SRC}
-        alt=""
-        width={size}
-        height={size}
-        className="size-full rounded-full object-cover"
-        decoding="async"
-      />
+      <span
+        className="bg-gold-soft/40 relative grid size-full place-items-center overflow-hidden rounded-full"
+        style={{ width: size, height: size }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element -- ۴۰px، از قبل بهینه */}
+        <img
+          src={size <= 44 ? AVATAR_SM_SRC : AVATAR_SRC}
+          alt=""
+          width={size}
+          height={size}
+          className="size-full object-cover"
+          decoding="async"
+        />
+      </span>
     </span>
   );
 }

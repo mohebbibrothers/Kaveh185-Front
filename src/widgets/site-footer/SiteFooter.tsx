@@ -3,161 +3,198 @@ import { Logo } from "@/shared/ui/Logo";
 import { SITE } from "@/shared/config/site";
 import { BackToTop } from "./BackToTop";
 import { ChannelCard } from "./ChannelCard";
+import { MartyrsMarquee } from "@/widgets/landing/MartyrsMarquee";
+import type { Martyr } from "@/shared/api/landing";
 
 /**
- * فوتر — «شبِ آرامِ» پایانِ صفحه.
+ * فوتر — «شبِ آرامِ» پایانِ صفحه، حالا با یادوارهٔ شهدا در آستانهٔ آن.
  *
- * ── ایرادِ نسخهٔ قبل (نکتهٔ ۱۱ کاربر) ────────────────────────────────────
- * «اصلاً قشنگ طراحی نکردی و حتی پویانمایی قوی و حرفه‌ای براش انجام ندادی.»
- * ایراد درست بود: یک `div` با `border-t` و چهار ستون متن، بدون عمق، بدون
- * حرکت، و کارتِ کانال یک مستطیلِ تخت بود. کاربر دو مرجع داد: سایت «هم‌سهم»
- * (پویانمایی) و فوتر بعثت (عمق و ترکیب).
+ * ── تغییرهای این دور (نکته‌های ۸، ۹، ۱۰، ۱۱) ────────────────────────────
  *
- * ── زبانِ طراحیِ تازه ────────────────────────────────────────────────────
+ * ۱) **یادوارهٔ شهدا داخلِ فوتر است، نه قبلِ آن** (نکتهٔ ۸).
+ *    یک بخش با `-mt` یا `mt-0` سرِ جایش نمی‌نشیند؛ وقتی دو بخش از دو
+ *    کامپوننتِ جدا بیایند، بالاخره یک روز یکی‌شان فاصله می‌گیرد. حالا
+ *    مالکیت یکی است: یادواره اولِ فوتر است و بدونِ هیچ فاصله‌ای به بدنه
+ *    می‌چسبد. `mt-16`ی که بین آخرین بخش و فوتر بود هم حذف شد.
  *
- * ۱) **سرمایه‌ایِ لاجوردی (`bg-stage`)** — فوتر از بدنهٔ روشنِ صفحه جدا
- *    می‌شود و صفحه «بسته» به نظر می‌رسد، نه «قطع‌شده».
- * ۲) **لایه‌های عمق**: دو هالهٔ رنگِ نرم (طلایی و لاجوردی)، بافتِ گره‌چینیِ
- *    محو، و یک خطِ طلاییِ گرادیانی در لبهٔ بالا. هیچ تصویری در باندل نیست.
- * ۳) **پویانماییِ واقعی، نه تزئینی**:
- *    • ستون‌ها با تأخیرِ پله‌ای (`60ms`) بالا می‌آیند (`k185-rise`).
- *    • هر لینک در هاور: خطِ زیرینِ طلایی از راست رشد می‌کند و فلش کوچک
- *      جابه‌جا می‌شود — بازخوردِ فوری، بدون تغییرِ چیدمان.
- *    • نشانِ سایت در هاور یک چرخشِ ۶درجه می‌گیرد (کشفِ کوچک).
- *    • کارتِ کانال: حلقهٔ پالس، درخششِ لغزنده، و آیکونِ بله که در هاور
- *      «تکان می‌خورد» — دقیقاً همان چیزی که خواسته شد.
- * ۴) **سه ستون با وزنِ متفاوت** (`1.4fr 1fr 1.25fr`) — نه چهار ستونِ
- *    مساوی که همه‌چیز را هم‌وزن و بی‌سلسله‌مراتب می‌کند.
- * ۵) **«بازگشت به بالا»** با دکمهٔ واقعی و اسکرول‌محور (اسکرول‌بار پنهان
- *    است؛ بدون این، کاربر راهِ سریعِ برگشت ندارد).
+ * ۲) **تمِ نوار و فوتر با تمِ سایت** (نکتهٔ ۹).
+ *    هر دو از توکنِ `band` می‌خوانند که در تم روز روشن و در تم شب تیره
+ *    است. هیچ `bg-stage` ثابتی نمانده. کنتراستِ هر چهار جفت‌رنگِ
+ *    `on-band`/`band`/`band-accent` در `build-tokens.mjs` سنجیده و در CI
+ *    گِیت می‌شود، پس این یکپارچگی با CSS شکسته نمی‌شود.
  *
- * ⚠️ فقط یک کانال رسمی وجود دارد. لینکِ مرده بدتر از نبودِ لینک است.
+ * ۳) **چیدمانِ موبایل از نو** (نکتهٔ ۱۰).
+ *    نسخهٔ قبل در موبایل ستون‌ها را پشتِ سرِ هم می‌چید و «کانالِ رسمی»
+ *    به یک باکسِ پهنِ خسته‌کننده تبدیل می‌شد. حالا:
+ *      • سربرگِ هویت وسط‌چین با نشان، و دو چیپِ کوتاه زیرش؛
+ *      • دو ستونِ کوتاهِ «دسترسی سریع» و «قوانین» در دو ستونِ کنارِ هم
+ *        (در ۳۲۰px هم جا می‌شود، چون متن‌ها کوتاه‌اند)؛
+ *      • **کانال رسمی یک آیکونِ گردِ بزرگ** با پویانماییِ اختصاصی، نه یک
+ *        باکسِ دراز — همان چیزی که خواسته شد؛
+ *      • نوارِ پایانی با یک خطِ اعتبارِ کوتاه و «بازگشت به بالا».
+ *
+ * ۴) **پویانماییِ واقعی**: ستون‌ها با تأخیرِ پله‌ای، لنگرهای لینک با خطِ
+ *    طلایی، نشان با چرخشِ کوچک، و آیکونِ بله با پالس و تکان.
  */
-export function SiteFooter() {
+export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
   const year = new Intl.DateTimeFormat("fa-IR", { year: "numeric" }).format(new Date());
 
   const quick = [
     { href: "/register", label: "ثبت‌نام در مسابقه" },
     { href: "/book", label: "مطالعهٔ کتاب" },
-    { href: "/rules", label: "قوانین و شرایط" },
-    { href: "/receipt", label: "استعلام کارنامه" },
     { href: "/mosques", label: "رتبه‌بندی مساجد" },
   ] as const;
 
+  const legal = [
+    { href: "/rules", label: "قوانین و شرایط" },
+    { href: "/receipt", label: "استعلام کارنامه" },
+    { href: "/login", label: "ورود به حساب" },
+  ] as const;
+
   return (
-    <footer className="bg-stage text-on-stage relative mt-16 overflow-hidden">
-      {/* ── لبهٔ بالایی: خطِ طلاییِ گرادیانی، نه قوسِ بریده ── */}
-      <div
-        aria-hidden="true"
-        className="via-gold/55 absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent to-transparent"
-      />
+    <footer className="bg-band text-on-band relative overflow-hidden">
+      {/* ── یادوارهٔ شهدا — اولِ فوتر، بی‌فاصله ── */}
+      <MartyrsMarquee items={martyrs} />
 
-      {/* ── لایه‌های عمق ── */}
-      <div
-        aria-hidden="true"
-        className="k185-girih-veil pointer-events-none absolute inset-0 opacity-[0.055]"
-      />
-      <div
-        aria-hidden="true"
-        className="bg-gold/[0.07] pointer-events-none absolute -top-24 -right-16 size-72 rounded-full blur-3xl"
-      />
-      <div
-        aria-hidden="true"
-        className="bg-accent/[0.05] pointer-events-none absolute -bottom-28 left-1/4 size-80 rounded-full blur-3xl"
-      />
+      {/* ── بدنهٔ فوتر ── */}
+      <div className="relative">
+        {/* خطِ نوریِ بالای بدنه؛ اگر یادواره خالی باشد، این تنها لبه است */}
+        <div
+          aria-hidden="true"
+          className="via-band-accent/40 absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent to-transparent"
+        />
 
-      <div className="relative mx-auto w-full max-w-6xl px-4 pt-10 pb-2 sm:px-6 sm:pt-12">
-        <div className="grid gap-9 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1.25fr] lg:gap-12">
-          {/* ── ستون ۱: هویت ── */}
-          <div className="k185-footer-col" style={{ animationDelay: "0ms" }}>
-            <div className="flex items-center gap-3">
-              <span className="k185-footer-badge transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-rotate-6">
-                <Logo size={48} variant="emblem" />
-              </span>
-              <span className="flex flex-col leading-tight">
-                <span className="text-[15px] font-extrabold">{SITE.name}</span>
-                <span className="text-on-stage-muted text-[10.5px]">{SITE.event.title}</span>
-              </span>
-            </div>
+        {/* لایه‌های عمق */}
+        <div
+          aria-hidden="true"
+          className="k185-girih-veil pointer-events-none absolute inset-0 opacity-[0.05]"
+        />
+        <div
+          aria-hidden="true"
+          className="bg-band-accent/[0.08] pointer-events-none absolute -top-24 -right-16 size-72 rounded-full blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="bg-brand/[0.06] pointer-events-none absolute -bottom-28 left-1/4 size-80 rounded-full blur-3xl"
+        />
 
-            <p className="text-on-stage-muted mt-4 max-w-sm text-[12.5px] leading-[2]">
-              مسابقهٔ کتاب‌خوانی {SITE.bookTitle} به مناسبت هفتهٔ بسیج، میان مساجد حوزهٔ مقاومت بسیج
-              ۱۸۵ شهید کاوه.
-            </p>
-
-            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px]">
-              <span className="border-on-stage/12 text-on-stage-muted inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-semibold">
-                <span aria-hidden="true" className="bg-verde size-1.5 rounded-full" />
-                شرکت رایگان
-              </span>
-              <span className="border-on-stage/12 text-on-stage-muted inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-semibold">
-                <span aria-hidden="true" className="bg-gold size-1.5 rounded-full" />
-                یک‌بار برای هر کد ملی
-              </span>
-            </div>
-          </div>
-
-          {/* ── ستون ۲: دسترسی سریع ── */}
-          <nav
-            aria-label="دسترسی سریع"
-            className="k185-footer-col"
-            style={{ animationDelay: "70ms" }}
-          >
-            <h2 className="text-on-stage mb-3.5 flex items-center gap-2 text-[12px] font-extrabold tracking-wide">
-              <span aria-hidden="true" className="bg-gold/70 h-3 w-[2px] rounded-full" />
-              دسترسی سریع
-            </h2>
-            <ul className="space-y-0.5">
-              {quick.map((l) => (
-                <li key={l.href}>
-                  <Link
-                    href={l.href}
-                    className="k185-footer-link text-on-stage-muted group hover:text-on-stage inline-flex min-h-[34px] items-center gap-1.5 text-[12.5px] transition-colors"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      width="11"
-                      height="11"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.4"
-                      aria-hidden="true"
-                      className="-me-1 opacity-0 transition-all duration-300 group-hover:me-0 group-hover:opacity-100"
-                    >
-                      <path d="M14 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <span className="k185-footer-link-text relative">{l.label}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          {/* ── ستون ۳: کانال رسمی ── */}
-          <div className="k185-footer-col" style={{ animationDelay: "140ms" }}>
-            <h2 className="text-on-stage mb-3.5 flex items-center gap-2 text-[12px] font-extrabold tracking-wide">
-              <span aria-hidden="true" className="bg-gold/70 h-3 w-[2px] rounded-full" />
-              کانال رسمی
-            </h2>
-            <ChannelCard />
-            <p className="text-on-stage-muted/85 mt-2.5 text-[10.5px] leading-5">
-              اطلاع‌رسانی رسمی مسابقه فقط در این کانال است.
-            </p>
-          </div>
+        {/* ── مشتِ شهید کاوه — واترمارکِ ساختارمند (نکتهٔ ۱۱) ──
+            نه تصویرِ تصادفی: پشتِ ستونِ هویت، در ارتفاعِ کاملِ ستون، با
+            ماسکِ محو و شفافیتِ بسیار کم. در دسکتاپ دیده می‌شود و در
+            موبایل پنهان است (جایی که فقط شلوغی می‌شود). */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 -left-4 hidden w-[240px] opacity-[0.07] lg:block"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element -- واترمارکِ تزئینی */}
+          <img
+            src="/img/punch-fist.webp"
+            alt=""
+            className="size-full object-contain object-bottom"
+            style={{
+              maskImage: "linear-gradient(to top, black 55%, transparent 95%)",
+              WebkitMaskImage: "linear-gradient(to top, black 55%, transparent 95%)",
+            }}
+          />
         </div>
 
-        {/* ── نوار پایانی ── */}
-        <div className="border-on-stage/10 mt-8 flex flex-col items-center justify-between gap-3 border-t py-4 sm:flex-row">
-          <p className="text-on-stage-muted/80 order-2 text-center text-[10.5px] sm:order-1 sm:text-right">
-            © {year} — {SITE.organizer}
-          </p>
+        <div className="relative mx-auto w-full max-w-6xl px-4 pt-9 pb-2 sm:px-6 sm:pt-11">
+          {/* ── سربرگِ هویت: در موبایل وسط‌چین، در دسکتاپ ستونِ اول ── */}
+          <div className="k185-footer-col flex flex-col items-center text-center lg:grid lg:grid-cols-[1.5fr_1fr_1.1fr] lg:items-start lg:gap-10 lg:text-start">
+            <div className="w-full lg:w-auto">
+              <div className="flex flex-col items-center gap-2.5 lg:flex-row lg:items-center lg:gap-3">
+                <span className="k185-footer-badge block transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-rotate-3">
+                  <Logo size={64} variant="emblem" />
+                </span>
+                <span className="flex flex-col leading-tight">
+                  <span className="text-[16px] font-extrabold">{SITE.name}</span>
+                  <span className="text-on-band-muted mt-0.5 text-[10.5px]">{SITE.event.title}</span>
+                </span>
+              </div>
 
-          <div className="order-1 flex items-center gap-3 sm:order-2">
-            <span className="text-on-stage-muted/70 hidden items-center gap-1.5 text-[10.5px] font-semibold sm:flex">
-              <span aria-hidden="true" className="bg-verde size-1.5 rounded-full" />
-              سامانهٔ رسمی برگزاری
-            </span>
-            <BackToTop />
+              <p className="text-on-band-muted mx-auto mt-3.5 max-w-sm text-[12.5px] leading-[2] lg:mx-0">
+                مسابقهٔ کتاب‌خوانی {SITE.bookTitle} به مناسبت هفتهٔ بسیج، میان مساجد حوزهٔ مقاومت
+                بسیج ۱۸۵ شهید کاوه.
+              </p>
+
+              <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2 text-[11px] lg:justify-start">
+                <span className="border-on-band/15 text-on-band-muted inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-semibold">
+                  <span aria-hidden="true" className="bg-verde size-1.5 rounded-full" />
+                  شرکت رایگان
+                </span>
+                <span className="border-on-band/15 text-on-band-muted inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-semibold">
+                  <span aria-hidden="true" className="bg-band-accent size-1.5 rounded-full" />
+                  یک‌بار برای هر کد ملی
+                </span>
+              </div>
+            </div>
+
+            {/* ── دو ستونِ کوتاه: در موبایل کنارِ هم، در دسکتاپ زیرِ هم نمی‌روند ── */}
+            <div className="mt-7 grid w-full grid-cols-2 gap-4 lg:mt-0 lg:contents">
+              <nav aria-label="دسترسی سریع" className="k185-footer-col" style={{ animationDelay: "70ms" }}>
+                <h2 className="text-on-band mb-2.5 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide lg:justify-start">
+                  <span aria-hidden="true" className="bg-band-accent/70 h-3 w-[2px] rounded-full" />
+                  دسترسی سریع
+                </h2>
+                <ul className="space-y-0.5">
+                  {quick.map((l) => (
+                    <li key={l.href} className="text-center lg:text-start">
+                      <Link
+                        href={l.href}
+                        className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[32px] items-center text-[12px] transition-colors"
+                      >
+                        <span className="k185-footer-link-text relative">{l.label}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+
+              <nav aria-label="قوانین و حساب" className="k185-footer-col" style={{ animationDelay: "120ms" }}>
+                <h2 className="text-on-band mb-2.5 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide lg:justify-start">
+                  <span aria-hidden="true" className="bg-band-accent/70 h-3 w-[2px] rounded-full" />
+                  قوانین و حساب
+                </h2>
+                <ul className="space-y-0.5">
+                  {legal.map((l) => (
+                    <li key={l.href} className="text-center lg:text-start">
+                      <Link
+                        href={l.href}
+                        className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[32px] items-center text-[12px] transition-colors"
+                      >
+                        <span className="k185-footer-link-text relative">{l.label}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </div>
+
+            {/* ── کانال رسمی: آیکونِ گردِ بزرگ، نه باکسِ دراز ── */}
+            <div
+              className="k185-footer-col mt-7 flex w-full flex-col items-center lg:mt-0 lg:items-start"
+              style={{ animationDelay: "170ms" }}
+            >
+              <h2 className="text-on-band mb-2.5 flex items-center gap-2 text-[11.5px] font-extrabold tracking-wide">
+                <span aria-hidden="true" className="bg-band-accent/70 h-3 w-[2px] rounded-full" />
+                کانال رسمی
+              </h2>
+              <ChannelCard />
+            </div>
+          </div>
+
+          {/* ── نوار پایانی ── */}
+          <div className="border-on-band/12 mt-7 flex flex-col items-center justify-between gap-3 border-t pt-4 sm:flex-row">
+            <p className="text-on-band-muted order-2 text-center text-[10.5px] sm:order-1 sm:text-start">
+              © {year} — {SITE.organizer}
+            </p>
+            <div className="order-1 flex items-center gap-3 sm:order-2">
+              <span className="text-on-band-muted hidden items-center gap-1.5 text-[10.5px] font-semibold sm:flex">
+                <span aria-hidden="true" className="bg-verde size-1.5 rounded-full" />
+                سامانهٔ رسمی برگزاری
+              </span>
+              <BackToTop />
+            </div>
           </div>
         </div>
       </div>

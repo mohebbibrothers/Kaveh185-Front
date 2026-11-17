@@ -5,6 +5,7 @@ import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { SITE } from "@/shared/config/site";
+import { Logo } from "@/shared/ui/Logo";
 
 /**
  * منوی موبایل — **برگهٔ پایین‌کشویی (bottom sheet)**، به سبک سایت مهدیه.
@@ -34,7 +35,10 @@ import { SITE } from "@/shared/config/site";
  */
 export function MobileMenu({
   links,
-  anchors = [],
+  // ⚠️ `anchors` عمداً پذیرفته و نادیده گرفته می‌شود: نکتهٔ ۶ کاربر حذفِ
+  // بخشِ «در همین صفحه» بود. امضا حفظ شده تا `SiteHeader` و تست‌های قبلی
+  // نشکنند و اگر روزی برگرداندیم، جای اضافه‌کردنش همین‌جاست.
+  anchors: _anchors = [],
 }: {
   links: readonly { href: string; label: string }[];
   anchors?: readonly { href: string; label: string }[];
@@ -124,8 +128,16 @@ export function MobileMenu({
           <span aria-hidden="true" className="bg-border-strong/70 h-[4px] w-10 rounded-full" />
         </div>
 
-        <div className="flex shrink-0 items-center justify-between px-4 pb-2">
-          <p className="text-text text-[14px] font-extrabold">منو</p>
+        {/* ⚠️ نکتهٔ ۶ کاربر: عنوانِ «منو» برداشته شد.
+            برگهٔ پایین‌کشویی خودش می‌گوید منو است؛ یک برچسبِ اضافه فقط
+            یک ردیف از ارتفاعِ ارزشمندِ موبایل را می‌گرفت. دکمهٔ بستن
+            می‌ماند (لمسِ بزرگ، سمتِ شروعِ RTL) و کنارش نشانِ سایت آمده
+            تا برگه هویت داشته باشد. */}
+        <div className="flex shrink-0 items-center justify-between gap-2 px-4 pb-2">
+          <span className="flex items-center gap-2">
+            <Logo size={26} />
+            <span className="text-text text-[12.5px] font-extrabold">{SITE.name}</span>
+          </span>
           <button
             type="button"
             onClick={close}
@@ -181,27 +193,6 @@ export function MobileMenu({
             ))}
           </ul>
 
-          {anchors.length > 0 ? (
-            <div className="border-border/70 mt-2 border-t pt-2">
-              <p className="text-text-subtle px-3 pb-1 text-[10.5px] font-extrabold tracking-wide">
-                در همین صفحه
-              </p>
-              <ul className="space-y-0.5">
-                {anchors.map((n) => (
-                  <li key={n.href}>
-                    <a
-                      href={n.href as Route}
-                      onClick={close}
-                      className="text-text-muted hover:bg-surface-2 hover:text-text flex min-h-[42px] items-center gap-2.5 rounded-xl px-3 text-[13px] font-semibold transition-colors"
-                    >
-                      <span aria-hidden="true" className="bg-gold/70 size-1.5 rounded-full" />
-                      {n.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
         </nav>
 
         {/* ردیف اقدام — همیشه پایین برگه، بی‌نیاز از اسکرول */}

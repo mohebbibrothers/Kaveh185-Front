@@ -7,6 +7,7 @@ import { SITE } from "@/shared/config/site";
 import { toFa } from "@/shared/lib/fa";
 import { useData } from "@/shared/api/data-context";
 import { LeaderGallery } from "./LeaderGallery";
+import { useState } from "react";
 
 /**
  * «کتاب و کلام» — باکسِ تصویر رهبر + گالریِ خودکار + کلام.
@@ -44,6 +45,9 @@ export function ReadingSection({ bookStories }: { bookStories: number }) {
   const leader = data.gallery.leader;
 
   const hasAdminGallery = leader.length > 0;
+  // شمارندهٔ اسلایدِ گالری: در سرتیترِ همین باکس، گوشهٔ بالا-چپ، هم‌ردیف با
+  // برچسبِ «کتاب مسابقهٔ امسال» — خواستهٔ صریحِ کاربر (نکتهٔ ۷).
+  const [slide, setSlide] = useState({ index: 0, count: 0 });
 
   return (
     <section id="book" aria-labelledby="book-title" className="k185-reveal mt-12 scroll-mt-24">
@@ -68,9 +72,23 @@ export function ReadingSection({ bookStories }: { bookStories: number }) {
               {SITE.bookTitle}
             </h2>
           </div>
-          <span className="text-text-subtle text-[10.5px] font-semibold">
-            {toFa(bookStories)} داستان کوتاه
-          </span>
+          <div className="flex items-center gap-2.5">
+            {slide.count > 1 ? (
+              /* موبایل: چسبیده به گوشهٔ بالا-چپِ خودِ باکس، هم‌ردیف با
+                 «کتاب مسابقهٔ امسال». دسکتاپ: همان‌جا در ردیفِ سرتیتر. */
+              <span
+                className="border-gold/35 bg-band text-on-band absolute top-5 left-4 inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[9.5px] font-extrabold sm:static sm:top-auto sm:left-auto"
+                aria-live="polite"
+              >
+                <span aria-hidden="true" className="bg-gold size-1 rounded-full" />
+                {toFa(slide.index + 1)} از {toFa(slide.count)}
+                <span className="sr-only">تصویر</span>
+              </span>
+            ) : null}
+            <span className="text-text-subtle text-[10.5px] font-semibold">
+              {toFa(bookStories)} داستان کوتاه
+            </span>
+          </div>
         </div>
 
         {hasAdminGallery ? (
@@ -80,7 +98,7 @@ export function ReadingSection({ bookStories }: { bookStories: number }) {
              می‌شد و نصفِ باکس خالی می‌ماند. گالری باید فضای کاملِ باکس را
              بگیرد. */
           <div className="relative">
-            <LeaderGallery items={leader} />
+            <LeaderGallery items={leader} onProgress={setSlide} />
           </div>
         ) : (
           <div className="relative grid gap-0 md:grid-cols-[minmax(0,1fr)_minmax(250px,36%)]">

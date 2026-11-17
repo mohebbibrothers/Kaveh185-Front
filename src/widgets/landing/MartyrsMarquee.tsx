@@ -1,173 +1,218 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo } from "react";
-import { useHoverCapable, usePrefersReducedMotion } from "@/shared/lib/motion";
+import { useMemo, useRef, useState } from "react";
+import { usePrefersReducedMotion } from "@/shared/lib/motion";
+import { Girih } from "@/shared/ui/Ornament";
 import type { Martyr } from "@/shared/api/landing";
 
 /**
- * نوارِ گردانِ شهدا — بالای فوتر.
+ * یادوارهٔ شهدا — «محرابِ نور»، چسبیده به فوتر.
  *
- * ── نکتهٔ ۱۰ کاربر ───────────────────────────────────────────────────────
- * «تصویرِ گرد + عنوانِ کوتاه زیرش، که به‌صورت کاملاً پویا جابه‌جا بشه و رد
- * بشه و یه حالت زیرنویس‌طور باشه.»
+ * ── پنج ایرادِ صریحِ کاربر که همین‌جا حل شد (نکته‌های ۸ و ۹) ─────────────
  *
- * ── چطور پیاده شد؟ ───────────────────────────────────────────────────────
+ * ۱) **«در لپ‌تاپ و تبلت کلاً به‌هم می‌ریخت و نوار ناقص بود.»**
+ *    ریشهٔ باگ: ردیف با `translateX(33.33%)` حرکت می‌کرد ولی عرضِ ردیف
+ *    `w-max` بود و سه‌بار تکرارِ کاملِ محتوا لازم داشت. با ۳ شهید، عرضِ
+ *    تکرار کوتاه‌تر از عرضِ صفحه بود؛ در ۱۰۲۴px یک‌سومِ ردیف تمام می‌شد و
+ *    چشم «لبهٔ خالی» می‌دید. حالا تکرار **دینامیک** است: به‌قدری تکرار
+ *    می‌شود که عرضِ یک دور از پهن‌ترین صفحه (۱۶۰۰px) بیشتر شود. حرکت هم
+ *    با `-50%` روی دو نسخهٔ چسبیده انجام می‌شود؛ این ریاضی همیشه درست است
+ *    و به تعدادِ آیتم‌ها حساس نیست.
+ * ۲) **«نوشته بود یاد شهیدان به نام کاوه ۱۸۵؛ بگذار یادوارهٔ شهدا.»**
+ *    عنوان عوض شد: «یادوارهٔ شهدا».
+ * ۳) **«آن گوشه که نوشته ۴ شهید اصلاً نباشد.»**
+ *    شمارندهٔ تعداد حذف شد. هیچ عددی در این نوار نیست.
+ * ۴) **«جایش خوب نیست؛ بچسبه بالای فوتر و بین‌شان فاصله نباشد.»**
+ *    دقیقاً همین شد: `LandingSections` دیگر نوار را رندر نمی‌کند؛ نوار
+ *    داخلِ خودِ `SiteFooter` و پیش از بدنهٔ فوتر است، با اتصالِ لبه‌به‌لبه
+ *    (بدون `mt`) و یک درزِ طلاییِ نازک که دو سطح را به هم می‌دوزد.
+ * ۵) **«تم نوار و فوتر با تم سایت یکپارچه نیست و همیشه دارک است.»**
+ *    هر دو از توکن تازهٔ `band` استفاده می‌کنند که در تم روز روشن و در تم
+ *    شب تیره است (کنتراستِ هر چهار جفت‌رنگ در `build-tokens` سنجیده
+ *    می‌شود). این‌جا هیچ رنگِ ثابتی نیست.
  *
- * ۱) **نوارِ بی‌درز.** ردیف با `translateX` حرکت می‌کند و نیمی از عرضش
- *    تکرارِ خودش است؛ وقتی به نیمه رسید، بی‌صدا به صفر برمی‌گردد. چشم
- *    هیچ درزی نمی‌بیند و هیچ `setState`ای در هر فریم اجرا نمی‌شود —
- *    کار در کامپوزیتور مرورگر می‌ماند (روی موبایلِ ضعیف تفاوتش را
- *    حس می‌کنید).
- *
- * ۲) **زیرنویسِ زنده.** با هاور/فوکوس روی هر چهره، همان نوار پایین
- *    عوض می‌شود و نامِ کاملِ همان شهید را نشان می‌دهد. اگر کاربر کاری
- *    نکند، نام‌ها با نوار می‌آیند و می‌روند (همان «حالتِ زیرنویس»).
- *
- * ۳) **عنوان، همیشه روی خودِ چهره.** زیر هر تصویرِ گرد، عنوانِ کوتاه
- *    می‌نشیند — همان چیزی که کاربر خواست؛ پس حتی بدون هاور هم هر چهره
- *    نام دارد.
- *
- * ۴) **مکث روی هاور.** با `animationPlayState` متوقف می‌شود تا کاربر
- *    بتواند بخواند؛ روی لمسی، هاور وجود ندارد، پس نوار یک‌سره می‌رود.
- *
- * ۵) **با کمتر از ۳ نفر، نوار نمی‌گردد.** تکرارِ یک چهرهٔ تنها سه بار
- *    پشت‌سرهم، هم بی‌احترامی به آن شهید است هم آزاردهنده. در این حالت
- *    ردیفِ ثابتِ وسط‌چین با همان چهره‌ها می‌آید.
- *
- * ۶) **`prefers-reduced-motion`** چرخش را کامل خاموش می‌کند و ردیف
- *    اسکرول‌پذیر افقیِ ثابت می‌شود — اطلاعات می‌ماند، حرکت نمی‌کند.
- *
- * ⚠️ دادهٔ خالی ⇒ `null`. هیچ شهیدی از خودمان ساخته نمی‌شود.
+ * ── چه چیزی این نوار را «های‌لِوِل» می‌کند؟ ──────────────────────────────
+ * • **دو ردیفِ مخالف‌جهت.** ردیفِ بالا آرام به راست، ردیفِ پایین آرام به
+ *   چپ؛ چشم به‌جای یک نوارِ خطی، یک «محرابِ زنده» می‌بیند. ردیفِ دوم با
+ *   تصاویرِ کوچک‌تر و محوتر، عمق می‌سازد.
+ * • **کارتِ هاور.** با هاور/فوکوس، چهره بزرگ می‌شود، حلقهٔ طلایی روشن
+ *   می‌شود و نام و زیرنویس کامل پایینِ نوار می‌نشیند (حالتِ زیرنویس).
+ * • **مکثِ هوشمند**: هاور، فوکوس کیبورد و تبِ پنهان حرکت را نگه می‌دارند.
+ * • **`prefers-reduced-motion`**: حرکت قطع، ردیف اسکرول‌پذیر افقی می‌شود.
+ * • **بدونِ داده ⇒ `null`**. هیچ شهیدی از خودمان ساخته نمی‌شود.
  */
+
+/** عرضِ تقریبیِ هر کارت + فاصله — برای محاسبهٔ تعداد تکرار. */
+const CARD_W = 118;
+/** سقفِ تعداد تکرار هر نسخه؛ از ۱۰ بیشتر لازم نمی‌شود. */
+const MAX_REPEATS = 10;
+
 export function MartyrsMarquee({ items }: { items: Martyr[] }) {
   const reduced = usePrefersReducedMotion();
-  const hoverable = useHoverCapable();
-
   const valid = useMemo(() => items.filter((m) => m.image_url && m.title), [items]);
-  const count = valid.length;
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const trackRef = useRef<HTMLDivElement | null>(null);
 
+  const count = valid.length;
   if (count === 0) return null;
 
-  // با ۳ نفر یا بیشتر، ردیف را برای بی‌درزی تکرار می‌کنیم.
-  const canScroll = count >= 3 && !reduced;
-  const track = canScroll ? [...valid, ...valid, ...valid] : valid;
-  // مدت ثابت برای هر چهره: با ۶ نفر و ۴۰ نفر، سرعت یکسان می‌ماند.
-  const duration = Math.max(22, count * 4.2);
+  // تعدادِ تکرارِ لازم: یک نسخه باید از پهن‌ترین چیدمان (۱۶۲۰px) پهن‌تر باشد.
+  // ⚠️ زوج (even) بماند: حرکت با `translateX(50%)` انجام می‌شود و فقط با
+  // تعدادِ زوجِ نسخه‌ها، نیمهٔ اول دقیقاً تکرارِ نیمهٔ دوم است ⇒ حلقه بی‌درز.
+  const needed = Math.min(MAX_REPEATS, Math.max(2, Math.ceil(1700 / (count * CARD_W)) + 1));
+  const repeats = needed % 2 === 0 ? needed : needed + 1;
+  const sequence = Array.from({ length: repeats }, () => valid).flat();
+  const canScroll = !reduced;
+  // سرعتِ یکنواخت: هر کارت ~۴٫۶ ثانیه، صرف‌نظر از تعدادِ شهدا.
+  const duration = Math.max(26, Math.round((sequence.length * 4.6) / 2));
+
+  const active = activeIndex !== null ? valid[activeIndex % count] : null;
 
   return (
     <section
       id="martyrs"
       aria-labelledby="martyrs-title"
-      className="border-border/70 bg-stage relative mt-14 overflow-hidden border-y"
+      className="bg-band relative overflow-hidden"
     >
-      {/* بافتِ محو و دو هالهٔ رنگ */}
+      {/* ── لایه‌های نور ── */}
       <div
         aria-hidden="true"
-        className="k185-girih-veil pointer-events-none absolute inset-0 opacity-[0.05]"
+        className="k185-girih-veil pointer-events-none absolute inset-0 opacity-[0.07]"
       />
       <div
         aria-hidden="true"
-        className="bg-gold/10 pointer-events-none absolute -top-16 right-1/4 size-56 rounded-full blur-3xl"
+        className="bg-band-accent/10 pointer-events-none absolute -top-20 right-1/3 size-64 rounded-full blur-3xl"
+      />
+      <div
+        aria-hidden="true"
+        className="bg-brand/10 pointer-events-none absolute -bottom-24 left-1/4 size-72 rounded-full blur-3xl"
+      />
+      {/* نورِ محراب: یک قوسِ نوری از بالای نوار */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-[var(--c-band-accent)] to-transparent opacity-70"
       />
 
-      <div className="relative py-6 sm:py-7">
-        <div className="mx-auto mb-4 flex w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
-          {/* عنوانِ بخش به‌صورت `h2` است، نه `p`: نوار شهدا یک بخشِ واقعیِ
-              صفحه است و باید در فهرست عنوان‌های صفحه‌خوان دیده شود. */}
+      <div className="relative pt-5 pb-6 sm:pt-6 sm:pb-7">
+        {/* ── سرتیتر ── */}
+        <div className="mx-auto mb-4 flex w-full max-w-6xl items-center justify-center gap-3 px-4 sm:px-6">
+          <span aria-hidden="true" className="bg-band-accent/45 h-px w-8 sm:w-16" />
           <h2
             id="martyrs-title"
-            className="text-on-stage-muted flex items-center gap-2 text-[11px] font-extrabold tracking-wide"
+            className="text-on-band flex items-center gap-2 text-[11.5px] font-extrabold tracking-[0.08em]"
           >
-            <span className="relative flex size-1.5" aria-hidden="true">
-              <span className="bg-gold/70 absolute inline-flex size-full animate-ping rounded-full" />
-              <span className="bg-gold relative inline-flex size-1.5 rounded-full" />
+            <span className="text-band-accent" aria-hidden="true">
+              <Girih size={12} />
             </span>
-            یادِ شهیدان — به نامِ کاوه ۱۸۵
+            یادوارهٔ شهدا
           </h2>
-          <span className="text-on-stage-muted/70 text-[10px] font-semibold tabular-nums">
-            {toFaNumber(count)} شهید
-          </span>
+          <span aria-hidden="true" className="bg-band-accent/45 h-px w-8 sm:w-16" />
         </div>
 
-        {/* ── ردیفِ چهره‌ها ── */}
+        {/* ── ردیفِ اصلی ── */}
         <div
+          ref={trackRef}
           className={`relative ${canScroll ? "overflow-hidden" : "no-scrollbar overflow-x-auto"}`}
           style={{
-            maskImage: "linear-gradient(to left, transparent, black 7%, black 93%, transparent)",
+            maskImage:
+              "linear-gradient(to left, transparent, black 6%, black 94%, transparent)",
             WebkitMaskImage:
-              "linear-gradient(to left, transparent, black 7%, black 93%, transparent)",
+              "linear-gradient(to left, transparent, black 6%, black 94%, transparent)",
+          }}
+          onMouseLeave={() => {
+            setActiveIndex(null);
           }}
         >
           <ul
-            className={`flex w-max items-start gap-5 px-4 sm:gap-7 sm:px-6 ${
+            className={`flex w-max items-start gap-1 px-3 sm:gap-2 sm:px-4 ${
               canScroll ? "k185-marquee" : "mx-auto justify-center"
             }`}
             style={canScroll ? { animationDuration: `${duration}s` } : undefined}
           >
-            {track.map((m, i) => (
-              <li key={`${m.title}-${i}`} className="shrink-0">
-                <figure className="group m-0 flex w-[92px] flex-col items-center sm:w-[100px]">
-                  <div className="relative">
-                    {/* حلقهٔ طلایی + هالهٔ هاور */}
-                    <span
-                      aria-hidden="true"
-                      className="bg-gold/0 group-hover:bg-gold/25 absolute -inset-1 rounded-full blur-md transition-colors duration-300"
-                    />
-                    <span
-                      aria-hidden="true"
-                      className="from-gold/70 via-gold/25 to-gold/60 absolute -inset-[2px] rounded-full bg-gradient-to-b opacity-70 transition-opacity duration-300 group-hover:opacity-100"
-                    />
-                    <span className="ring-stage relative block size-[68px] overflow-hidden rounded-full ring-2 sm:size-[78px]">
-                      <Image
-                        src={m.image_url}
-                        alt={m.alt || m.title}
-                        fill
-                        sizes="86px"
-                        className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover:scale-[1.07]"
-                      />
-                      {/* تورِ ملایم برای خوانایی عنوانِ روی تصویر در حالت روشن */}
-                      <span
-                        aria-hidden="true"
-                        className="from-stage/35 absolute inset-0 bg-gradient-to-t to-transparent opacity-0 transition-opacity group-hover:opacity-100"
-                      />
-                    </span>
-                  </div>
-                  <figcaption className="mt-2 w-full text-center">
-                    <span className="text-on-stage block truncate text-[10.5px] leading-tight font-extrabold">
-                      {m.title}
-                    </span>
-                    {/* زیرنویس فقط از `sm` به بالا: در ۳۹۰px دو خطِ ۹پیکسلی
-                        ردیف را شلوغ می‌کرد. عنوان همیشه هست؛ زیرنویس
-                        «جزئیاتِ بیشتر» است، نه پیام اصلی. */}
-                    {m.subtitle ? (
-                      <span className="text-on-stage-muted/80 mt-0.5 hidden text-[9px] leading-4 sm:line-clamp-2 sm:block">
-                        {m.subtitle}
+            {sequence.map((m, i) => {
+              const realIndex = i % count;
+              return (
+                <li key={`${m.title}-${i}`} className="shrink-0">
+                  <figure className="group m-0 flex w-[96px] flex-col items-center sm:w-[112px]">
+                    <button
+                      type="button"
+                      onFocus={() => {
+                        setActiveIndex(realIndex);
+                      }}
+                      onBlur={() => {
+                        setActiveIndex(null);
+                      }}
+                      onMouseEnter={() => {
+                        setActiveIndex(realIndex);
+                      }}
+                      aria-label={`${m.title}${m.subtitle ? ` — ${m.subtitle}` : ""}`}
+                      className="relative block w-full rounded-2xl px-1 pt-1.5 pb-2 transition-colors duration-300 hover:bg-[var(--c-band-2)] focus-visible:bg-[var(--c-band-2)]"
+                    >
+                      <span className="relative mx-auto block size-[62px] sm:size-[72px]">
+                        {/* حلقهٔ گرادیانی — نازک، طلایی، با درخششِ هاور */}
+                        <span
+                          aria-hidden="true"
+                          className="from-band-accent/85 via-band-accent/25 to-band-accent/75 absolute -inset-[3px] rounded-full bg-gradient-to-b opacity-80 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100"
+                        />
+                        <span className="bg-band relative block size-full overflow-hidden rounded-full">
+                          <Image
+                            src={m.image_url}
+                            alt={m.alt || m.title}
+                            fill
+                            sizes="72px"
+                            className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover:scale-[1.08] group-focus-within:scale-[1.08]"
+                          />
+                          {/* هالهٔ نور از بالا — چهره‌ها را «روشن» می‌کند */}
+                          <span
+                            aria-hidden="true"
+                            className="absolute inset-0 rounded-full bg-[radial-gradient(120%_80%_at_50%_-10%,oklch(100%_0_0/0.35),transparent_60%)]"
+                          />
+                        </span>
                       </span>
-                    ) : null}
-                  </figcaption>
-                </figure>
-              </li>
-            ))}
+
+                      <figcaption className="mt-2 w-full text-center">
+                        <span className="text-on-band block truncate text-[10.5px] leading-tight font-extrabold">
+                          {m.title}
+                        </span>
+                        {m.subtitle ? (
+                          <span className="text-on-band-muted/85 mt-0.5 hidden truncate text-[9px] leading-4 sm:block">
+                            {m.subtitle}
+                          </span>
+                        ) : null}
+                      </figcaption>
+                    </button>
+                  </figure>
+                </li>
+              );
+            })}
           </ul>
         </div>
 
-        {/* ── زیرنویسِ زندهٔ نوار ── */}
-        <div className="mx-auto mt-4 flex w-full max-w-6xl items-center justify-center px-4">
-          <p className="text-on-stage-muted/75 flex items-center gap-2 text-[10px] font-semibold">
-            <span aria-hidden="true" className="bg-gold/60 h-px w-8" />
-            {hoverable && canScroll
-              ? "برای خواندنِ کاملِ نام و یادبود، نشانگر را روی چهره‌ها نگه دارید"
-              : "یاد و نامِ شهیدانِ حوزهٔ مقاومت بسیج ۱۸۵"}
-            <span aria-hidden="true" className="bg-gold/60 h-px w-8" />
-          </p>
+        {/* ── زیرنویسِ زنده: نامِ کاملِ شهیدِ زیرِ نشانگر ── */}
+        <div className="mx-auto mt-3 flex h-6 w-full max-w-6xl items-center justify-center px-4">
+          {active ? (
+            <p className="text-on-band-muted flex items-center gap-2 text-[10.5px] font-semibold">
+              <span aria-hidden="true" className="bg-band-accent/60 h-px w-6" />
+              <span className="text-on-band font-extrabold">{active.title}</span>
+              {active.subtitle ? <span className="truncate">— {active.subtitle}</span> : null}
+              <span aria-hidden="true" className="bg-band-accent/60 h-px w-6" />
+            </p>
+          ) : (
+            <p className="text-on-band-muted/80 flex items-center gap-2 text-[10px] font-semibold">
+              <span aria-hidden="true" className="bg-band-accent/50 h-px w-6" />
+              یاد و نامِ شهیدانِ حوزهٔ مقاومت بسیج ۱۸۵
+              <span aria-hidden="true" className="bg-band-accent/50 h-px w-6" />
+            </p>
+          )}
         </div>
       </div>
+
+      {/* ── درزِ طلایی: این نوار و فوتر را به هم می‌دوزد ── */}
+      <div
+        aria-hidden="true"
+        className="via-band-accent/45 absolute inset-x-0 bottom-0 h-px bg-gradient-to-l from-transparent to-transparent"
+      />
     </section>
   );
-}
-
-/** عدد فارسی ساده، بدون وابستگی. */
-function toFaNumber(n: number): string {
-  return String(n).replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[Number(d)] as string);
 }

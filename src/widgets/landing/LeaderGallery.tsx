@@ -46,9 +46,16 @@ const ROTATE_MS = 6500;
 export function LeaderGallery({
   items,
   className = "",
+  onProgress,
 }: {
   items: LeaderPortrait[];
   className?: string;
+  /**
+   * تعداد اسلایدهای قابلِ نمایش را به والد می‌دهد تا شمارندهٔ «۱ از ۳» را
+   * در گوشهٔ **بالا-چپِ خودِ باکس** (کنارِ «کتاب مسابقهٔ امسال») بگذارد —
+   * نه شناور روی تصویر.
+   */
+  onProgress?: (state: { index: number; count: number }) => void;
 }) {
   // فقط تصاویری که ادمین اجازهٔ نمایش در باکس را داده، و تصویر دارند.
   const slides = useMemo(() => items.filter((i) => i.image_url && i.show_in_box), [items]);
@@ -63,6 +70,12 @@ export function LeaderGallery({
   // شود (ادمین یک تصویر را حذف کند) و `rawIndex` بیرون بزند، همان‌جا
   // نرمال می‌شود — بدون یک رندر آبشاریِ اضافه و بدون setState در effect.
   const index = count > 0 ? rawIndex % count : 0;
+
+  // گزارشِ وضعیت به والد (برای شمارندهٔ گوشهٔ باکس). با `useEffect` بدنهٔ
+  // رندر تمیز می‌ماند و رفرنسِ تابع در رندرِ بعدی دوباره اجرا نمی‌شود.
+  useEffect(() => {
+    onProgress?.({ index, count });
+  }, [index, count, onProgress]);
 
   // پیش‌بارگذاری تصویر بعدی
   useEffect(() => {
@@ -106,7 +119,7 @@ export function LeaderGallery({
 
   return (
     <div
-      className={`grid gap-4 md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] md:items-stretch md:gap-0 ${className}`}
+      className={`relative grid gap-4 md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] md:items-stretch md:gap-0 ${className}`}
       onMouseEnter={() => {
         setPaused(true);
       }}
@@ -260,21 +273,15 @@ export function LeaderGallery({
           )}
         </blockquote>
 
-        {count > 1 ? (
+        {count > 1 && paused ? (
           <p className="text-text-subtle mt-3.5 flex items-center gap-1.5 text-[10.5px] font-semibold">
             <span aria-hidden="true" className="bg-gold/70 inline-block size-1 rounded-full" />
-            {toFaNumber(index + 1)} از {toFaNumber(count)}
-            {paused ? " · چرخش متوقف است" : ""}
+            چرخش خودکار متوقف است
           </p>
         ) : null}
       </div>
     </div>
   );
-}
-
-/** عدد فارسی بدون وابستگی به ماژول دیگر (برای این یک مورد، ساده‌تر است). */
-function toFaNumber(n: number): string {
-  return String(n).replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[Number(d)] as string);
 }
 
 /** فلشِ قبلی/بعد روی قابِ تصویر. */

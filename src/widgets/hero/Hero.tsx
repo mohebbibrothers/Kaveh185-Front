@@ -7,31 +7,32 @@ import type { ExamStatus } from "@/shared/api/landing";
 import { secondsUntil } from "@/shared/lib/time";
 
 /**
- * هیروی صفحهٔ اول — یک پیام، یک زمان، یک اقدام.
+ * هیروی صفحهٔ اول — یک پیام، یک زمان، یک تصمیم.
  *
- * ── سه تغییرِ این دور ────────────────────────────────────────────────────
+ * ── چهار نکتهٔ کاربر که همین‌جا حل شد ────────────────────────────────────
  *
- * ۱) **دکمهٔ «مشاهدهٔ قوانین»** (نکتهٔ ۲): دکمهٔ اصلی به `/rules` می‌رود و
- *    متنش دقیقاً همان چیزی است که خواسته شد. یک لینکِ متنیِ کم‌وزن کنارش
- *    «ورود به آزمون» را نگه می‌دارد، تا اقدام اصلی همیشه یک دکمه بماند و
- *    دو دکمهٔ هم‌وزن با هم رقابت نکنند.
+ * ۱) **موبایل و فولدِبل: همه‌چیز وسط‌چین** (نکتهٔ ۵).
+ *    نسخهٔ قبل پرتره را در گوشهٔ بالا-چپ می‌گذاشت و متن را کنارِ آن؛ در
+ *    ۳۲۰–۳۹۰px نتیجه یک «ستونِ چپ‌چین با گوشهٔ خالی» بود که خودِ کاربر
+ *    گفت به‌دردنخور است. حالا در `lg` پایین، پرتره **بالای متن** و
+ *    وسط‌چین است، بزرگ‌تر از قبل (۱۵۲px)، و تیتر/تایمر/دکمه‌ها هم همه
+ *    وسط‌چین‌اند. از `lg` به بالا همان چیدمانِ دوستونیِ قبلی برمی‌گردد.
  *
- * ۲) **پرتره در گوشهٔ بالا-چپ موبایل** (نکتهٔ ۷): نسخهٔ قبل تصویر را
- *    `order-2` می‌گذاشت، یعنی *زیر* متن و دکمه — و کاربر درست گفت که در
- *    موبایل «می‌رود پایین و ساختار را به‌هم می‌ریزد». حالا در موبایل یک
- *    **ردیفِ بالا** داریم: تصویرِ کوچکِ مربع در گوشهٔ بالا-چپ (شروعِ RTL)
- *    و چیپ وضعیت در گوشهٔ بالا-راست؛ متن زیرشان تمام‌عرض. این هم «گوشهٔ
- *    بالا» است که خواسته شد، هم هیچ چیز را نمی‌پوشاند. در `md` به بالا
- *    تصویر بزرگ می‌شود و ستونِ کنارِ متن می‌مانَد.
+ * ۲) **کادرِ پرتره: «طاقِ مینا»** (نکتهٔ ۳).
+ *    نسخهٔ قبل تصویر را در یک مستطیلِ ۲۲px با حلقهٔ نازک می‌گذاشت؛ نتیجه
+ *    «کادرِ عکسِ خام» بود. حالا قاب یک **طاقِ محرابی** است: قوسِ بالا،
+ *    لایه‌های عمق (سایهٔ بیرونی + نورِ داخلی + هالهٔ طلایی)، یک لبهٔ
+ *    براقِ لغزنده، و زیرنویسِ نام روی نوارِ شیشه‌ای. تصویر خودش
+ *    **بدون پس‌زمینه** است، پس طاق روی زمینهٔ سایت می‌نشیند، نه روی یک
+ *    مستطیلِ کرم.
  *
- * ۳) **تایمرِ تازه**: `Countdown` بازنویسی شد (چهار کاشیِ نفس‌کشنده، رقم
- *    ۹۰۰، تیکِ تک‌رقمی). این‌جا فقط جایش عوض شد: تایمر در یک ردیفِ
- *    مستقل با فاصلهٔ واقعی از تیتر و از دکمه.
+ * ۳) **دکمهٔ دوم: «مشاهدهٔ رتبه‌بندی مساجد»** (نکتهٔ ۴).
+ *    «ثبت‌نام و شرکت» دو بار در صفحه بود (هدر + هیرو). حالا دکمهٔ دوم
+ *    به `/mosques` می‌رود؛ ثبت‌نام یک بار در هدر و یک بار در پایانِ
+ *    همین هیرو به‌صورت متنِ کم‌رنگ هست — بدون تکرارِ وزنِ بصری.
  *
- * ── چرا فقط یک دکمهٔ پررنگ؟ ───────────────────────────────────────────────
- * تفکیک وزن = تفکیک تصمیم. دکمهٔ پررنگ «قوانین» است، چون کاربری که نمی‌داند
- * چه خبر است باید اول بخواند؛ لینکِ کم‌رنگ «ورود به آزمون» برای کسی است
- * که از قبل می‌داند چه می‌خواهد.
+ * ۴) **تایمر: «حلقهٔ زمان»** (نکتهٔ ۲) — جداگانه در `Countdown` توضیح داده
+ *    شده؛ این‌جا فقط جای آن در ستونِ وسط‌چینِ موبایل است.
  */
 export interface HeroStatus {
   window_state: ExamStatus["window_state"];
@@ -91,39 +92,36 @@ export function Hero({ status, serverNow }: { status: HeroStatus; serverNow?: st
         aria-hidden="true"
         className="k185-girih-veil pointer-events-none absolute inset-0 opacity-[0.035]"
       />
+      {/* هالهٔ گرمِ پشتِ پرتره در دسکتاپ */}
+      <div
+        aria-hidden="true"
+        className="bg-gold/10 pointer-events-none absolute -top-24 left-[18%] hidden size-[26rem] rounded-full blur-3xl lg:block"
+      />
 
-      <div className="relative mx-auto w-full max-w-6xl px-4 pt-4 pb-9 sm:px-6 sm:pt-10 sm:pb-12 lg:pt-14 lg:pb-16">
-        <div className="grid gap-4 sm:gap-8 md:grid-cols-[minmax(0,1fr)_240px] md:items-center lg:grid-cols-[minmax(0,1fr)_290px] lg:gap-12">
+      <div className="relative mx-auto w-full max-w-6xl px-4 pt-3 pb-8 sm:px-6 sm:pt-8 sm:pb-12 lg:pt-14 lg:pb-16">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-[minmax(0,1fr)_240px] md:items-center lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-12">
           {/* ── متن و اقدام ── */}
-          <div className="order-2 flex min-w-0 flex-col md:order-1">
-            {/* ردیف بالا: در موبایل تصویر + چیپ؛ از md چیپ تنها می‌ماند */}
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <span
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11.5px] font-bold ${stateChip}`}
-                >
-                  <span className="relative flex size-1.5" aria-hidden="true">
-                    {state === "open" && (
-                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-current opacity-70" />
-                    )}
-                    <span className="relative inline-flex size-1.5 rounded-full bg-current" />
-                  </span>
-                  {status.window_state_label}
+          <div className="order-2 flex min-w-0 flex-col items-center text-center md:order-1 md:items-start md:text-start">
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 md:justify-start">
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11.5px] font-bold ${stateChip}`}
+              >
+                <span className="relative flex size-1.5" aria-hidden="true">
+                  {state === "open" && (
+                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-current opacity-70" />
+                  )}
+                  <span className="relative inline-flex size-1.5 rounded-full bg-current" />
                 </span>
-                <span className="text-text-muted hidden text-[12px] font-semibold min-[420px]:inline">
-                  {dateRange}
-                </span>
-              </div>
-
-              {/* ── پرتره: موبایل، گوشهٔ بالا-چپ ── */}
-              <div className="md:hidden">
-                <HeroPortrait size={104} priority />
-              </div>
+                {status.window_state_label}
+              </span>
+              <span className="text-text-muted hidden text-[12px] font-semibold min-[420px]:inline">
+                {dateRange}
+              </span>
             </div>
 
             <h1
               aria-label="مسابقهٔ کتاب‌خوانی هفتهٔ بسیج، کاوه ۱۸۵"
-              className="text-text mt-3 text-[clamp(24px,7.2vw,40px)] leading-[1.24] font-extrabold tracking-tight sm:mt-4 lg:text-[clamp(28px,3.4vw,42px)]"
+              className="text-text mt-3 text-[clamp(23px,6.9vw,40px)] leading-[1.28] font-extrabold tracking-tight sm:mt-4 lg:text-[clamp(28px,3.4vw,42px)]"
             >
               <span aria-hidden="true">
                 مسابقهٔ کتاب‌خوانی
@@ -143,15 +141,17 @@ export function Hero({ status, serverNow }: { status: HeroStatus; serverNow?: st
             </span>
 
             {/* ── تایمر ── */}
-            <div className="mt-4 sm:mt-6">
+            <div className="mt-4 flex w-full flex-col items-center sm:mt-6 md:items-start">
               <span className="text-text-subtle mb-2 inline-flex items-center gap-1.5 text-[10.5px] font-bold">
                 <span className="text-gold-strong" aria-hidden="true">
                   <Girih size={10} />
                 </span>
                 {countdownLabel}
               </span>
+              {/* موبایل: تاریخِ پایان زیرِ تایمر می‌رود، نه کنارش — وگرنه
+                  تایمر از مرکزِ ستون بیرون می‌زند (دیده‌شده در ۳۹۰px). */}
               {hasSchedule ? (
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <div className="flex flex-col items-center gap-1.5 md:flex-row md:items-center md:justify-start md:gap-x-3">
                   <Countdown
                     targetSeconds={Math.max(0, secondsLeft)}
                     label={countdownLabel}
@@ -172,49 +172,51 @@ export function Hero({ status, serverNow }: { status: HeroStatus; serverNow?: st
               )}
             </div>
 
-            {/* ── اقدام ── */}
-            <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2.5 sm:mt-7">
+            {/* ── اقدام ──
+                دکمهٔ اصلی «مشاهدهٔ قوانین» است، دکمهٔ دوم به رتبه‌بندی
+                مساجد می‌رود و «ثبت‌نام و شرکت» فقط یک لینکِ کم‌رنگ است:
+                تکرارِ دکمهٔ هدر در هیرو هم شلوغی بود هم وزنِ بی‌جا. */}
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2.5 sm:mt-7 md:justify-start">
               <Link
                 href="/rules"
                 className="bg-brand text-on-brand hover:bg-brand-hover inline-flex h-11 items-center gap-2 rounded-xl px-5 text-[13.5px] font-extrabold shadow-[0_1px_0_oklch(100%_0_0/0.16)_inset,0_10px_24px_-14px_oklch(30%_0.08_258/0.6)] transition-colors sm:h-12 sm:px-6 sm:text-[14.5px]"
               >
                 مشاهدهٔ قوانین
+                <Chevron />
+              </Link>
+              <Link
+                href="/mosques"
+                className="border-border-strong/80 text-text hover:border-brand/50 hover:bg-surface inline-flex h-11 items-center gap-2 rounded-xl border px-4 text-[13px] font-bold transition-colors sm:h-12 sm:px-5 sm:text-[13.5px]"
+              >
                 <svg
                   viewBox="0 0 24 24"
                   width="15"
                   height="15"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2.2"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   aria-hidden="true"
+                  className="text-gold-strong"
                 >
-                  <path d="M14 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M4 20h16" />
+                  <path d="M7 20v-6M12 20V9M17 20v-9" />
                 </svg>
+                رتبه‌بندی مساجد
               </Link>
               <Link
                 href={state === "open" ? "/exam" : "/register"}
-                className="text-brand group inline-flex items-center gap-1.5 text-[13px] font-bold underline-offset-4 hover:underline"
+                className="text-text-muted hover:text-brand inline-flex items-center gap-1 text-[12px] font-bold underline-offset-4 hover:underline"
               >
-                {state === "open" ? "ورود به آزمون" : "ثبت‌نام و شرکت"}
-                <svg
-                  viewBox="0 0 24 24"
-                  width="13"
-                  height="13"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.4"
-                  aria-hidden="true"
-                  className="transition-transform group-hover:-translate-x-0.5"
-                >
-                  <path d="M14 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                {state === "open" ? "ورود به آزمون" : "ثبت‌نام در مسابقه"}
               </Link>
             </div>
           </div>
 
-          {/* ── پرتره در تبلت و دسکتاپ ── */}
-          <div className="order-1 hidden justify-end md:order-2 md:flex">
-            <HeroPortrait size={null} priority={false} />
+          {/* ── پرتره: در موبایل/تبلتِ عمودی بالای متن و وسط‌چین، در دسکتاپ ستونِ کنار ── */}
+          <div className="order-1 flex justify-center md:order-2 md:justify-end">
+            <HeroPortrait priority />
           </div>
         </div>
       </div>
@@ -222,58 +224,97 @@ export function Hero({ status, serverNow }: { status: HeroStatus; serverNow?: st
   );
 }
 
-/**
- * قابِ پرتره — یک کامپوننت، دو اندازه.
- *
- * چرا جدا شد؟ چون موبایل و دسکتاپ دو قابِ کاملاً متفاوت داشتند و تکرارِ
- * مارک‌آپ باعث می‌شد یک روز یکی از قاب‌ها عقب بماند. این‌جا قاب مشترک است
- * و فقط اندازه فرق می‌کند.
- */
-function HeroPortrait({ size, priority }: { size: number | null; priority: boolean }) {
-  const isSmall = size !== null;
-
+/** فلشِ کوچکِ «رفتن» — مشترک بین دکمه‌ها. */
+function Chevron() {
   return (
-    <figure className={isSmall ? "m-0 shrink-0" : "m-0 w-full max-w-[300px]"}>
-      <div
-        className={`relative ${isSmall ? "" : "k185-lift"}`}
-        style={isSmall ? { width: size, height: size } : undefined}
-      >
-        {/* هالهٔ طلایی پشت قاب */}
+    <svg
+      viewBox="0 0 24 24"
+      width="15"
+      height="15"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      aria-hidden="true"
+    >
+      <path d="M14 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/**
+ * قابِ پرتره — **«طاقِ مینا»**.
+ *
+ * ── چه چیزی این قاب را از «کادرِ عکس» جدا می‌کند؟ ────────────────────────
+ * چهار لایهٔ مستقل، هر کدام یک کار:
+ *   ۱) **هاله** — یک لکهٔ طلاییِ محو پشتِ قاب که آن را از سطح جدا می‌کند.
+ *   ۲) **بدنهٔ طاق** — پس‌زمینهٔ گرادیانی تیره-به-روشن + سایهٔ دوگانه
+ *      (سایهٔ عمیقِ بیرونی برای «بلندشدن» و نورِ داخلیِ بالا برای «براق
+ *      بودن»). این همان حسِ سه‌بعدی است، بدون تصویر و بدون WebGL.
+ *   ۳) **لبهٔ براق** — یک حلقهٔ نازکِ گرادیانی + یک خطِ نورِ مورب که فقط
+ *      در هاور عبور می‌کند (کشفِ کوچک، نه شلوغی).
+ *   ۴) **زیرنویسِ شیشه‌ای** — نام شهید روی نوارِ `backdrop-blur` پایینِ
+ *      قاب، تا تصویر «بی‌نام» نماند.
+ *
+ * تصویر **بدون پس‌زمینه** است و با `object-contain` می‌نشیند، پس هیچ
+ * بخشی از خوش‌نویسی یا پرچم بریده نمی‌شود.
+ */
+function HeroPortrait({ priority }: { priority: boolean }) {
+  return (
+    <figure className="k185-portrait m-0 w-[clamp(150px,44vw,190px)] shrink-0 lg:w-full lg:max-w-[300px]">
+      <div className="relative">
+        {/* ۱) هاله */}
         <div
           aria-hidden="true"
-          className={`bg-gold/12 absolute rounded-[30%] blur-2xl ${isSmall ? "-inset-2" : "-inset-4"}`}
+          className="bg-gold/25 absolute -inset-5 rounded-[46%] blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="bg-brand/12 absolute inset-x-6 -bottom-4 h-16 rounded-full blur-2xl"
         />
 
-        <div
-          className={`ring-gold/35 bg-surface relative overflow-hidden shadow-[0_18px_44px_-24px_oklch(28%_0.06_260/0.5)] ring-1 ${
-            isSmall ? "size-full rounded-[26%]" : "rounded-[22px]"
-          }`}
-        >
-          <Image
-            src={isSmall ? "/img/emblem-portrait-sm.jpg" : "/img/emblem-portrait.jpg"}
-            alt="تصویر شهید محمود کاوه، فرماندهٔ لشکر ویژهٔ ۱۵۵ شهدا، در قاب تزئینی با پرچم ایران"
-            width={isSmall ? 384 : 768}
-            height={isSmall ? 512 : 1024}
-            priority={priority}
-            sizes={isSmall ? "104px" : "(max-width: 1023px) 240px, 300px"}
-            className="h-auto w-full"
-          />
+        {/* ۲) بدنهٔ طاق */}
+        <div className="k185-arch relative overflow-hidden rounded-t-[999px] rounded-b-[26px] border border-white/25 bg-gradient-to-b from-white/55 via-gold-soft/45 to-gold-soft/15 p-[5px] shadow-[0_30px_60px_-30px_oklch(24%_0.06_260/0.65),0_2px_0_oklch(100%_0_0/0.75)_inset]">
+          <div className="relative overflow-hidden rounded-t-[999px] rounded-b-[22px] bg-[radial-gradient(120%_90%_at_50%_0%,oklch(100%_0_0/0.96),oklch(94%_0.03_86/0.9)_55%,oklch(90%_0.035_84/0.85))]">
+            <Image
+              src="/img/emblem-mark.webp"
+              alt="نشان یادبود شهید محمود کاوه — پرتره در کادر گنبدی با پرچم ایران و خوش‌نویسی «به یاد شهید کاوه، حوزهٔ ۱۸۵»"
+              width={420}
+              height={688}
+              priority={priority}
+              sizes="(max-width: 1023px) 190px, 300px"
+              className="h-auto w-full select-none"
+            />
 
-          {/* برچسب نام — فقط در قاب بزرگ، و روی نوارِ خوانا */}
-          {isSmall ? null : (
-            // ⚠️ این نوار عمداً تیره و تقریباً مات است: زمینهٔ پایینِ تصویر
-            // کرمِ روشن است و در نسخهٔ قبل متنِ سفید روی آن خوانده نمی‌شد.
-            <figcaption className="from-stage via-stage/85 absolute inset-x-0 bottom-0 bg-gradient-to-t to-transparent px-3.5 pt-10 pb-3">
-              <p className="text-on-stage text-[12.5px] font-extrabold">شهید محمود کاوه</p>
-              <p className="text-on-stage-muted mt-0.5 text-[10px]">فرماندهٔ لشکر ویژهٔ ۱۵۵ شهدا</p>
+            {/* ۳) لبهٔ داخلی + براقیت */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 rounded-t-[999px] rounded-b-[22px] shadow-[inset_0_0_0_1px_oklch(100%_0_0/0.5),inset_0_-30px_40px_-30px_oklch(30%_0.05_80/0.55)]"
+            />
+            <span
+              aria-hidden="true"
+              className="k185-arch-sheen pointer-events-none absolute inset-y-0 -left-1/3 w-1/2 bg-gradient-to-r from-transparent via-white/45 to-transparent"
+            />
+
+            {/* ۴) زیرنویسِ شیشه‌ای */}
+            <figcaption className="absolute inset-x-2 bottom-2 rounded-xl border border-white/25 bg-stage/55 px-2.5 py-1.5 text-center backdrop-blur-md">
+              <span className="text-on-stage block text-[10.5px] leading-tight font-extrabold">
+                شهید محمود کاوه
+              </span>
+              <span className="text-on-stage-muted mt-0.5 block text-[8.5px] leading-tight">
+                فرماندهٔ لشکر ویژهٔ ۱۵۵ شهدا
+              </span>
             </figcaption>
-          )}
+          </div>
         </div>
 
-        {/* گوشهٔ طلایی — همان جزئیاتِ کوچکی که قاب را «طراحی‌شده» نشان می‌دهد */}
+        {/* گوشه‌های زرین — جزئیاتِ کوچکی که قاب را «کارشده» نشان می‌دهد */}
         <span
           aria-hidden="true"
-          className="border-gold/45 pointer-events-none absolute -top-px -right-px size-4 rounded-tr-[26%] border-t-2 border-r-2"
+          className="border-gold/60 pointer-events-none absolute -bottom-1 -left-1 size-5 rounded-bl-xl border-b-2 border-l-2"
+        />
+        <span
+          aria-hidden="true"
+          className="border-gold/60 pointer-events-none absolute -bottom-1 -right-1 size-5 rounded-br-xl border-r-2 border-b-2"
         />
       </div>
     </figure>

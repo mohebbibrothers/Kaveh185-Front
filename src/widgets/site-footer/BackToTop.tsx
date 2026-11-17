@@ -53,7 +53,7 @@ export function BackToTop() {
         document.getElementById("main")?.focus();
       }}
       aria-label="بازگشت به بالای صفحه"
-      className={`k185-back-to-top group border-on-stage/15 bg-on-stage/[0.06] text-on-stage-muted hover:border-gold/40 hover:text-on-stage inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-[11px] font-bold transition-all duration-300 ${
+      className={`k185-back-to-top group border-on-band/20 bg-on-band/[0.05] text-on-band-muted hover:border-band-accent/50 hover:text-on-band inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-[11px] font-bold transition-all duration-300 ${
         show ? "visible opacity-100" : "invisible opacity-0"
       }`}
     >

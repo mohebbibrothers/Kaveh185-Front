@@ -5,41 +5,46 @@ import { faDuration, toFa } from "@/shared/lib/fa";
 import { usePageVisible, usePrefersReducedMotion } from "@/shared/lib/motion";
 
 /**
- * شمارش معکوس — نسخهٔ چهارم: «چهار کاشیِ نفس‌کشنده».
+ * شمارش معکوس — نسخهٔ پنجم: **«حلقهٔ زمان»**.
  *
- * ── چه ایرادی گرفته شد و چه شد؟ ───────────────────────────────────────────
- * کاربر گفت «فونت تایمر جذاب نیست، کادر به اعداد چسبیده، خوش‌فرم نیست».
- * سه ایرادِ واقعی پشتِ این جمله بود:
+ * ── چرا نسخهٔ چهارم هم نپسندیدی؟ (نکتهٔ ۲ کاربر) ─────────────────────────
+ * «نمی‌دونم چرا با روزشمار حال نمی‌کنم؛ شاید فونتشه، شاید استایلشه.»
+ * و این دقیقاً تشخیصِ درست بود: چهار کاشیِ هم‌اندازه، تایمر را به یک
+ * «جدولِ عدد» تبدیل می‌کرد. مشکل، جذابیتِ فونت تنها نبود؛ **سلسله‌مراتب**
+ * نبود. روز و ثانیه هم‌وزن بودند، در حالی که معنا یکی نیست: یک عدد
+ * «چقدر مانده» است و سه عدد «جزئیات».
  *
- * ۱) **قاب به رقم چسبیده بود.** رقم‌ها با `leading-none` در قابی با
- *    `py-2` می‌نشستند؛ در فارسی، کرسیِ حروف (ascender/descender) از
- *    `leading-none` بیرون می‌زند و دقیقاً حسِ «چسبیده» می‌دهد. حالا هر
- *    رقم در **کاشی مستقل** با نسبتِ ابعاد ثابت و فاصلهٔ داخلیِ واقعی
- *    (`px-3 pt-2.5 pb-1`) می‌نشیند، و کاشی‌ها با `gap` از هم جدا هستند.
+ * ── زبانِ تازه: یک ساعتِ جواهر، نه چهار جعبه ──────────────────────────────
  *
- * ۲) **رقم‌ها یکنواخت نبودند.** وزن ۸۰۰ + اندازهٔ ۲۲px کافی نبود. حالا
- *    وزن ۹۰۰، `font-variant-numeric: tabular-nums` صریح، `letter-spacing`
- *    منفیِ ملایم (−۰٫۰۲em) و اندازهٔ `clamp(24px, 5.2vw, 34px)` — یعنی در
- *    موبایل بزرگ و خوانا، در دسکتاپ بزرگ‌تر ولی نه غول.
- *
- * ۳) **کاشی روز بی‌ربط بود.** «روز» پس‌زمینهٔ رنگ‌دار داشت و مثل یک
- *    تبلیغ جدا می‌افتاد. حالا هر چهار کاشی یک خانواده‌اند و تفکیک با
- *    **وزن و رنگِ برچسب** انجام می‌شود، نه با جعبهٔ رنگیِ متفاوت.
- *
- * ── چرا فونت عوض نشد؟ ─────────────────────────────────────────────────────
- * وزیرمتن قانونِ هویت بصری پروژه است. «جذابیتِ فونتِ اعداد» با وزن،
- * `tabular-nums`، فاصلهٔ حروف و کاشی‌بندی حل شد — نه با یک فونت لاتینِ
- * عددی که کل صفحه را غیرفارسی نشان می‌داد.
- *
- * ── تیکِ هر رقم ────────────────────────────────────────────────────────────
- * فقط رقمی که واقعاً عوض شده، یک پرش کوتاه می‌گیرد (`key` روی همان رقم).
- * نسخهٔ قبل کلِ واحد را دوباره mount می‌کرد و تایمر «می‌لرزید».
+ *  ۱) **حلقهٔ پیشرفتِ زنده** دورِ کاشیِ روز: یک `conic-gradient` که هر
+ *     ثانیه یک پله جلو می‌رود و می‌گوید «چقدر از این مرحله گذشته». بدون
+ *     آن، چهار عددِ ساکن بودند؛ با آن، تایمر «کار می‌کند» و چشم می‌فهمد.
+ *  ۲) **سلسله‌مراتب**: روز در کاشیِ پیشرو بزرگ و با شمارهٔ سه‌رقمی (یا
+ *     چهاررقمی)؛ ساعت/دقیقه/ثانیه در یک نوارِ افقیِ کاشی‌های کوچک، با
+ *     جداکنندهٔ «:» که در فارسی نقطه‌چینِ طلایی است.
+ *  ۳) **فونتِ اعداد**: ارقام فارسی با `Vazirmatn` وزن ۹۰۰ + `tabular-nums`
+ *     + `font-variant-numeric` + `letter-spacing` منفی. ارقام فارسی در
+ *     وزیرمتن `tabular` نیستند (پهنای ۱ و ۳ فرق دارد) و همین باعث می‌شد
+ *     تایمر «بلرزد» و ارزان به نظر برسد؛ برای همین هر رقم را در یک
+ *     **سلولِ عرض‌ثابت** می‌نشانیم و عرضِ کل را با `ch` قفل می‌کنیم.
+ *     نتیجه: هیچ پرشی در عرض، و ریتمِ یکنواختِ عددی.
+ *  ۴) **تیکِ نرمِ تک‌رقمی**: فقط رقمی که عوض می‌شود یک «برشِ» کوتاه
+ *     می‌گیرد (بدون `blur`، بدون جابه‌جایی عمودیِ بلند) تا در تبِ پشتِ
+ *     سر صحنه هم آرام باشد.
+ *  ۵) **حالتِ پایان و حالتِ بدونِ زمان‌بندی** هر دو طراحی‌شده‌اند؛ هیچ‌وقت
+ *     یک قابِ خالی نمی‌بینید.
+ *  ۶) **تم روز/شب**: رنگ‌ها از توکن‌های `surface`/`gold`/`brand` می‌آیند،
+ *     پس در هر دو تم درست است — نه یک جعبهٔ سفیدِ ثابت.
  *
  * ── دسترس‌پذیری ───────────────────────────────────────────────────────────
- * `role="timer"` + `aria-live="off"` (اعلام هر ثانیه، صفحه‌خوان را قطع
- * می‌کند) + یک `sr-only` با کل مدت. برچسبِ هر کاشی هم `sr-only` است، پس
- * «۴۲» تنها خوانده نمی‌شود، «۴۲ ثانیه» خوانده می‌شود.
+ * `role="timer"` + `aria-live="off"` (اعلام هر ثانیه صفحه‌خوان را قطع
+ * می‌کند) + یک `sr-only` با مدتِ کامل. هر کاشی برچسبِ `sr-only` دارد، پس
+ * «۰۲» تنها خوانده نمی‌شود، «۲ روز» خوانده می‌شود.
  */
+
+/** کاشیِ پیشرو: حداکثر روزی که حلقه را «پر» نشان می‌دهد. */
+const RING_SCALE_DAYS = 30;
+
 export function Countdown({
   targetSeconds,
   label,
@@ -82,7 +87,6 @@ export function Countdown({
 
   const isDark = variant === "dark";
   const finished = left <= 0;
-
   const accent = tone === "upcoming" ? "gold" : "verde";
 
   if (finished) {
@@ -90,9 +94,7 @@ export function Countdown({
       <div
         role="status"
         className={`inline-flex items-center gap-2.5 rounded-2xl border px-4 py-3 ${
-          isDark
-            ? "border-white/12 bg-white/[0.06] text-white"
-            : "border-border bg-surface text-text"
+          isDark ? "border-white/12 bg-white/[0.06] text-white" : "border-border bg-surface text-text"
         }`}
       >
         <span
@@ -119,11 +121,17 @@ export function Countdown({
     );
   }
 
-  const units: { value: number; label: string; pad: number }[] = [
-    { value: d, label: "روز", pad: d > 99 ? 3 : 2 },
-    { value: h, label: "ساعت", pad: 2 },
-    { value: m, label: "دقیقه", pad: 2 },
-    { value: s, label: "ثانیه", pad: 2 },
+  /** پرشِ حلقه: نسبتِ گذشتِ زمان از مقیاسِ روزهای همین مرحله. */
+  const totalDays = Math.max(1, Math.ceil(targetSeconds / 86400));
+  const progress = Math.min(
+    1,
+    Math.max(0, 1 - Math.min(d + (h * 60 + m) / 1440 + s / 86400, RING_SCALE_DAYS) / totalDays),
+  );
+
+  const small: { value: number; label: string }[] = [
+    { value: h, label: "ساعت" },
+    { value: m, label: "دقیقه" },
+    { value: s, label: "ثانیه" },
   ];
 
   return (
@@ -131,71 +139,86 @@ export function Countdown({
       role="timer"
       aria-live="off"
       aria-label={`${label}: ${d} روز و ${h} ساعت و ${m} دقیقه`}
-      className="inline-flex max-w-full items-stretch"
+      className="inline-flex max-w-full items-center"
       data-variant={variant}
       data-tone={tone}
     >
       <div
-        className={`flex items-stretch gap-1.5 rounded-[18px] border p-1.5 sm:gap-2 sm:rounded-[20px] sm:p-2 ${
+        className={`k185-clock flex items-center gap-2 rounded-[20px] border py-1.5 ps-1.5 pe-3 sm:gap-2.5 sm:rounded-[24px] sm:py-2 sm:ps-2 sm:pe-3.5 ${
           isDark
-            ? "border-white/10 bg-white/[0.05] shadow-[inset_0_1px_0_oklch(100%_0_0/0.07)]"
-            : "border-border/90 bg-surface-2/60 shadow-[inset_0_1px_0_oklch(100%_0_0/0.8),0_10px_30px_-24px_oklch(28%_0.06_260/0.8)]"
+            ? "border-white/10 bg-white/[0.05]"
+            : "border-border/80 bg-surface/95 shadow-[0_1px_0_oklch(100%_0_0/0.9)_inset,0_18px_44px_-34px_oklch(26%_0.05_260/0.75)]"
         }`}
       >
-        {units.map((u, index) => {
-          const text = toFa(String(u.value).padStart(u.pad, "0"));
-          const isLead = index === 0;
-          return (
-            <span
-              key={u.label}
-              className={`relative flex min-w-[3.1rem] flex-col items-center justify-center rounded-[13px] px-2 pt-2 pb-1.5 sm:min-w-[3.55rem] sm:rounded-[15px] ${
-                isDark
-                  ? isLead
-                    ? "bg-white/[0.09]"
-                    : "bg-white/[0.045]"
-                  : isLead
-                    ? "bg-gold-soft/70"
-                    : "bg-surface"
-              } ${
-                !isDark && !isLead
-                  ? "shadow-[inset_0_0_0_1px_oklch(88%_0.016_252/0.9)]"
-                  : isLead
-                    ? ""
-                    : "shadow-[inset_0_0_0_1px_oklch(100%_0_0/0.08)]"
-              }`}
-            >
-              {/* خطِ طلاییِ بالای کاشی — همیشه، برای خواندنِ سطرِ رقم‌ها */}
-              <span
-                aria-hidden="true"
-                className={`absolute inset-x-3 top-0 h-px ${
-                  isLead
-                    ? accent === "gold"
-                      ? "bg-gold/70"
-                      : "bg-verde/60"
-                    : isDark
-                      ? "bg-white/12"
-                      : "bg-border-strong/40"
-                }`}
-              />
-              <span className="sr-only">{u.label}</span>
-              <Digit value={text} isLead={isLead} isDark={isDark} animate={!reduced} />
-              <span
-                className={`mt-0.5 text-[9.5px] font-bold tracking-wide ${
-                  isDark
-                    ? "text-on-stage-muted"
-                    : isLead
-                      ? accent === "gold"
-                        ? "text-gold-strong"
-                        : "text-verde"
-                      : "text-text-subtle"
-                }`}
-                aria-hidden="true"
-              >
-                {u.label}
-              </span>
-            </span>
-          );
-        })}
+        {/* ── کاشیِ پیشرو: روز، با حلقهٔ پیشرفت ──
+            حلقه با SVG رسم می‌شود، نه `conic-gradient` + ماسک: ماسکِ
+            `exclude` در برخی مرورگرها/حالت‌ها به‌جای حلقه، یک گوهِ توپر
+            می‌کشد (همان چیزی که در پیش‌نمایش دیده شد). SVG قطعی است. */}
+        <div
+          className={`relative flex min-w-[4.6rem] flex-col items-center justify-center rounded-[14px] px-2 py-2 sm:min-w-[5.2rem] sm:rounded-[17px] ${
+            isDark ? "bg-white/[0.07]" : "bg-gold-soft/60"
+          }`}
+        >
+          <ProgressRing progress={progress} accent={accent} />
+          <span className="sr-only">روز</span>
+          <span
+            className={`k185-num relative text-[clamp(25px,6.6vw,32px)] leading-none ${
+              isDark ? "text-white" : "text-text"
+            }`}
+          >
+            <Digits value={toFa(String(d).padStart(2, "0"))} animate={!reduced} />
+          </span>
+          <span
+            aria-hidden="true"
+            className={`relative mt-1 text-[9px] font-extrabold tracking-[0.16em] ${
+              accent === "gold" ? "text-gold-strong" : "text-verde"
+            }`}
+          >
+            روز
+          </span>
+        </div>
+
+        {/* جداکنندهٔ نازک */}
+        <span
+          aria-hidden="true"
+          className={`h-9 w-px shrink-0 ${isDark ? "bg-white/12" : "bg-border/80"}`}
+        />
+
+        {/* ── سه واحدِ دقیق‌تر: عدد + برچسب، بدونِ جعبهٔ جدا ── */}
+        <div className="flex items-end gap-1.5 sm:gap-2.5">
+          {small.map((u, index) => (
+            <div key={u.label} className="flex items-end">
+              {index > 0 ? (
+                <span
+                  aria-hidden="true"
+                  className={`mb-3 px-0.5 text-[15px] leading-none font-black ${
+                    isDark ? "text-white/25" : "text-gold/60"
+                  }`}
+                >
+                  :
+                </span>
+              ) : null}
+              <div className="flex flex-col items-center pb-0.5">
+                <span className="sr-only">{u.label}</span>
+                <span
+                  className={`k185-num text-[clamp(18px,4.9vw,23px)] leading-none ${
+                    isDark ? "text-white" : "text-text"
+                  }`}
+                >
+                  <Digits value={toFa(String(u.value).padStart(2, "0"))} animate={!reduced} />
+                </span>
+                <span
+                  aria-hidden="true"
+                  className={`mt-1 text-[8.5px] font-bold ${
+                    isDark ? "text-on-stage-muted" : "text-text-subtle"
+                  }`}
+                >
+                  {u.label}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       <span className="sr-only">{faDuration(left)} باقی مانده</span>
     </div>
@@ -203,31 +226,80 @@ export function Countdown({
 }
 
 /**
- * یک کاشیِ رقم.
+ * حلقهٔ پیشرفتِ کاشیِ روز.
  *
- * چرا جدا شد؟ چون `key` روی هر رقم باعث می‌شود فقط همان رقم دوباره
- * mount شود و انیمیشن بگیرد؛ اگر `key` روی کل کاشی بود، برچسب واحد هم
- * می‌پرید.
+ * دو دایره: مسیرِ کم‌رنگ و کمانِ رنگی. کمان با `strokeDasharray` رسم
+ * می‌شود، پس هیچ ماسک، `conic-gradient` یا `mask-composite`ی در کار نیست
+ * و در همهٔ مرورگرها یکسان است.
  */
-function Digit({
-  value,
-  isLead,
-  isDark,
-  animate,
+function ProgressRing({
+  progress,
+  accent,
 }: {
-  value: string;
-  isLead: boolean;
-  isDark: boolean;
-  animate: boolean;
+  progress: number;
+  accent: "gold" | "verde";
 }) {
-  const color = isDark ? "text-white" : isLead ? "text-text" : "text-text";
+  const r = 26;
+  const circumference = 2 * Math.PI * r;
+  const dash = Math.max(0, Math.min(1, progress)) * circumference;
+
+  return (
+    <svg
+      viewBox="0 0 60 60"
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 size-full"
+      fill="none"
+    >
+      <rect
+        x="1"
+        y="1"
+        width="58"
+        height="58"
+        rx="13"
+        stroke={`color-mix(in oklab, var(--c-${accent}) 18%, transparent)`}
+        strokeWidth="1.5"
+      />
+      <rect
+        x="1"
+        y="1"
+        width="58"
+        height="58"
+        rx="13"
+        stroke={`var(--c-${accent})`}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={circumference - dash}
+        pathLength={circumference}
+        style={{ transition: "stroke-dashoffset 900ms linear" }}
+        // مسیرِ کمان از گوشهٔ بالا-راست شروع می‌شود و در جهتِ ساعت می‌رود
+        transform="rotate(-90 30 30)"
+        opacity="0.75"
+      />
+    </svg>
+  );
+}
+
+/**
+ * ارقامِ عرض‌ثابت.
+ *
+ * چرا هر رقم در یک سلول؟ ارقامِ فارسیِ وزیرمتن `tabular` نیستند؛ «۱» از
+ * «۳» باریک‌تر است و در شمارنده، عرضِ کلِ عدد با هر تیک کمی می‌پرید —
+ * همان «لرزش» که تایمر را ارزان نشان می‌داد. با عرضِ ثابت (`1ch` + کمی
+ * فاصله) عدد مثل یک صفحهٔ ساعتِ واقعی می‌نشیند.
+ */
+function Digits({ value, animate }: { value: string; animate: boolean }) {
   return (
     <span
-      className={`k185-num text-[clamp(24px,5.4vw,33px)] leading-[1.05] font-black tabular-nums ${color}`}
+      className="inline-flex items-baseline"
       style={{ direction: "ltr", unicodeBidi: "isolate" }}
     >
       {Array.from({ length: value.length }, (_, i) => value.charAt(i)).map((ch, i) => (
-        <span key={`${i}-${ch}`} className={animate ? "k185-digit-in" : undefined}>
+        <span
+          key={`${i}-${ch}`}
+          className={`inline-block text-center ${animate ? "k185-digit-in" : ""}`}
+          style={{ width: "0.62em" }}
+        >
           {ch}
         </span>
       ))}

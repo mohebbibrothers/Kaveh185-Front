@@ -64,6 +64,12 @@ const PAIRS = [
   ["on-stage", "stage", 7],
   ["on-stage-muted", "stage", 4.5],
   ["gold", "stage", 4.5],
+  // «باند» — فوتر و نوار یادواره: سطحی که با تم روز/شب عوض می‌شود، پس
+  // هر چهار جفتش در هر دو تم باید AA باشند.
+  ["on-band", "band", 7],
+  ["on-band-muted", "band", 4.5],
+  ["band-accent", "band", 3],
+  ["on-band", "band-2", 7],
 ];
 const fails = [];
 for (const theme of ["light", "dark"]) {

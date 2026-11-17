@@ -67,11 +67,13 @@ describe("MobileMenu", () => {
     });
   });
 
-  it("بخش‌های صفحه را در گروه جدا نشان می‌دهد", async () => {
-    render(<MobileMenu links={links} anchors={[{ href: "/#about", label: "دربارهٔ مسابقه" }]} />);
+  it("عنوانِ «منو» و بخشِ «در همین صفحه» را نشان نمی‌دهد", async () => {
+    // نکتهٔ ۶ کاربر: هر دو برداشته شدند؛ فقط فهرستِ مقصدهای اصلی می‌ماند.
+    render(<MobileMenu links={links} />);
     fireEvent.click(screen.getByLabelText("باز کردن منو"));
     await screen.findByRole("dialog");
-    expect(screen.getByText("در همین صفحه")).toBeTruthy();
-    expect(screen.getByText("دربارهٔ مسابقه")).toBeTruthy();
+    expect(screen.queryByText("در همین صفحه")).toBeNull();
+    expect(screen.queryByText("منو")).toBeNull();
+    expect(screen.getAllByRole("link").some((a) => a.textContent?.includes("خانه"))).toBe(true);
   });
 });

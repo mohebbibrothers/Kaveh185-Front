@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/widgets/site-header/SiteHeader";
-import { SiteFooter } from "@/widgets/site-footer/SiteFooter";
+import { SiteFooterWithMartyrs as SiteFooter } from "@/widgets/site-footer/SiteFooterWithMartyrs";
 import { BookReader } from "@/widgets/book/BookReader";
 import { SITE } from "@/shared/config/site";
 import { toFa } from "@/shared/lib/fa";

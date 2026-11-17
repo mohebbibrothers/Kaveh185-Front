@@ -53,7 +53,8 @@ export function LandingShell({
         <Hero status={data.exam_status} serverNow={data.server_time} />
         {children}
       </main>
-      <SiteFooter />
+      {/* یادوارهٔ شهدا داخلِ فوتر است، پس دادهٔ شهدا به فوتر می‌رود. */}
+      <SiteFooter martyrs={data.gallery.martyrs} />
     </DataContext.Provider>
   );
 }
