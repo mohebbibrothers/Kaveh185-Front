@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { NavIcon } from "./NavLink";
@@ -40,8 +41,16 @@ export function MobileMenu({
   links,
   anchors = [],
 }: {
-  links: readonly { href: string; label: string; icon: string }[];
-  anchors?: readonly { href: string; label: string }[];
+  /**
+   * ⚠️ `href` از نوع `Route` است، نه `string` — و همین، یک خطای واقعیِ CI
+   * را حل کرد: در این پروژه `typedRoutes` روشن است، پس `<Link href>` فقط
+   * `Route` می‌پذیرد. کدِ قبلی `href as "/"` می‌نوشت تا تایپ‌چک راضی شود؛
+   * ESLint روی همان کستِ زائدِ سه‌جا ایراد گرفت و لینت در CI شکست.
+   * تایپ‌کردنِ خودِ پراپ، هم کست‌ها را حذف می‌کند و هم اجازه نمی‌دهد
+   * آینده کسی مسیرِ ناموجود به منو اضافه کند.
+   */
+  links: readonly { href: Route; label: string; icon: string }[];
+  anchors?: readonly { href: Route; label: string }[];
 }) {
   const [open, setOpen] = useState(false);
   /**
@@ -206,7 +215,7 @@ export function MobileMenu({
                   {/* خانه — تمام‌عرض */}
                   {home ? (
                     <Link
-                      href={home.href as "/"}
+                      href={home.href}
                       onClick={close}
                       className="border-brand/25 bg-brand/[0.07] text-brand hover:bg-brand/[0.12] flex items-center gap-2.5 rounded-xl border px-3.5 py-3 text-[14px] font-extrabold transition-colors"
                     >
@@ -222,7 +231,7 @@ export function MobileMenu({
                     {rest.map((n) => (
                       <li key={n.href}>
                         <Link
-                          href={n.href as "/"}
+                          href={n.href}
                           onClick={close}
                           className="border-border bg-canvas/60 text-text hover:border-brand/35 flex items-center gap-2 rounded-xl border px-3 py-2.5 text-[12.5px] font-bold transition-colors"
                         >
@@ -245,7 +254,7 @@ export function MobileMenu({
                         {anchors.map((n) => (
                           <li key={n.href}>
                             <Link
-                              href={n.href as "/"}
+                              href={n.href}
                               onClick={close}
                               className="text-text-muted hover:text-text flex items-center gap-2 rounded-lg px-1 py-2 text-[12.5px] font-semibold transition-colors"
                             >
