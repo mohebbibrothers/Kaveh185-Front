@@ -42,7 +42,9 @@ export function SiteHeader() {
             <Logo size={38} />
           </span>
           <span className="flex flex-col leading-tight">
-            <span className="text-text text-[15px] font-extrabold tracking-tight">{SITE.name}</span>
+            <span className="text-text text-[14px] font-extrabold tracking-tight whitespace-nowrap min-[380px]:text-[15px]">
+              {SITE.name}
+            </span>
             <span className="text-text-subtle hidden text-[10.5px] font-medium sm:block">
               مسابقهٔ کتاب‌خوانی هفتهٔ بسیج
             </span>
@@ -63,11 +65,18 @@ export function SiteHeader() {
           >
             ورود
           </Link>
+          {/*
+            ⚠️ در ۳۲۰px این دکمه به دو خط می‌شکست و هدر را بلند می‌کرد
+            (در تست واقعیِ ۳۲۰px دیده شد). حالا زیر ۳۸۰px متنِ کوتاه
+            «ثبت‌نام» نشان می‌دهد و از ۳۸۰px به بالا متنِ کامل؛ دو span،
+            یک دکمه — بدون منطق JS و بدون پرشِ چیدمان.
+          */}
           <Link
             href="/register"
-            className="bg-brand text-on-brand hover:bg-brand-hover inline-flex h-9 items-center rounded-lg px-4 text-[13px] font-bold shadow-[0_1px_0_oklch(100%_0_0/0.14)_inset] transition-colors"
+            className="bg-brand text-on-brand hover:bg-brand-hover inline-flex h-9 shrink-0 items-center rounded-lg px-3 text-[12.5px] font-bold whitespace-nowrap shadow-[0_1px_0_oklch(100%_0_0/0.14)_inset] transition-colors min-[380px]:px-4 min-[380px]:text-[13px]"
           >
-            ثبت‌نام و شرکت
+            <span className="min-[380px]:hidden">ثبت‌نام</span>
+            <span className="hidden min-[380px]:inline">ثبت‌نام و شرکت</span>
           </Link>
           <MobileMenu links={links} anchors={anchors} />
         </div>
