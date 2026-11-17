@@ -4,6 +4,7 @@ import { Logo } from "@/shared/ui/Logo";
 import { ThemeToggle } from "@/shared/ui/ThemeToggle";
 import { ANCHORS, PRIMARY, SITE } from "@/shared/config/site";
 import { MobileMenu } from "./MobileMenu";
+import { ReadingProgress } from "@/shared/ui/ReadingProgress";
 
 /**
  * هدر سایت — سه ناحیه، یک خط، بی‌شلوغی.
@@ -71,6 +72,11 @@ export function SiteHeader() {
           <MobileMenu links={links} anchors={anchors} />
         </div>
       </div>
+
+      {/* نوار پیشرفت — چسبیده به لبهٔ پایین هدر، «زیر منوی افقی بالا».
+          `dir` لازم نیست: عرضِ نوار با direction صفحه هم‌جهت است و مبدأ در
+          RTL خودکار سمت راست می‌شود. */}
+      <ReadingProgress />
     </header>
   );
 }

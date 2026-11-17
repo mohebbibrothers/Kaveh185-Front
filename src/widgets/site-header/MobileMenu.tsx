@@ -1,135 +1,278 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import type { Route } from "next";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
+import { NavIcon } from "./NavLink";
 
 /**
- * منوی موبایل.
+ * منوی موبایل — **برگهٔ پایین‌کشویی** (Bottom Sheet)، نه یک جعبهٔ بازشو.
  *
- * چرا نسخهٔ قبلی نداشت؟ ناوبری با `hidden lg:flex` پنهان می‌شد و هیچ جانشینی
- * نبود — کاربر موبایل (که اکثریت مخاطب این مسابقه است) نمی‌توانست به قوانین،
- * جدول مساجد یا بخش‌های صفحه برسد. این کامپوننت آن شکاف را پر می‌کند.
+ * ── ایرادی که کاربر دید ─────────────────────────────────────────────────
+ * نسخهٔ قبل یک `div` سفید بود که از زیر هدر باز می‌شد. ایرادهای واقعی:
+ *   • **محل باز شدن** غلط بود: برگه از بالا می‌آمد ولی انگشتِ کاربر روی
+ *     آیکونِ راستِ بالا بود و چشمش پایینِ صفحه — حرکتِ عمودی برخلاف مسیرِ
+ *     طبیعیِ دست روی موبایل.
+ *   • **شکل** نداشت: مستطیلی با گوشهٔ ۱۲px و ردیف‌های متنی؛ نه نشانگر
+ *     کشیدن، نه گروه‌بندی، نه آیکون.
+ *   • **بسته‌شدن** فقط با کلیک روی پس‌زمینه بود و دکمهٔ بستنِ دیداری نداشت.
  *
- * دسترس‌پذیری: aria-expanded، aria-controls، بستن با Escape، قفل اسکرول
- * هنگام باز بودن، و بستن خودکار با تغییر مسیر.
+ * ── طرح ─────────────────────────────────────────────────────────────────
+ * برگه از **پایین** می‌آید (۲۸۰ms)، پشتش لایهٔ تیره با محوِ کوتاه. داخل:
+ *   • دستگیرهٔ کشیدن، نشانهٔ دیداریِ «می‌شود پایین کشید».
+ *   • «خانه» تمام‌عرض با رنگ برند (پرکاربردترین مقصد).
+ *   • بقیهٔ مقصدها در شبکهٔ دوردیفه با آیکون و برچسب.
+ *   • لنگرهای صفحهٔ اول جدا و کم‌رنگ‌تر.
+ *   • نوار اقدام چسبیده به پایین: «ثبت‌نام و شرکت» + «ورود».
+ *
+ * ── ⚠️ درسی که گران تمام شد: چرا پورتال؟ ──────────────────────────────────
+ * هدر `sticky` + `backdrop-blur-xl` دارد. در CSS هر عنصری با
+ * `backdrop-filter` (یا `filter`/`transform`) **مبدأِ موقعیت‌یابیِ `fixed`
+ * برای فرزندانش** می‌شود. نتیجه در عمل: برگه که `fixed inset-0` بود، به
+ * کادرِ ۶۵پیکسلیِ هدر مقید می‌شد و فقط یک نوارِ سفید از آن دیده می‌شد
+ * (در تست واقعیِ ۳۹۰px همین اتفاق افتاد). با `createPortal` به `body`،
+ * برگه واقعاً تمام‌صفحه می‌شود و لایهٔ تیره هم درست می‌نشیند.
+ *
+ * ── دسترس‌پذیری ─────────────────────────────────────────────────────────
+ * `role="dialog"` + `aria-modal`، تمرکز به اولین لینک، Escape می‌بندد،
+ * `Tab` داخل برگه می‌چرخد، اسکرول بدنه قفل می‌شود و پس از بستن تمرکز به
+ * همان دکمهٔ همبرگری برمی‌گردد. `env(safe-area-inset-bottom)` برای آیفون.
  */
 export function MobileMenu({
   links,
   anchors = [],
 }: {
-  links: readonly { href: string; label: string }[];
-  anchors?: readonly { href: string; label: string }[];
+  /**
+   * ⚠️ `href` از نوع `Route` است، نه `string`. در این پروژه `typedRoutes`
+   * روشن است و `<Link href>` فقط `Route` می‌پذیرد؛ تایپ‌کردنِ خودِ پراپ
+   * یعنی هیچ‌جا به کستِ `as "/"` نیاز نیست — همان کستی که ESLint روی آن
+   * ایراد گرفت و لینتِ CI را شکست.
+   */
+  links: readonly { href: Route; label: string; icon: string }[];
+  anchors?: readonly { href: Route; label: string }[];
 }) {
   const [open, setOpen] = useState(false);
+  const sheetRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+
+  /**
+   * ⚠️ چرا `useSyncExternalStore` و نه `useEffect + setState`؟
+   * پورتال به `document.body` نیاز دارد و در رندر سمت سرور `document`
+   * وجود ندارد. راهِ رایج `useEffect(() => setMounted(true))` است، ولی
+   * قانون lint پروژه (React Compiler) هر setState همگام در effect را رد
+   * می‌کند. این نسخه همان کار را بدون رندر آبشاری انجام می‌دهد: در سرور
+   * `false`، در کلاینت پس از هیدریشن `true`.
+   */
+  const mounted = useSyncExternalStore(
+    () => () => {
+      /* منبع خارجی‌ای عوض نمی‌شود؛ فقط «کلاینت هست یا نه» را می‌پرسیم */
+    },
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        return;
+      }
+      if (e.key !== "Tab" || !sheetRef.current) return;
+      // حلقهٔ تمرکز: از آخرین عنصر به اولین و برعکس.
+      const focusables = sheetRef.current.querySelectorAll<HTMLElement>(
+        "a[href], button:not([disabled])",
+      );
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (!first || !last) return;
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+
+    // تمرکز به اولین لینک — نه بلافاصله، تا انیمیشن ورود نپرد.
+    const id = window.setTimeout(() => {
+      sheetRef.current?.querySelector<HTMLElement>("a[href], button")?.focus();
+    }, 80);
+
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
+      window.clearTimeout(id);
+      document.body.style.overflow = prevOverflow;
     };
   }, [open]);
+
+  const close = () => {
+    setOpen(false);
+    triggerRef.current?.focus();
+  };
+
+  const home = links.find((l) => l.href === "/");
+  const rest = links.filter((l) => l.href !== "/");
 
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => {
-          setOpen((v) => !v);
+          setOpen(true);
         }}
         aria-expanded={open}
         aria-controls="mobile-nav"
-        aria-label={open ? "بستن منو" : "باز کردن منو"}
+        aria-label="باز کردن منو"
         className="border-border-strong text-text hover:bg-surface-2 grid size-9 place-items-center rounded-md border transition-colors lg:hidden"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          {open ? (
-            <path
-              d="M6 6l12 12M18 6L6 18"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          ) : (
-            <path
-              d="M4 7h16M4 12h16M4 17h16"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          )}
+          <path
+            d="M4 7h16M4 12h16M4 17h16"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
         </svg>
       </button>
 
-      {open && (
-        <div className="fixed inset-0 top-16 z-50 lg:hidden">
-          <button
-            type="button"
-            aria-label="بستن منو"
-            tabIndex={-1}
-            onClick={() => {
-              setOpen(false);
-            }}
-            className="bg-stage/45 absolute inset-0 h-full w-full"
-          />
-          <nav
-            id="mobile-nav"
-            aria-label="ناوبری موبایل"
-            className="bg-surface border-border relative mx-3 mt-2 rounded-xl border p-2 shadow-lg"
-          >
-            {links.map((n) => (
-              <a
-                key={n.href}
-                href={n.href}
-                onClick={() => {
-                  setOpen(false);
-                }}
-                className="text-text hover:bg-surface-2 block rounded-lg px-3 py-3 text-[14px] font-bold transition-colors"
+      {open && mounted
+        ? createPortal(
+            <div className="fixed inset-0 z-50 lg:hidden" role="presentation">
+              {/* پس‌زمینهٔ تیره — کلیک = بستن */}
+              <button
+                type="button"
+                aria-label="بستن منو"
+                tabIndex={-1}
+                onClick={close}
+                className="k185-sheet-backdrop bg-stage/55 absolute inset-0 h-full w-full backdrop-blur-[2px]"
+              />
+
+              <div
+                id="mobile-nav"
+                ref={sheetRef}
+                role="dialog"
+                aria-modal="true"
+                aria-label="منوی سایت"
+                className="k185-sheet bg-surface border-border absolute inset-x-0 bottom-0 rounded-t-[26px] border-t shadow-[0_-18px_50px_-20px_oklch(24%_0.05_260/0.45)]"
+                style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
               >
-                {n.label}
-              </a>
-            ))}
-            {anchors.length > 0 ? (
-              <div className="border-border mt-1 border-t pt-1">
-                <p className="text-text-subtle px-3 pt-2 pb-1 text-[10.5px] font-bold">
-                  بخش‌های صفحهٔ اول
-                </p>
-                {anchors.map((n) => (
-                  <a
-                    key={n.href}
-                    href={n.href}
-                    onClick={() => {
-                      setOpen(false);
-                    }}
-                    className="text-text-muted hover:bg-surface-2 block rounded-lg px-3 py-2.5 text-[13px] font-bold transition-colors"
+                {/*
+                  دستگیرهٔ کشیدن وسط‌چین و مطلق است؛ دکمهٔ بستن **در جریان
+                  چیدمان** می‌نشیند. نسخهٔ اول دکمه را `absolute` گذاشته بود
+                  و روی گوشهٔ ردیف «خانه» می‌افتاد.
+                */}
+                <div className="relative flex items-center px-4 pt-2 pb-1.5">
+                  <span
+                    aria-hidden="true"
+                    className="bg-border-strong/70 absolute top-4 left-1/2 h-1 w-10 -translate-x-1/2 rounded-full"
+                  />
+                  <button
+                    type="button"
+                    onClick={close}
+                    aria-label="بستن منو"
+                    className="border-border-strong text-text-muted hover:bg-surface-2 ms-auto grid size-8 place-items-center rounded-full border transition-colors"
                   >
-                    {n.label}
-                  </a>
-                ))}
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.1"
+                      aria-hidden="true"
+                    >
+                      <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="px-4 pt-2 pb-3">
+                  {/* خانه — تمام‌عرض */}
+                  {home ? (
+                    <Link
+                      href={home.href}
+                      onClick={close}
+                      className="border-brand/25 bg-brand/[0.07] text-brand hover:bg-brand/[0.12] flex items-center gap-2.5 rounded-xl border px-3.5 py-3 text-[14px] font-extrabold transition-colors"
+                    >
+                      <span className="bg-brand text-on-brand grid size-7 place-items-center rounded-lg">
+                        <NavIcon name={home.icon} size={15} />
+                      </span>
+                      {home.label}
+                    </Link>
+                  ) : null}
+
+                  {/* بقیهٔ مقصدها — شبکهٔ دوردیفه */}
+                  <ul className="mt-2 grid grid-cols-2 gap-2">
+                    {rest.map((n) => (
+                      <li key={n.href}>
+                        <Link
+                          href={n.href}
+                          onClick={close}
+                          className="border-border bg-canvas/60 text-text hover:border-brand/35 flex items-center gap-2 rounded-xl border px-3 py-2.5 text-[12.5px] font-bold transition-colors"
+                        >
+                          <span className="text-brand">
+                            <NavIcon name={n.icon} size={15} />
+                          </span>
+                          {n.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* لنگرهای صفحهٔ اول — کم‌رنگ‌تر، چون مقصد اصلی نیستند */}
+                  {anchors.length > 0 ? (
+                    <div className="border-border mt-3.5 border-t pt-2.5">
+                      <p className="text-text-subtle px-1 pb-1 text-[10.5px] font-bold">
+                        بخش‌های صفحهٔ اول
+                      </p>
+                      <ul>
+                        {anchors.map((n) => (
+                          <li key={n.href}>
+                            <Link
+                              href={n.href}
+                              onClick={close}
+                              className="text-text-muted hover:text-text flex items-center gap-2 rounded-lg px-1 py-2 text-[12.5px] font-semibold transition-colors"
+                            >
+                              <span aria-hidden="true" className="bg-border-strong/60 h-px w-2.5" />
+                              {n.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+
+                  {/* نوار اقدام */}
+                  <div className="border-border mt-2 flex items-center gap-2 border-t pt-3">
+                    <Link
+                      href="/register"
+                      onClick={close}
+                      className="bg-brand text-on-brand hover:bg-brand-hover flex h-11 flex-1 items-center justify-center rounded-xl text-[13.5px] font-extrabold transition-colors"
+                    >
+                      ثبت‌نام و شرکت
+                    </Link>
+                    <Link
+                      href="/login"
+                      onClick={close}
+                      className="border-border-strong text-text hover:bg-surface-2 flex h-11 items-center justify-center rounded-xl border px-5 text-[13px] font-bold transition-colors"
+                    >
+                      ورود
+                    </Link>
+                  </div>
+                </div>
               </div>
-            ) : null}
-            <div className="border-border mt-1 border-t pt-1">
-              <Link
-                href="/login"
-                onClick={() => {
-                  setOpen(false);
-                }}
-                className="text-text-muted hover:bg-surface-2 block rounded-lg px-3 py-3 text-[14px] font-bold transition-colors"
-              >
-                ورود
-              </Link>
-              {/* «استعلام کارنامه» عمداً اینجا نیست: «کارنامه» در بالای همین
-                  منو هست و دو لینک با یک مقصد، فقط تردید می‌سازد. */}
-            </div>
-          </nav>
-        </div>
-      )}
+            </div>,
+            document.body,
+          )
+        : null}
     </>
   );
 }

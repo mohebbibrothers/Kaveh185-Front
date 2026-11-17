@@ -174,6 +174,116 @@
     }
   }
 
+  /* ── برگهٔ پایین‌کشویی منو (Bottom Sheet) ──────────────────────────────
+     ورود از پایین، ۲۸۰ms با منحنیِ «کندشروع/تندپایان». لایهٔ تیره با محوِ
+     کوتاه‌تر می‌آید تا حسِ «روی صفحه نشست» بدهد، نه «صفحه عوض شد».
+     ⚠️ هر دو فقط با `no-preference` فعال‌اند؛ با `reduce` برگه بدون حرکت
+     ظاهر می‌شود (وگرنه کاربر حساس به حرکت، پرش می‌بیند). */
+  @keyframes k185-sheet-up {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  @keyframes k185-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .k185-sheet {
+      animation: k185-sheet-up 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .k185-sheet-backdrop {
+      animation: k185-fade-in 200ms ease-out both;
+    }
+  }
+
+  /* ── نوار شهدا: حرکت پیوسته و بی‌درنگ ────────────────────────────────
+     دو نسخه از محتوا پشتِ سر هم تکرار می‌شوند و کل نوار به اندازهٔ نصفِ
+     عرضش جابه‌جا می‌شود؛ در نقطهٔ پایان، نسخهٔ دوم دقیقاً جای نسخهٔ اول
+     است، پس حلقه بی‌دردسر است. مکث روی هاور (دسکتاپ) تا کاربر بتواند یک
+     چهره را بخواند. */
+  @keyframes k185-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(50%);
+    }
+  }
+  .k185-marquee-track {
+    animation: k185-marquee var(--marquee-duration, 46s) linear infinite;
+    will-change: transform;
+  }
+  .k185-marquee:hover .k185-marquee-track,
+  .k185-marquee:focus-within .k185-marquee-track {
+    animation-play-state: paused;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .k185-marquee-track {
+      animation: none;
+    }
+  }
+
+  /* ── پالسِ نرم (کانال رسمی در فوتر) ──────────────────────────────────
+     یک حلقه که آرام بزرگ و محو می‌شود؛ حسِ «زنده بودن» بدون چشمک‌زدن. */
+  @keyframes k185-pulse {
+    0% {
+      transform: scale(1);
+      opacity: 0.55;
+    }
+    70% {
+      transform: scale(1.9);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1.9);
+      opacity: 0;
+    }
+  }
+  .k185-pulse::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: currentColor;
+    animation: k185-pulse 2.8s ease-out infinite;
+    pointer-events: none;
+  }
+
+  /* ── نوار پیشرفتِ مطالعه، چسبیده به لبهٔ پایین هدر ────────────────────
+     ⚠️ `transform: scaleX` است نه `width`: تغییر عرض، چیدمان را در هر
+     فریم دوباره حساب می‌کند؛ transform فقط ترکیب‌بندی می‌شود و روی
+     موبایلِ ضعیف هم ۶۰fps می‌ماند. مبدأ در RTL سمت راست است. */
+  .k185-progress-track {
+    position: relative;
+    height: 2px;
+    overflow: hidden;
+    background: color-mix(in oklab, var(--c-border) 70%, transparent);
+  }
+  .k185-progress-fill {
+    height: 100%;
+    transform-origin: right center;
+    transform: scaleX(var(--k185-progress, 0));
+    background: linear-gradient(
+      to left,
+      var(--c-gold-strong),
+      color-mix(in oklab, var(--c-gold) 55%, var(--c-brand))
+    );
+    transition: transform 120ms linear;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .k185-progress-fill {
+      transition: none;
+    }
+  }
+
   /* متن فقط برای صفحه‌خوان */
   .sr-only {
     position: absolute;
