@@ -61,7 +61,17 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
 
   const cycle = useCallback(() => {
     setMode((current) => {
-      const next: Mode = current === "auto" ? "light" : current === "light" ? "dark" : "auto";
+      /*
+        ⚠️ این‌جا یک باگ واقعی بود که فقط در CI خودش را نشان داد:
+        تا زمانی که تایمرِ `setTimeout(0)` مقدارِ ذخیره‌شده را نخوانده،
+        `current` برابر `null` است. زنجیرهٔ سه‌تاییِ قبلی برای `null` هم
+        «خودکار» می‌داد، یعنی اولین کلیک **هیچ کاری نمی‌کرد** (خودکار →
+        خودکار). روی ماشینِ سریع، تایمر قبل از کلیک اجرا می‌شد و باگ دیده
+        نمی‌شد؛ در CI کندتر بود و تست شکست. حالا `null` صریحاً «خودکار»
+        خوانده می‌شود، پس ترتیبِ چرخه در هر شرایطی ۱۰۰٪ قطعی است.
+      */
+      const normalized: Mode = current ?? "auto";
+      const next: Mode = normalized === "auto" ? "light" : normalized === "light" ? "dark" : "auto";
       applyMode(next);
       try {
         if (next === "auto") localStorage.removeItem(STORAGE_KEY);

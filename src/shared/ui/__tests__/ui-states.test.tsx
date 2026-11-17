@@ -111,6 +111,10 @@ describe("ThemeToggle", () => {
   it("چرخهٔ تم سه‌حالته است: خودکار → روز → شب", async () => {
     render(<ThemeToggle />);
     const button = await waitFor(() => screen.getByRole("button"));
+    // ⚠️ منتظر می‌مانیم تا وضعیت اولیه (خواندن از localStorage) بنشیند.
+    // بدون این انتظار، تست به یک مسابقهٔ زمانی وابسته می‌شد: روی ماشینِ
+    // کند، اولین کلیک پیش از mount کامل می‌افتاد و برچسب «خودکار» می‌ماند.
+    await waitFor(() => expect(button.getAttribute("aria-label")).toContain("خودکار"));
     const labels: string[] = [button.getAttribute("aria-label") ?? ""];
     for (let i = 0; i < 3; i += 1) {
       fireEvent.click(button);
