@@ -22,7 +22,23 @@
  * باید از قبل برای همان دایره ساخته شده باشد.
  */
 
-const EMBLEM_SRC = "/img/emblem.png";
+/**
+ * نشان کامل — **بدون هیچ برشی**.
+ *
+ * ── ایرادِ نسخهٔ قبل (نکتهٔ ۳ کاربر) ────────────────────────────────────
+ * فایل `emblem.png` خودش از پایین بریده بود: روبانِ سه‌رنگ و دعای
+ * «به یاد شهید» نصفه بودند و در هدر و فوتر همان برش دیده می‌شد — کاربر
+ * دقیقاً همین را گفت: «لوگو از پایین کات شده و قسمتی از متن داخل لوگو
+ * بریده». ریشهٔ مشکل در CSS نبود؛ در خودِ فایل بود.
+ *
+ * فایل تازه (`emblem-portrait.jpg`) از تصویر اصلیِ `kaveh-hero.jpg` با
+ * ناحیهٔ وسیع‌تر ساخته شده: طاق کامل، هر دو روبان، دعا و گلبرگ‌ها. نسبت
+ * ۳:۴ است، پس در قابِ مربع با `object-contain` هم نمی‌بریم — فقط دو نوارِ
+ * کرم در دو طرف می‌ماند که با `rounded` و حلقهٔ طلایی، «کادرِ عکس» می‌شود،
+ * نه «برش».
+ */
+const EMBLEM_SRC = "/img/emblem-portrait.jpg";
+const EMBLEM_SM_SRC = "/img/emblem-portrait-sm.jpg";
 const FACE_SRC = "/img/icon-face.png";
 
 function GoldRing({ size }: { size: number }) {
@@ -113,21 +129,23 @@ export function Logo({
   }
 
   if (variant === "emblem") {
+    // نسبت واقعی تصویر ۳:۴ است؛ اگر قاب مربع بماند، `contain` دو نوار
+    // خالی می‌گذارد و نشان کوچک می‌شود. پس خودِ قاب هم ۳:۴ است.
+    const width = Math.round(size * 0.75);
+    const height = size;
     return (
       <span
-        className={`relative inline-grid shrink-0 place-items-center ${className}`}
-        style={{ width: size, height: size }}
+        className={`ring-gold/30 relative inline-grid shrink-0 place-items-center overflow-hidden rounded-[26%] shadow-[0_2px_10px_-4px_oklch(28%_0.06_260/0.35)] ring-1 ${className}`}
+        style={{ width, height }}
       >
-        {/* شمسهٔ کامل: تاج و پرچم دست‌نخورده، بدون برش دایره‌ای */}
-        {/* eslint-disable-next-line @next/next/no-img-element -- PNG شفاف با
-            ابعاد ثابت؛ next/image برای این اندازه فقط لایهٔ resize اضافه
-            می‌کند و تصویر را دوباره بهینه نمی‌کند. */}
+        {/* eslint-disable-next-line @next/next/no-img-element -- تصویر ثابت با
+            ابعاد مشخص؛ next/image برای ۳۰px فقط یک لایهٔ resize اضافه می‌کند. */}
         <img
-          src={EMBLEM_SRC}
+          src={size <= 48 ? EMBLEM_SM_SRC : EMBLEM_SRC}
           alt=""
-          width={size}
-          height={size}
-          className="size-full object-contain drop-shadow-[0_2px_6px_rgba(20,26,48,0.18)]"
+          width={width}
+          height={height}
+          className="size-full object-cover object-center"
           decoding="async"
         />
       </span>

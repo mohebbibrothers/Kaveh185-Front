@@ -3,7 +3,6 @@
 import { SiteHeader } from "@/widgets/site-header/SiteHeader";
 import { SiteFooter } from "@/widgets/site-footer/SiteFooter";
 import { Hero } from "@/widgets/hero/Hero";
-import { ScrollProgress } from "@/shared/ui/ScrollProgress";
 import { useLiveBootstrap } from "@/shared/api/live";
 import { DataContext } from "@/shared/api/data-context";
 import type { Bootstrap } from "@/shared/api/landing";
@@ -18,6 +17,11 @@ import type { Bootstrap } from "@/shared/api/landing";
  * سقف پروژه ۱۹۰KB است. برای کاربر ایرانی روی موبایل این تفاوت بین «دو
  * ثانیه» و «شش ثانیه» است — و کاربر دقیقاً همان لحظه تصمیم می‌گیرد بماند
  * یا برود.
+ *
+ * ⚠️ نوار پیشرفتِ مطالعه از این‌جا حذف شد: اکنون **داخل هدر** و چسبیده به
+ * لبهٔ پایینیِ منوی افقی رندر می‌شود (`ReadingProgress` در `SiteHeader`)،
+ * همان جایی که در سایت مهدیه دیده شد. نسخهٔ قبل آن را `fixed top-0` بالای
+ * هدر می‌گذاشت و از هدر جدا به نظر می‌رسید.
  *
  * حالا:
  *   • این فایل (هدر + هیرو + فوتر) در HTML پیش‌رندر می‌شود؛ کاربر اول
@@ -44,7 +48,6 @@ export function LandingShell({
 
   return (
     <DataContext.Provider value={{ data, freshness, lastOk }}>
-      <ScrollProgress />
       <SiteHeader />
       <main id="main">
         <Hero status={data.exam_status} serverNow={data.server_time} />

@@ -79,12 +79,48 @@ export const leaderboardSchema = z.object({
   leaderboard: z.array(leaderboardEntrySchema),
 });
 
+/**
+ * گالری محتوایی — تصاویر رهبر انقلاب و نوار شهدا.
+ *
+ * ── چرا `default([])` روی هر دو آرایه؟ ────────────────────────────────────
+ * نسخهٔ فعلی بک‌اند `gallery` را ندارد و ممکن است نسخهٔ فرانت زودتر از بک
+ * مستقر شود (مهاجرت‌ها همیشه بعد از بیلد انجام می‌شوند). با `default([])`،
+ * نبودِ کلید فقط یعنی «گالری خالی است» — صفحه می‌آید، بخش‌ها پنهان
+ * می‌مانند، هیچ خطای سفید‌صفحه‌ای رخ نمی‌دهد. این همان اصل صداقت است:
+ * داده نیست ⇒ بخش نیست، نه دادهٔ ساختگی.
+ */
+export const leaderPortraitSchema = z.object({
+  id: z.number().optional(),
+  image_url: z.string(),
+  alt: z.string().default(""),
+  caption: z.string().default(""),
+  caption_paragraphs: z.array(z.string()).default([]),
+  source: z.string().default(""),
+  show_in_box: z.boolean().default(true),
+  order: z.number().default(0),
+});
+
+export const martyrSchema = z.object({
+  id: z.number().optional(),
+  image_url: z.string(),
+  title: z.string(),
+  subtitle: z.string().default(""),
+  alt: z.string().default(""),
+  order: z.number().default(0),
+});
+
+export const gallerySchema = z.object({
+  leader: z.array(leaderPortraitSchema).default([]),
+  martyrs: z.array(martyrSchema).default([]),
+});
+
 export const bootstrapSchema = z.object({
   server_time: z.string(),
   server_time_jalali: z.string(),
   exam_status: examStatusSchema,
   mosques: z.array(mosqueSchema),
   leaderboard: leaderboardSchema,
+  gallery: gallerySchema.default({ leader: [], martyrs: [] }),
 });
 
 export type Bootstrap = z.infer<typeof bootstrapSchema>;
@@ -93,3 +129,6 @@ export type Mosque = z.infer<typeof mosqueSchema>;
 export type Leaderboard = z.infer<typeof leaderboardSchema>;
 export type LeaderboardEntry = z.infer<typeof leaderboardEntrySchema>;
 export type CommunicationChannel = z.infer<typeof communicationChannelSchema>;
+export type Gallery = z.infer<typeof gallerySchema>;
+export type LeaderPortrait = z.infer<typeof leaderPortraitSchema>;
+export type Martyr = z.infer<typeof martyrSchema>;

@@ -25,6 +25,9 @@ export const FALLBACK_BOOTSTRAP: Bootstrap = {
   server_time: "1970-01-01T00:00:00+00:00",
   server_time_jalali: "—",
   mosques: [],
+  // گالری در خروجیِ ایستا خالی است — همان قانون «هیچ دادهٔ ساختگی».
+  // تصاویر فقط از پاسخ زندهٔ بootstrap می‌آیند.
+  gallery: { leader: [], martyrs: [] },
   exam_status: {
     title: "مسابقهٔ کتابخوانی هفتهٔ بسیج",
     book_title: "شهادت آیه‌ها (۲)",

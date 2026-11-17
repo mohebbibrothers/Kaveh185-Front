@@ -2,6 +2,7 @@
 
 import { createContext, useContext } from "react";
 import type { Bootstrap } from "./landing";
+import { FALLBACK_BOOTSTRAP } from "./fallback";
 import type { DataFreshness } from "./bootstrap";
 
 /**
@@ -22,7 +23,20 @@ export interface DataContextValue {
 
 export const DataContext = createContext<DataContextValue | null>(null);
 
-/** دادهٔ جاری؛ اگر provider نبود همان مقدار اولیه‌ای که داده شده. */
-export function useData(fallback: DataContextValue): DataContextValue {
-  return useContext(DataContext) ?? fallback;
+/**
+ * دادهٔ جاری؛ اگر provider نبود همان مقدار اولیه‌ای که داده شده.
+ *
+ * پارامتر `fallback` اختیاری است: بعضی بخش‌ها (مثل گالری) خارج از provider
+ * هم رندر می‌شوند (در تست یا در صفحه‌های دیگر) و باید به‌جای کرش، پوستهٔ
+ * خالی بگیرند.
+ */
+export function useData(fallback?: DataContextValue): DataContextValue {
+  const ctx = useContext(DataContext);
+  if (ctx) return ctx;
+  if (fallback) return fallback;
+  return {
+    data: FALLBACK_BOOTSTRAP,
+    freshness: "shell",
+    lastOk: FALLBACK_BOOTSTRAP.server_time,
+  };
 }

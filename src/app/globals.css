@@ -109,6 +109,59 @@
     display: inline-block;
   }
 
+  /* ── رقم‌های شمارنده ────────────────────────────────────────────────
+     «جذابیتِ فونت» بدون عوض‌کردنِ فونت: وزن، عرضِ ثابت، فاصلهٔ حروف و
+     یک پرشِ کوتاهِ فقط-روی-رقمِ-عوض‌شده. `font-feature-settings` را عمداً
+     دست نمی‌زنیم (در `body` توضیح داده شده چرا). */
+  .k185-num {
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings:
+      "tnum" 1,
+      "lnum" 1;
+    letter-spacing: -0.02em;
+    font-weight: 900;
+  }
+  .k185-digit-in {
+    animation: k185-digit-in var(--dur-base) var(--ease-decelerate) both;
+    display: inline-block;
+    will-change: transform, opacity;
+  }
+  @keyframes k185-digit-in {
+    from {
+      opacity: 0.25;
+      transform: translateY(-38%) scale(0.94);
+      filter: blur(0.4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+  }
+
+  /* ── گالری: نوارِ زمان و ورودِ کلام ──────────────────────────────────
+     نوارِ زمان می‌گوید «چقدر مانده تا تصویر بعد»؛ بدون آن، پرشِ تصویر
+     غافلگیرکننده است. کلام هم با هر اسلاید آرام می‌آید تا چشم بفهمد
+     متن عوض شده. */
+  @keyframes k185-slide-progress {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes k185-quote-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   /* ── کاشی لاجوردی: پس‌زمینهٔ محرابی هیرو ───────────────────────────── */
   .k185-tile-bg {
     background-image:
@@ -172,6 +225,198 @@
       transform: translateY(-3px);
       box-shadow: 0 26px 56px -30px oklch(28% 0.06 260 / 0.5);
     }
+  }
+
+  /* ── برگهٔ پایین موبایل ──────────────────────────────────────────────
+     ورق از پایین بالا می‌آید و هر ردیف با تأخیرِ ۳۶ms ظاهر می‌شود — همان
+     حسِ «یکی‌یکی می‌نشیند» که منو را زنده می‌کند، بی‌آنکه کسی منتظر بماند.
+     `dvh` برای موبایل‌هایی که نوار آدرس‌شان جمع/باز می‌شود. */
+  @keyframes k185-sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  @keyframes k185-scrim-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes k185-sheet-item-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .k185-sheet {
+      animation: k185-sheet-in var(--dur-slow) var(--ease-decelerate) both;
+    }
+    .k185-scrim {
+      animation: k185-scrim-in var(--dur-base) linear both;
+    }
+    .k185-sheet-item {
+      animation: k185-sheet-item-in 320ms var(--ease-decelerate) both;
+    }
+  }
+
+  /* ── نوارِ گردانِ شهدا ────────────────────────────────────────────────
+     ردیف سه‌بار تکرار می‌شود؛ حرکت تا یک‌سومِ عرض و بازگشتِ بی‌درز. چون
+     `translate` روی لایهٔ کامپوزیت است، هیچ layout‌ای در هر فریم رخ
+     نمی‌دهد. `animation-play-state` با هاور روی کلِ ردیف متوقفش می‌کند. */
+  @keyframes k185-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(33.3333%);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .k185-marquee {
+      animation-name: k185-marquee;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+      will-change: transform;
+    }
+    .k185-marquee:hover,
+    .k185-marquee:focus-within {
+      animation-play-state: paused;
+    }
+  }
+
+  /* ── فوتر: پویانماییِ واقعی، نه تزئینی ────────────────────────────────
+     ستون‌ها با تأخیرِ پله‌ای بالا می‌آیند، لینک‌ها خطِ طلاییِ زیرین می‌گیرند
+     و کارتِ کانال (پالس + تکانِ آیکون + درخششِ لغزنده) زنده می‌شود.
+     همه‌چیز با `transform`/`opacity` است؛ هیچ layout‌ای نمی‌شکند. */
+  @keyframes k185-footer-col-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .k185-footer-col {
+      animation: k185-footer-col-in 620ms var(--ease-decelerate) both;
+    }
+  }
+
+  /* خطِ زیرینِ طلایی که از راست رشد می‌کند */
+  .k185-footer-link-text::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: -2px;
+    height: 1px;
+    background: linear-gradient(to left, var(--c-gold), transparent);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--dur-slow) var(--ease-standard);
+  }
+  .k185-footer-link:hover .k185-footer-link-text::after {
+    transform: scaleX(1);
+  }
+
+  /* پالسِ دوگانهٔ کارتِ کانال */
+  @keyframes k185-pulse-ring {
+    0% {
+      opacity: 0.55;
+      transform: scale(0.86);
+    }
+    70% {
+      opacity: 0;
+      transform: scale(1.5);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.5);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .k185-channel:hover .k185-pulse-ring,
+    .k185-channel:focus-visible .k185-pulse-ring {
+      animation: k185-pulse-ring 1900ms var(--ease-decelerate) infinite;
+    }
+    .k185-channel:hover .k185-pulse-ring-2,
+    .k185-channel:focus-visible .k185-pulse-ring-2 {
+      animation-delay: 520ms;
+    }
+
+    /* تکانِ آیکونِ بله — «سلام‌کردن» */
+    @keyframes k185-bell-wave {
+      0%,
+      55%,
+      100% {
+        transform: rotate(0deg);
+      }
+      10% {
+        transform: rotate(-13deg);
+      }
+      22% {
+        transform: rotate(11deg);
+      }
+      34% {
+        transform: rotate(-7deg);
+      }
+      46% {
+        transform: rotate(4deg);
+      }
+    }
+    .k185-channel:hover .k185-bell,
+    .k185-channel:focus-visible .k185-bell {
+      animation: k185-bell-wave 1200ms var(--ease-standard) 1;
+    }
+
+    /* درخششِ لغزنده */
+    @keyframes k185-sheen {
+      0% {
+        transform: translateX(-40%) skewX(-12deg);
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateX(420%) skewX(-12deg);
+        opacity: 0;
+      }
+    }
+    .k185-channel:hover .k185-channel-sheen,
+    .k185-channel:focus-visible .k185-channel-sheen {
+      animation: k185-sheen 1100ms var(--ease-standard) 1;
+    }
+
+    /* فلشِ رفتن */
+    .k185-channel:hover .k185-channel-arrow {
+      transform: translateX(-3px);
+    }
+    .k185-channel-arrow {
+      transition:
+        transform var(--dur-slow) var(--ease-standard),
+        color var(--dur-base),
+        border-color var(--dur-base);
+    }
+  }
+
+  /* دو خط و نه بیشتر — برای عنوان‌های نوار شهدا */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   /* متن فقط برای صفحه‌خوان */

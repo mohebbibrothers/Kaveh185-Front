@@ -1,6 +1,7 @@
 "use client";
 
 import { ReadingSection } from "@/widgets/landing/ReadingSection";
+import { MartyrsMarquee } from "@/widgets/landing/MartyrsMarquee";
 import { HowItWorks } from "@/widgets/how-it-works/HowItWorks";
 import { SectionTitle } from "@/shared/ui/Ornament";
 import { FreshnessLine } from "@/shared/ui/FreshnessLine";
@@ -16,9 +17,15 @@ import type { Bootstrap } from "@/shared/api/landing";
  *
  *   هیرو            «این چیست، تا کِی، از کجا شروع کنم؟»
  *   ۰۱ سه گام        «چه کاری باید بکنم؟»
- *   —  کتاب + کلام   «چه بخوانم و چرا؟»
- *   ۰۲ دربارهٔ مسابقه «چه رویدادی است، کِی، برگزارکننده کیست؟»
+ *   ۰۲ کتاب + کلام   «چه بخوانم و چرا؟» (با گالریِ تصاویر رهبر)
+ *   ۰۳ دربارهٔ مسابقه «چه رویدادی است، کِی، برگزارکننده کیست؟»
+ *   نوارِ شهدا      «به نامِ چه کسانی» — یادِ شهیدان، بالای فوتر
  *   فوتر
+ *
+ * ⚠️ نوار شهدا **بیرونِ** این `div` بسته‌بندی می‌شود؟ نه — داخلش است ولی
+ * تمام‌عرض: خودش `mx-auto max-w-6xl` ندارد و پس‌زمینهٔ لاجوردی‌اش را از
+ * لبه تا لبه می‌گیرد. برای همین در انتهای همین فایل، بعد از `</div>`
+ * رندر می‌شود.
  *
  * ── چرا صفحه این‌قدر کوتاه شد؟ ────────────────────────────────────────────
  * این نوبت، سه بخشِ کامل حذف شد به درخواست کاربر:
@@ -46,71 +53,82 @@ export function LandingSections({ initial }: { initial: Bootstrap }) {
   const status = data.exam_status;
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-      <HowItWorks status={status} />
+    <>
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+        <HowItWorks status={status} />
 
-      <ReadingSection bookStories={SITE.bookStories} />
+        <ReadingSection bookStories={SITE.bookStories} />
 
-      {/* ── دربارهٔ مسابقه ──
-          کوتاه و انسانی: یک پاراگراف «چرا» + یک ردیف «چه/کِی/کجا».
-          بازه از دادهٔ زنده می‌آید؛ پیش از رسیدن آن «در حال دریافت…». */}
-      <section id="about" aria-labelledby="about-title" className="k185-reveal mt-14 scroll-mt-24">
-        <SectionTitle
-          id="about-title"
-          eyebrow="دربارهٔ مسابقه"
-          title="مسابقه‌ای که از مسجد شروع می‌شود"
-          index="۰۲"
-        />
-        <div className="border-border bg-surface relative overflow-hidden rounded-2xl border p-5 sm:p-6">
-          <div
-            aria-hidden="true"
-            className="k185-girih-veil pointer-events-none absolute inset-y-0 left-0 hidden w-[52%] opacity-[0.16] lg:block"
+        {/* ── دربارهٔ مسابقه ──
+            کوتاه و انسانی: یک پاراگراف «چرا» + یک ردیف «چه/کِی/کجا».
+            بازه از دادهٔ زنده می‌آید؛ پیش از رسیدن آن «در حال دریافت…». */}
+        <section
+          id="about"
+          aria-labelledby="about-title"
+          className="k185-reveal mt-14 scroll-mt-24"
+        >
+          <SectionTitle
+            id="about-title"
+            eyebrow="دربارهٔ مسابقه"
+            title="مسابقه‌ای که از مسجد شروع می‌شود"
+            index="۰۳"
           />
-          <p className="text-text-muted relative max-w-[46rem] text-[13.5px] leading-[2.1] sm:text-[14px]">
-            هفتهٔ بسیج هر سال فرصتی است برای برگشتن به مسجد و محله. این مسابقه همان فرصت را به یک
-            کتاب کوتاه و چند پرسش ساده تبدیل کرده است: هر شرکت‌کننده مسجد خودش را انتخاب می‌کند و
-            نتیجه به نام همان مسجد ثبت می‌شود. جایزه‌ای جای مطالعه را نمی‌گیرد؛ اما مطالعهٔ مشترک،
-            محله را به هم نزدیک‌تر می‌کند.
-          </p>
-
-          <dl className="border-border relative mt-5 grid gap-x-6 gap-y-4 border-t pt-4 text-[12.5px] sm:grid-cols-3">
-            <div>
-              <dt className="text-text-subtle">کتاب مسابقه</dt>
-              <dd className="text-text mt-0.5 font-bold">{status.book_title || SITE.bookTitle}</dd>
-            </div>
-            <div>
-              <dt className="text-text-subtle">بازهٔ مسابقه</dt>
-              <dd className="text-text mt-0.5 font-bold tabular-nums">
-                {status.starts_at_jalali && status.ends_at_jalali
-                  ? `${faJalali(status.starts_at_jalali)} — ${faJalali(status.ends_at_jalali)}`
-                  : "در حال دریافت…"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-text-subtle">برگزارکننده</dt>
-              <dd className="text-text mt-0.5 font-bold">
-                {status.organizer_name || SITE.organizer}
-              </dd>
-            </div>
-          </dl>
-
-          <div className="border-border relative mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3.5">
-            <p className="text-text-subtle text-[11px] leading-6">
-              اطلاع‌رسانی رسمی فقط در{" "}
-              <a
-                href={SITE.channel.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-brand font-bold hover:underline"
-              >
-                {SITE.channel.name}
-              </a>{" "}
-              در پیام‌رسان {SITE.channel.platform}.
+          <div className="border-border bg-surface relative overflow-hidden rounded-2xl border p-5 sm:p-6">
+            <div
+              aria-hidden="true"
+              className="k185-girih-veil pointer-events-none absolute inset-y-0 left-0 hidden w-[52%] opacity-[0.16] lg:block"
+            />
+            <p className="text-text-muted relative max-w-[46rem] text-[13.5px] leading-[2.1] sm:text-[14px]">
+              هفتهٔ بسیج هر سال فرصتی است برای برگشتن به مسجد و محله. این مسابقه همان فرصت را به یک
+              کتاب کوتاه و چند پرسش ساده تبدیل کرده است: هر شرکت‌کننده مسجد خودش را انتخاب می‌کند و
+              نتیجه به نام همان مسجد ثبت می‌شود. جایزه‌ای جای مطالعه را نمی‌گیرد؛ اما مطالعهٔ مشترک،
+              محله را به هم نزدیک‌تر می‌کند.
             </p>
-            <FreshnessLine freshness={freshness} lastOk={lastOk} />
+
+            <dl className="border-border relative mt-5 grid gap-x-6 gap-y-4 border-t pt-4 text-[12.5px] sm:grid-cols-3">
+              <div>
+                <dt className="text-text-subtle">کتاب مسابقه</dt>
+                <dd className="text-text mt-0.5 font-bold">
+                  {status.book_title || SITE.bookTitle}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-text-subtle">بازهٔ مسابقه</dt>
+                <dd className="text-text mt-0.5 font-bold tabular-nums">
+                  {status.starts_at_jalali && status.ends_at_jalali
+                    ? `${faJalali(status.starts_at_jalali)} — ${faJalali(status.ends_at_jalali)}`
+                    : "در حال دریافت…"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-text-subtle">برگزارکننده</dt>
+                <dd className="text-text mt-0.5 font-bold">
+                  {status.organizer_name || SITE.organizer}
+                </dd>
+              </div>
+            </dl>
+
+            <div className="border-border relative mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3.5">
+              <p className="text-text-subtle text-[11px] leading-6">
+                اطلاع‌رسانی رسمی فقط در{" "}
+                <a
+                  href={SITE.channel.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand font-bold hover:underline"
+                >
+                  {SITE.channel.name}
+                </a>{" "}
+                در پیام‌رسان {SITE.channel.platform}.
+              </p>
+              <FreshnessLine freshness={freshness} lastOk={lastOk} />
+            </div>
           </div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
+
+      {/* نوارِ شهدا — تمام‌عرض، بالای فوتر، بیرون از قالبِ max-w */}
+      <MartyrsMarquee items={data.gallery.martyrs} />
+    </>
   );
 }
