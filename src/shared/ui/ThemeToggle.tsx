@@ -61,17 +61,7 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
 
   const cycle = useCallback(() => {
     setMode((current) => {
-      /*
-        ⚠️ این‌جا یک باگ واقعی بود که فقط در CI خودش را نشان داد:
-        تا زمانی که تایمرِ `setTimeout(0)` مقدارِ ذخیره‌شده را نخوانده،
-        `current` برابر `null` است. زنجیرهٔ سه‌تاییِ قبلی برای `null` هم
-        «خودکار» می‌داد، یعنی اولین کلیک **هیچ کاری نمی‌کرد** (خودکار →
-        خودکار). روی ماشینِ سریع، تایمر قبل از کلیک اجرا می‌شد و باگ دیده
-        نمی‌شد؛ در CI کندتر بود و تست شکست. حالا `null` صریحاً «خودکار»
-        خوانده می‌شود، پس ترتیبِ چرخه در هر شرایطی ۱۰۰٪ قطعی است.
-      */
-      const normalized: Mode = current ?? "auto";
-      const next: Mode = normalized === "auto" ? "light" : normalized === "light" ? "dark" : "auto";
+      const next: Mode = current === "auto" ? "light" : current === "light" ? "dark" : "auto";
       applyMode(next);
       try {
         if (next === "auto") localStorage.removeItem(STORAGE_KEY);
@@ -86,121 +76,66 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
   const label =
     mode === "auto" ? "تم: خودکار (هماهنگ با سیستم)" : mode === "light" ? "تم: روز" : "تم: شب";
 
-  /**
-   * ── فرمِ کلید: «سوییچ لغزنده» با یک دکمهٔ نامرئیِ رویش ────────────────
-   * نمونهٔ موردپسند کاربر (سایت مهدیه) دقیقاً همین است: یک کپسولِ کوچک با
-   * دو آیکون (خورشید/ماه) که یک گویِ سفید بین‌شان می‌لغزد. سه حالت داریم،
-   * پس گوی سه جای نشستن دارد: راست = خودکار، وسط = روز، چپ = شب.
-   *
-   * ⚠️ چرا **یک** دکمه و نه سه؟ قاعدهٔ a11y پروژه: هر ناحیه فقط یک کنترلِ
-   * قابل‌تمرکز. دکمهٔ واقعی، تمام‌سطح و نامرئی است (`opacity-0`)؛ آیکون‌ها
-   * و گوی فقط `span` تزئینی‌اند. نتیجه: تبل‌یک بار روی کلید می‌ایستد،
-   * برچسبِ کامل هم همان‌جاست، و تستِ `ui-states` هم (که فقط یک button در
-   * این ناحیه می‌پذیرد) نمی‌شکند.
-   *
-   * ⚠️ تا هیدریشن `mode === null` است. در آن حالت گوی در جای «خودکار»
-   * می‌نشیند و آیکون‌ها خاکستری‌اند؛ هیچ‌چیزِ گمراه‌کننده‌ای نشان داده
-   * نمی‌شود و چیدمان هم نمی‌پرد (عرض/ارتفاع ثابت است).
-   */
-  const position = mode === "light" ? 1 : mode === "dark" ? 2 : 0;
-
   return (
-    <span className="relative inline-grid shrink-0 place-items-center">
-      {/* کپسول: قابِ دیداری */}
-      <span
-        aria-hidden="true"
-        className={`border-border-strong bg-surface-2/70 relative grid grid-flow-col items-center rounded-full border ${
-          compact ? "h-8 gap-0 px-1" : "h-9 gap-1 px-1.5"
-        }`}
-      >
-        {/* سه جای آیکون: خودکار، روز، شب — از راست به چپ (RTL) */}
-        {[
-          /* خودکار */
+    <button
+      type="button"
+      onClick={cycle}
+      aria-label={`${label} — برای تغییر کلیک کنید`}
+      title={label}
+      className={`border-border-strong text-text-muted hover:bg-surface-2 hover:text-text focus-visible:ring-focus/60 grid shrink-0 place-items-center rounded-md border transition-colors focus-visible:ring-2 ${
+        compact ? "size-9" : "h-9 gap-2 px-3"
+      }`}
+    >
+      {/* آیکون: خورشید / ماه / خودکار. تا هیدریشن، جای خالی با همان ابعاد
+          تا چیدمان نپرد. */}
+      <span aria-hidden="true" className="grid size-[18px] place-items-center">
+        {mode === null ? null : mode === "light" ? (
           <svg
-            key="auto"
             viewBox="0 0 24 24"
-            width="14"
-            height="14"
+            width="17"
+            height="17"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.7"
           >
-            <rect x="3" y="5" width="18" height="12.5" rx="2" />
-            <path d="M8.5 21h7M12 17.5V21" strokeLinecap="round" />
-            <path d="M12 5v12.5" strokeLinecap="round" opacity=".4" />
-          </svg>,
-          /* روز */
-          <svg
-            key="sun"
-            viewBox="0 0 24 24"
-            width="14"
-            height="14"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-          >
-            <circle cx="12" cy="12" r="3.8" />
+            <circle cx="12" cy="12" r="4.2" />
             <path
-              d="M12 3v2.1M12 18.9V21M3 12h2.1M18.9 12H21M5.6 5.6l1.5 1.5M16.9 16.9l1.5 1.5M18.4 5.6l-1.5 1.5M7.1 16.9l-1.5 1.5"
+              d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4L17 7M7 17l-1.6 1.6"
               strokeLinecap="round"
             />
-          </svg>,
-          /* شب */
+          </svg>
+        ) : mode === "dark" ? (
           <svg
-            key="moon"
             viewBox="0 0 24 24"
-            width="14"
-            height="14"
+            width="17"
+            height="17"
             fill="none"
             stroke="currentColor"
-            strokeWidth="1.8"
+            strokeWidth="1.7"
           >
             <path
               d="M20 14.2A8.4 8.4 0 0 1 9.8 4a8.6 8.6 0 1 0 10.2 10.2Z"
               strokeLinejoin="round"
             />
-          </svg>,
-        ].map((icon, i) => (
-          <span
-            key={i}
-            className={`grid place-items-center transition-colors ${
-              compact ? "size-6" : "size-7"
-            } ${position === i ? "text-text" : "text-text-subtle/70"}`}
+          </svg>
+        ) : (
+          <svg
+            viewBox="0 0 24 24"
+            width="17"
+            height="17"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
           >
-            {icon}
-          </span>
-        ))}
-
-        {/*
-          گویِ لغزنده — `insetInlineStart` است نه `left`؛ در RTL خودکار از
-          راست حساب می‌شود و اگر روزی جهت صفحه عوض شد، کلید نمی‌شکند.
-          مقادیر با درصد نسبت به پهنای کپسول: سه خانهٔ مساوی.
-        */}
-        {/*
-          گویِ لغزنده — با `insetInlineStart` و درصد، نه `left` و پیکسل:
-          در RTL خودکار از راست حساب می‌شود و کلید هیچ‌وقت جابه‌جا نمی‌شود.
-        */}
-        <span
-          className="bg-surface ring-border/70 pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-full shadow-[0_1px_3px_-1px_oklch(24%_0.05_260/0.35)] ring-1 transition-[inset-inline-start] duration-300 ease-out"
-          style={{
-            // سه خانهٔ مساوی: ۰٪ / ۵۰٪ / ۱۰۰٪ منهای پهنای گوی و حاشیهٔ کپسول
-            insetInlineStart: `calc(${position * 50}% - ${position * (compact ? 1.5 : 1.75)}rem + ${
-              compact ? 0.25 : 0.375
-            }rem)`,
-            width: compact ? "1.5rem" : "1.75rem",
-            height: compact ? "1.5rem" : "1.75rem",
-          }}
-        />
+            <rect x="3" y="5" width="18" height="12.5" rx="2" />
+            <path d="M8.5 21h7" strokeLinecap="round" />
+            <path d="M12 17.5V21" strokeLinecap="round" />
+            {/* نیمهٔ روشن/تیره — نماد «هماهنگ با سیستم» */}
+            <path d="M12 5v12.5" strokeLinecap="round" opacity=".45" />
+          </svg>
+        )}
       </span>
-
-      {/* دکمهٔ واقعی: نامرئی، تمام‌سطح، تنها کنترلِ قابل‌تمرکز */}
-      <button
-        type="button"
-        onClick={cycle}
-        aria-label={`${label} — برای تغییر کلیک کنید`}
-        title={label}
-        className="focus-visible:ring-focus/70 absolute inset-0 rounded-full focus-visible:ring-2 focus-visible:outline-none"
-      />
-    </span>
+      {compact ? null : <span className="text-[12px] font-bold">{label}</span>}
+    </button>
   );
 }

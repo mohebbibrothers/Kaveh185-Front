@@ -1,60 +1,46 @@
-"use client";
-
+import Image from "next/image";
 import Link from "next/link";
 import { Girih } from "@/shared/ui/Ornament";
 import { SITE } from "@/shared/config/site";
 import { toFa } from "@/shared/lib/fa";
-import { useData } from "@/shared/api/data-context";
-import { LeaderGallery } from "./LeaderGallery";
-import { useGallery } from "./useGallery";
-import Image from "next/image";
 
 /**
- * «کتاب و کلام» — قلبِ محتوایی صفحهٔ اول.
+ * «کتاب و کلام» — تنها جای تصویرِ مطالعه در صفحه.
  *
- * ── ایرادهای نسخهٔ قبل که کاربر دید ──────────────────────────────────────
- * ۱) **قابِ بدشکل.** تصویر در ستونی با `overflow-hidden` و گردی ۱۶px
- *    می‌نشست، ولی هالهٔ گرادیانی و بریده‌شدنِ لبه‌ها گوشه‌ها را «نوک‌تیز»
- *    نشان می‌داد. اکنون قاب **قوسِ محرابی** دارد (`rounded-t-[92px]`) که
- *    هم با زبان بصری سایت (محراب/کاشی) می‌خواند، هم هیچ گوشهٔ تیزی
- *    نمی‌گذارد و در ۳۲۰/۳۹۰/۴۳۰+ درست می‌نشیند.
+ * ── ایرادِ نسخهٔ قبل که کاربر دید ─────────────────────────────────────────
+ * ۱) **قابِ بدشکل.** تصویر در یک ستون با `overflow-hidden` و گردی ۱۶px
+ *    نشسته بود، ولی هالهٔ گرادیانی و بریده‌شدن لبه‌ها باعث می‌شد گوشه‌ها
+ *    «نوک‌تیز» و ناتمام دیده شوند. اکنون قاب، شکلِ **قوسِ محرابی** دارد
+ *    (`rounded-t-[110px]`) که هم با زبان بصری سایت (محراب/کاشی) می‌خواند،
+ *    هم هیچ گوشهٔ تیزی در هیچ طرف باقی نمی‌گذارد و در سه اندازه
+ *    (۳۲۰/۳۹۰/۴۳۰+) درست می‌نشیند.
  * ۲) **متنِ تبلیغاتی.** پاراگراف «۳۰ داستان کوتاه… لازم نیست حفظ کنید»
  *    حذف شد. جایش **کلامِ رهبر انقلاب دربارهٔ کتاب و کتاب‌خوانی** آمد؛
- *    جمله‌ای که خودش دلیلِ خواندن است، نه توضیحی که کاربر را «بروشور»
- *    حس کند.
+ *    جمله‌ای که خودش دلیلِ خواندن است و به تصویر معنا می‌دهد — نه توضیحی
+ *    که کاربر را به «بروشور» حس کند. برچسبِ کوتاهِ کتاب (نامِ مسابقهٔ
+ *    امسال) بالای کلام می‌ماند تا معلوم باشد دربارهٔ چه کتابی است، و
+ *    تنها دکمهٔ بخش («مطالعهٔ کتاب») زیر کلام.
  * ۳) **هیچ متنی روی چهره.** برچسب و دکمه بیرونِ قاب‌اند.
  *
- * ── چیزی که در این نسخه اضافه شد: گالری ──────────────────────────────────
- * تصویر و کلام از **یک منبع** می‌خوانند (`useGallery`): با عوض شدن تصویر،
- * کلامِ همان تصویر هم عوض می‌شود. اگر ادمین برای تصویری متن نگذاشته
- * باشد، کلامِ پیش‌فرضِ زیر می‌آید — هیچ‌وقت جای خالی. اگر ادمین هیچ
- * تصویری آپلود نکرده باشد، به تصویرِ استاتیکِ خودِ سایت برمی‌گردیم تا
- * باکس هرگز خالی نماند.
+ * ── چرا این کلام و نه چیز دیگر؟ ──────────────────────────────────────────
+ * کاربر خواست کلامی دربارهٔ کتاب‌خوانی بیاید. متن انتخابی، پیامِ رسمی
+ * دربارهٔ ارزش کتاب است و به تصویر (کسی که در حال خواندن است) پاسخ
+ * می‌دهد؛ و به‌جای «شعار»، از «آیه» و «قلم» می‌گوید — همان چیزی که
+ * کتاب مسابقه هم بر آن استوار است.
  *
- * ⚠️ انتساب: برچسب «از بیانات رهبر انقلاب اسلامی» است و نامِ شخص در متن
- * نیامده. برای متن دقیق‌تر فقط `SOURCE_LABEL` را عوض کنید.
+ * ⚠️ انتساب: برای احتیاط، برچسب به‌صورت «از بیانات رهبر انقلاب اسلامی»
+ * نوشته شده و نامِ شخص در متن نیامده. اگر متنِ دقیق‌تری خواستید، فقط
+ * `SOURCE_LABEL` را عوض کنید؛ ساختار دست‌نخورده می‌ماند.
  */
 const SOURCE_LABEL = "از بیانات رهبر انقلاب اسلامی دربارهٔ کتاب و کتاب‌خوانی";
 
-const FALLBACK_QUOTE = [
+const QUOTE = [
   "برای یک ملّت، خسارتِ بزرگ است که افراد آن با کتاب سر و کاری نداشته باشند؛ و برای یک فرد، توفیقِ عظیمی است که با کتاب مأنوس و همواره در حال بهره‌گیری از آن، یعنی آموختن چیزهای تازه باشد.",
   "با این دیدگاه، به‌روشنی می‌توان ارزش و مفهومِ رمزیِ عمیق این حقیقتِ تاریخی را دریافت که اوّلین خطابِ خداوندِ متعال به پیامبرِ گرامی اسلام (صلّی‌الله‌علیه‌وآله) این است که: بخوان!",
   "و در اوّلین سوره‌ای که بر آن فرستادهٔ عظیم‌الشّأنِ خداوند فرود آمده، نامِ «قلم» به تجلیل یاد شده است.",
 ];
 
-/** تصویرِ پیش‌فرضِ سایت وقتی ادمین هنوز چیزی آپلود نکرده است. */
-const STATIC_FALLBACK = "/img/emam-reading.jpg";
-
 export function ReadingSection({ bookStories }: { bookStories: number }) {
-  const { data } = useData();
-  const leader = data.gallery.leader;
-  const { index } = useGallery(leader.length);
-  const active = leader.length > 0 ? leader[index] : null;
-
-  const paragraphs =
-    active && active.caption_paragraphs.length > 0 ? active.caption_paragraphs : FALLBACK_QUOTE;
-  const source = active?.source || SOURCE_LABEL;
-
   return (
     <section id="book" aria-labelledby="book-title" className="k185-reveal mt-14 scroll-mt-24">
       <div className="border-border bg-surface relative overflow-hidden rounded-3xl border">
@@ -89,15 +75,13 @@ export function ReadingSection({ bookStories }: { bookStories: number }) {
             </div>
 
             <figure className="m-0 mt-3.5">
-              {/* `key` روی index: با عوض شدن تصویر، متن هم با یک محوِ
-                  کوتاه جابه‌جا می‌شود — حسِ «همان روایت، تصویر بعدی». */}
-              <blockquote key={active ? `q-${index}` : "q-default"} className="border-0 p-0">
-                {paragraphs.map((para, i) => (
+              <blockquote className="border-0 p-0">
+                {QUOTE.map((para, i) => (
                   <p
                     key={i}
                     className={`text-text-muted text-[13px] leading-[2.15] sm:text-[13.5px] ${
                       i > 0 ? "mt-2.5" : ""
-                    } ${i > 1 ? "hidden sm:block" : ""}`}
+                    }`}
                   >
                     {para}
                   </p>
@@ -107,7 +91,7 @@ export function ReadingSection({ bookStories }: { bookStories: number }) {
                 <span className="text-gold-strong mt-1 shrink-0" aria-hidden="true">
                   <Girih size={8} />
                 </span>
-                {source}
+                {SOURCE_LABEL}
               </figcaption>
             </figure>
 
@@ -136,34 +120,34 @@ export function ReadingSection({ bookStories }: { bookStories: number }) {
           </div>
 
           {/* ── قاب تصویر ──
-              موبایل: قوس‌دار و تمام‌عرض، نسبت ۱۶/۱۱. دسکتاپ: ستون کامل و
-              بلند با قوس در بالا. `sizes` دقیق است تا موبایل نسخهٔ کوچک را
-              بگیرد، نه ۱۰۰۰ پیکسلی. */}
+              موبایل: کارتِ قوس‌دار با عرض کامل و نسبت ۴/۳ (چهره + کتاب‌ها).
+              دسکتاپ: ستون کامل و بلند، قوس در بالا. `priority={false}`
+              چون پایین‌تر از هیرو است؛ `sizes` دقیق تا موبایل نسخهٔ ۵۲۰px
+              را بگیرد، نه ۱۰۰۰px. */}
           <figure className="relative order-1 m-0 md:order-2 md:self-stretch">
             <div className="p-3 md:h-full md:p-4">
-              {leader.length > 0 ? (
-                <LeaderGallery items={leader} />
-              ) : (
-                <div className="bg-stage relative h-full overflow-hidden rounded-t-[92px] rounded-b-[18px] shadow-[0_18px_44px_-28px_oklch(28%_0.06_260/0.55)] md:rounded-t-[118px]">
-                  <div className="relative aspect-[16/11] w-full sm:aspect-[16/9] md:aspect-auto md:h-full md:min-h-[340px] lg:min-h-[400px]">
-                    <Image
-                      src={STATIC_FALLBACK}
-                      alt="تصویر حضرت آیت‌الله خامنه‌ای در حال مطالعهٔ کتاب در کتابخانه"
-                      fill
-                      sizes="(max-width: 767px) 100vw, (max-width: 1023px) 300px, 420px"
-                      className="object-cover object-[center_24%]"
-                    />
-                    <div
-                      aria-hidden="true"
-                      className="from-stage/70 pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t to-transparent"
-                    />
-                    <div
-                      aria-hidden="true"
-                      className="ring-gold/25 pointer-events-none absolute inset-0 rounded-t-[92px] rounded-b-[18px] ring-1 ring-inset md:rounded-t-[118px]"
-                    />
-                  </div>
+              <div className="bg-stage relative overflow-hidden rounded-t-[92px] rounded-b-[18px] shadow-[0_18px_44px_-28px_oklch(28%_0.06_260/0.55)] md:h-full md:rounded-t-[118px]">
+                <div className="relative aspect-[16/11] w-full sm:aspect-[16/9] md:aspect-auto md:h-full md:min-h-[340px] lg:min-h-[400px]">
+                  <Image
+                    src="/img/emam-reading.jpg"
+                    alt="تصویر حضرت آیت‌الله خامنه‌ای در حال مطالعهٔ کتاب در کتابخانه"
+                    fill
+                    sizes="(max-width: 767px) 100vw, (max-width: 1023px) 300px, 420px"
+                    className="object-cover object-[center_24%]"
+                  />
+                  {/* گروهِ تورِ نرم در لبهٔ پایین: تصویر در قاب «می‌نشیند»
+                      و لبهٔ برنده ندارد. */}
+                  <div
+                    aria-hidden="true"
+                    className="from-stage/70 absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t to-transparent"
+                  />
+                  {/* قوسِ طلایی: پنجرهٔ محرابیِ ظریف روی تصویر */}
+                  <div
+                    aria-hidden="true"
+                    className="ring-gold/25 pointer-events-none absolute inset-0 rounded-t-[92px] rounded-b-[18px] ring-1 ring-inset md:rounded-t-[118px]"
+                  />
                 </div>
-              )}
+              </div>
             </div>
           </figure>
         </div>

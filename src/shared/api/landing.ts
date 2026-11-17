@@ -79,43 +79,12 @@ export const leaderboardSchema = z.object({
   leaderboard: z.array(leaderboardEntrySchema),
 });
 
-/**
- * گالری محتوایی — دو مجموعه که ادمین از پنل می‌آورد.
- *
- * ⚠️ هر دو `default([])` دارند. دلیلش یک تصمیمِ محصولی است: اگر نسخهٔ
- * بک‌اندِ نصب‌شده هنوز گالری نداشته باشد (یا ادمین هیچ‌چیز آپلود نکرده
- * باشد)، صفحه نباید بشکند و نباید بخشِ خالی نشان دهد. با آرایهٔ خالی،
- * فرانت آن بخش را کامل رندر نمی‌کند — همان «اصل صداقت».
- */
-export const leaderPortraitSchema = z.object({
-  image_url: z.string(),
-  alt: z.string(),
-  caption: z.string().default(""),
-  caption_paragraphs: z.array(z.string()).default([]),
-  source: z.string().default(""),
-  show_in_box: z.boolean().default(true),
-  order: z.number().default(0),
-});
-
-export const martyrSchema = z.object({
-  image_url: z.string(),
-  title: z.string(),
-  subtitle: z.string().default(""),
-  alt: z.string().default(""),
-});
-
-export const gallerySchema = z.object({
-  leader: z.array(leaderPortraitSchema).default([]),
-  martyrs: z.array(martyrSchema).default([]),
-});
-
 export const bootstrapSchema = z.object({
   server_time: z.string(),
   server_time_jalali: z.string(),
   exam_status: examStatusSchema,
   mosques: z.array(mosqueSchema),
   leaderboard: leaderboardSchema,
-  gallery: gallerySchema.default({ leader: [], martyrs: [] }),
 });
 
 export type Bootstrap = z.infer<typeof bootstrapSchema>;
@@ -124,6 +93,3 @@ export type Mosque = z.infer<typeof mosqueSchema>;
 export type Leaderboard = z.infer<typeof leaderboardSchema>;
 export type LeaderboardEntry = z.infer<typeof leaderboardEntrySchema>;
 export type CommunicationChannel = z.infer<typeof communicationChannelSchema>;
-export type LeaderPortrait = z.infer<typeof leaderPortraitSchema>;
-export type Martyr = z.infer<typeof martyrSchema>;
-export type Gallery = z.infer<typeof gallerySchema>;

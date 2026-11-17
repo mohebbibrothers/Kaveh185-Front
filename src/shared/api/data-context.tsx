@@ -3,7 +3,6 @@
 import { createContext, useContext } from "react";
 import type { Bootstrap } from "./landing";
 import type { DataFreshness } from "./bootstrap";
-import { FALLBACK_BOOTSTRAP } from "./fallback";
 
 /**
  * اشتراک یک نمونهٔ دادهٔ تازه‌شده بین بخش‌های صفحه.
@@ -23,18 +22,7 @@ export interface DataContextValue {
 
 export const DataContext = createContext<DataContextValue | null>(null);
 
-/** مقدار پیش‌فرضِ بی‌provider — همان پوستهٔ خالی، نه دادهٔ ساختگی. */
-const ORPHAN_VALUE: DataContextValue = {
-  data: FALLBACK_BOOTSTRAP,
-  freshness: "shell",
-  lastOk: FALLBACK_BOOTSTRAP.server_time,
-};
-
-/**
- * دادهٔ جاری. اگر provider نبود (مثلاً در تست کامپوننتی) پوستهٔ خالی
- * برمی‌گردد — بی‌آرگومان، تا هر مصرف‌کننده مجبور نباشد fallback خودش را
- * بسازد و دو نسخهٔ متفاوت از «حالت خالی» نداشته باشیم.
- */
-export function useData(fallback?: DataContextValue): DataContextValue {
-  return useContext(DataContext) ?? fallback ?? ORPHAN_VALUE;
+/** دادهٔ جاری؛ اگر provider نبود همان مقدار اولیه‌ای که داده شده. */
+export function useData(fallback: DataContextValue): DataContextValue {
+  return useContext(DataContext) ?? fallback;
 }

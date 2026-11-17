@@ -63,8 +63,6 @@ export const FALLBACK_BOOTSTRAP: Bootstrap = {
       },
     ],
   },
-  // گالری خالی: تا آپلود ادمین، بخش گالری و نوار شهدا رندر نمی‌شوند.
-  gallery: { leader: [], martyrs: [] },
   leaderboard: {
     organizer: "حوزهٔ مقاومت بسیج ۱۸۵ شهید کاوه",
     total_mosques: 0,

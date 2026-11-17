@@ -75,11 +75,7 @@ export function Hero({ status, serverNow }: { status: HeroStatus; serverNow?: st
         <div className="grid items-center gap-7 sm:gap-9 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-14">
           {/* ── متن ── */}
           <div className="order-1 flex min-w-0 flex-col">
-            {/* چیپِ وضعیت + بازهٔ زمانی — در دسکتاپ این‌جاست (بالای تیتر).
-                در موبایل همین محتوا در ردیفِ بالای هیرو، کنار تصویر می‌آید؛
-                دو نسخهٔ هم‌زمان با `lg:hidden` و `hidden lg:flex` تفکیک
-                می‌شوند — CSS، نه JS؛ پس بدون جاوااسکریپت هم درست است. */}
-            <div className="hidden flex-wrap items-center gap-x-3 gap-y-2 lg:flex">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <span
                 className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11.5px] font-bold ${stateChip}`}
               >
@@ -185,62 +181,35 @@ export function Hero({ status, serverNow }: { status: HeroStatus; serverNow?: st
             </div>
           </div>
 
-          {/* ── ردیفِ بالای هیرو: وضعیت + تصویر ──
-              در موبایل تصویر سمتِ چپ و چیپ سمتِ راست می‌نشیند؛ در `lg`
-              این بلوک به ستونِ کنارِ متن تبدیل می‌شود و چیپ به بالای متن
-              برمی‌گردد (`lg:` زیر). */}
-          <div className="order-0 flex min-w-0 items-start justify-between gap-3 sm:items-center lg:order-2 lg:block lg:w-full">
-            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 sm:gap-x-3 lg:hidden">
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11.5px] font-bold ${stateChip}`}
-              >
-                <span className="relative flex size-1.5" aria-hidden="true">
-                  {state === "open" && (
-                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-current opacity-70" />
-                  )}
-                  <span className="relative inline-flex size-1.5 rounded-full bg-current" />
-                </span>
-                {status.window_state_label}
-              </span>
-              <span className="text-text-muted text-[12px] font-semibold">
-                {status.starts_at_jalali && status.ends_at_jalali ? (
-                  <>
-                    {faJalali(status.starts_at_jalali)}
-                    <span className="text-text-subtle/70 mx-1.5" aria-hidden="true">
-                      تا
-                    </span>
-                    {faJalali(status.ends_at_jalali)}
-                  </>
-                ) : (
-                  <span className="text-text-subtle">بازهٔ زمانی در حال دریافت…</span>
-                )}
-              </span>
-            </div>
-            <div className="w-[112px] shrink-0 sm:w-[152px] md:w-[176px] lg:mt-6 lg:w-full">
-              <figure className="relative">
-                <div
-                  aria-hidden="true"
-                  className="bg-gold/12 absolute -inset-3 rounded-[26px] blur-2xl"
+          {/* ── پرترهٔ شهید کاوه ──
+              ⚠️ در گوشی، عمداً **بعد از** متن و اقدام می‌آید (`order-2`).
+              کاربری که با گوشی وارد می‌شود باید اول بداند چه خبر است و
+              دکمه را ببیند؛ تصویر بعد از آن، «تصدیقِ» پیام است، نه دروازهٔ
+              ورود به آن. در دسکتاپ ستون باریک کنار. */}
+          <div className="order-2 mx-auto w-[172px] shrink-0 sm:w-[200px] lg:order-2 lg:w-full">
+            <figure className="relative">
+              <div
+                aria-hidden="true"
+                className="bg-gold/12 absolute -inset-3 rounded-[26px] blur-2xl"
+              />
+              <div className="ring-gold/25 bg-surface relative overflow-hidden rounded-[20px] shadow-[0_20px_50px_-26px_oklch(28%_0.06_260/0.45)] ring-1">
+                <Image
+                  src="/img/kaveh-hero.jpg"
+                  alt="تصویر شهید محمود کاوه، فرماندهٔ لشکر ویژهٔ ۱۵۵ شهدا، در قاب تزئینی با پرچم ایران"
+                  width={900}
+                  height={1286}
+                  priority
+                  sizes="(max-width: 1023px) 200px, 300px"
+                  className="h-auto w-full"
                 />
-                <div className="ring-gold/25 bg-surface relative overflow-hidden rounded-[20px] shadow-[0_20px_50px_-26px_oklch(28%_0.06_260/0.45)] ring-1">
-                  <Image
-                    src="/img/kaveh-hero.jpg"
-                    alt="تصویر شهید محمود کاوه، فرماندهٔ لشکر ویژهٔ ۱۵۵ شهدا، در قاب تزئینی با پرچم ایران"
-                    width={900}
-                    height={1286}
-                    priority
-                    sizes="(max-width: 1023px) 200px, 300px"
-                    className="h-auto w-full"
-                  />
-                  <div className="from-stage/92 via-stage/70 absolute inset-x-0 bottom-0 bg-gradient-to-t to-transparent px-3 pt-6 pb-2.5">
-                    <p className="text-on-stage text-[11.5px] font-extrabold">شهید محمود کاوه</p>
-                    <p className="text-on-stage-muted mt-0.5 text-[9.5px] tabular-nums">
-                      فرماندهٔ لشکر ویژهٔ ۱۵۵ شهدا
-                    </p>
-                  </div>
+                <div className="from-stage/92 via-stage/70 absolute inset-x-0 bottom-0 bg-gradient-to-t to-transparent px-3 pt-6 pb-2.5">
+                  <p className="text-on-stage text-[11.5px] font-extrabold">شهید محمود کاوه</p>
+                  <p className="text-on-stage-muted mt-0.5 text-[9.5px] tabular-nums">
+                    فرماندهٔ لشکر ویژهٔ ۱۵۵ شهدا
+                  </p>
                 </div>
-              </figure>
-            </div>
+              </div>
+            </figure>
           </div>
         </div>
       </div>
