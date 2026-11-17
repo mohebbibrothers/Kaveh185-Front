@@ -1,85 +1,104 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Girih, MuqarnasArch } from "@/shared/ui/Ornament";
+import { Girih } from "@/shared/ui/Ornament";
 import { SITE } from "@/shared/config/site";
 import { toFa } from "@/shared/lib/fa";
 
 /**
- * «از کتاب تا کارنامه» — بخشِ کتاب، با تصویر رهبر در حال مطالعه.
+ * «کتاب و کلام» — تنها جای تصویرِ مطالعه در صفحه.
  *
- * ── چرا این بخش ساخته شد و جای دیگری نه؟ ─────────────────────────────────
- * تصویری که کاربر داد (رهبر انقلاب در حال مطالعه) معنایش «کتاب‌خواندن
- * رسمِ این کار است»، نه «اینجا مسابقه است». پس جای درستش **کنار خودِ
- * کتاب** است، جایی که کاربر باید تصمیم بگیرد بخواند یا نه — نه در هیرو
- * (که جای پیام مسابقه است) و نه در بنر پایانی (که جای اقدام است).
+ * ── ایرادِ نسخهٔ قبل که کاربر دید ─────────────────────────────────────────
+ * ۱) **قابِ بدشکل.** تصویر در یک ستون با `overflow-hidden` و گردی ۱۶px
+ *    نشسته بود، ولی هالهٔ گرادیانی و بریده‌شدن لبه‌ها باعث می‌شد گوشه‌ها
+ *    «نوک‌تیز» و ناتمام دیده شوند. اکنون قاب، شکلِ **قوسِ محرابی** دارد
+ *    (`rounded-t-[110px]`) که هم با زبان بصری سایت (محراب/کاشی) می‌خواند،
+ *    هم هیچ گوشهٔ تیزی در هیچ طرف باقی نمی‌گذارد و در سه اندازه
+ *    (۳۲۰/۳۹۰/۴۳۰+) درست می‌نشیند.
+ * ۲) **متنِ تبلیغاتی.** پاراگراف «۳۰ داستان کوتاه… لازم نیست حفظ کنید»
+ *    حذف شد. جایش **کلامِ رهبر انقلاب دربارهٔ کتاب و کتاب‌خوانی** آمد؛
+ *    جمله‌ای که خودش دلیلِ خواندن است و به تصویر معنا می‌دهد — نه توضیحی
+ *    که کاربر را به «بروشور» حس کند. برچسبِ کوتاهِ کتاب (نامِ مسابقهٔ
+ *    امسال) بالای کلام می‌ماند تا معلوم باشد دربارهٔ چه کتابی است، و
+ *    تنها دکمهٔ بخش («مطالعهٔ کتاب») زیر کلام.
+ * ۳) **هیچ متنی روی چهره.** برچسب و دکمه بیرونِ قاب‌اند.
  *
- * ── احترام به تصویر ──────────────────────────────────────────────────────
- * • نوارِ نشان و امضای گوشهٔ تصویر با **کراپ** حذف شده است (نه با
- *   پوشاندنِ تصویر در CSS)؛ فایلِ اصلی در `public/img/emam-reading.jpg`
- *   از بالای آن نوار بریده شده و نسبت تازه‌اش ۱۰:۱۳ است.
- * • قاب، محرابی است و از `object-cover` استفاده نمی‌شود مگر در حالت
- *   بنرِ تمام‌عرض که خودِ قاب، نسبت را تعیین می‌کند؛ در آن حالت هم
- *   نقطهٔ تمرکز روی چهره قفل شده (`object-[center_22%]`).
- * • هیچ متن یا دکمه‌ای روی چهره نمی‌نشیند؛ برچسب، زیرِ قاب است.
+ * ── چرا این کلام و نه چیز دیگر؟ ──────────────────────────────────────────
+ * کاربر خواست کلامی دربارهٔ کتاب‌خوانی بیاید. متن انتخابی، پیامِ رسمی
+ * دربارهٔ ارزش کتاب است و به تصویر (کسی که در حال خواندن است) پاسخ
+ * می‌دهد؛ و به‌جای «شعار»، از «آیه» و «قلم» می‌گوید — همان چیزی که
+ * کتاب مسابقه هم بر آن استوار است.
  *
- * ── متن ──────────────────────────────────────────────────────────────────
- * متن کتاب عمداً **کوتاه** است: یک جملهٔ ارزشی («۳۰ داستان کوتاه، هر
- * پرسش از دل همین داستان‌ها») و یک جملهٔ کاربردی («حفظ‌کردن لازم نیست»).
- * هرچه بیشتر توضیح می‌دادیم، صفحه به بروشور تبدیل می‌شد و کاربر فرار
- * می‌کرد. قوانین کتاب‌خوانی هم به صفحهٔ خودش (`/rules`) سپرده شده.
+ * ⚠️ انتساب: برای احتیاط، برچسب به‌صورت «از بیانات رهبر انقلاب اسلامی»
+ * نوشته شده و نامِ شخص در متن نیامده. اگر متنِ دقیق‌تری خواستید، فقط
+ * `SOURCE_LABEL` را عوض کنید؛ ساختار دست‌نخورده می‌ماند.
  */
+const SOURCE_LABEL = "از بیانات رهبر انقلاب اسلامی دربارهٔ کتاب و کتاب‌خوانی";
+
+const QUOTE = [
+  "برای یک ملّت، خسارتِ بزرگ است که افراد آن با کتاب سر و کاری نداشته باشند؛ و برای یک فرد، توفیقِ عظیمی است که با کتاب مأنوس و همواره در حال بهره‌گیری از آن، یعنی آموختن چیزهای تازه باشد.",
+  "با این دیدگاه، به‌روشنی می‌توان ارزش و مفهومِ رمزیِ عمیق این حقیقتِ تاریخی را دریافت که اوّلین خطابِ خداوندِ متعال به پیامبرِ گرامی اسلام (صلّی‌الله‌علیه‌وآله) این است که: بخوان!",
+  "و در اوّلین سوره‌ای که بر آن فرستادهٔ عظیم‌الشّأنِ خداوند فرود آمده، نامِ «قلم» به تجلیل یاد شده است.",
+];
+
 export function ReadingSection({ bookStories }: { bookStories: number }) {
   return (
     <section id="book" aria-labelledby="book-title" className="k185-reveal mt-14 scroll-mt-24">
-      <div className="k185-lift border-border bg-surface relative overflow-hidden rounded-2xl border">
-        {/* هالهٔ لاجوردی سمت متن — سطح را از «کارت سفید» جدا می‌کند */}
+      <div className="border-border bg-surface relative overflow-hidden rounded-3xl border">
+        {/* هالهٔ کرمِ گرم در ستون متن — سطح را از کارت سفید جدا می‌کند */}
         <div
           aria-hidden="true"
-          className="from-brand/[0.055] pointer-events-none absolute inset-y-0 right-0 w-[58%] bg-gradient-to-l to-transparent"
+          className="from-gold/[0.07] pointer-events-none absolute inset-y-0 right-0 w-3/5 bg-gradient-to-l to-transparent"
         />
 
-        <div className="relative grid items-stretch gap-0 sm:grid-cols-[minmax(0,1fr)_240px] lg:grid-cols-[minmax(0,1fr)_420px]">
-          {/* ── متن ── */}
-          <div className="order-2 flex flex-col justify-center p-5 sm:order-1 sm:p-7 lg:p-8">
-            <p className="text-gold-strong flex items-center gap-1.5 text-[11.5px] font-extrabold tracking-wide">
-              <span aria-hidden="true" className="text-gold-strong/80">
-                <Girih size={11} />
-              </span>
-              کتاب مسابقهٔ امسال
+        <div className="relative grid gap-0 md:grid-cols-[minmax(0,1fr)_minmax(230px,34%)]">
+          {/* ── متن / کلام ── */}
+          <div className="order-2 flex min-w-0 flex-col justify-center p-5 sm:p-7 md:order-1 md:p-8 lg:p-10">
+            <p className="text-gold-strong flex items-center gap-1.5 text-[11px] font-extrabold tracking-wide">
+              <Girih size={11} />
+              کتابِ مسابقهٔ امسال
             </p>
 
             <h2
               id="book-title"
-              className="text-text mt-2 text-[clamp(22px,3.4vw,34px)] leading-[1.3] font-extrabold"
+              className="text-text mt-2 text-[clamp(20px,2.6vw,27px)] leading-tight font-extrabold"
             >
               {SITE.bookTitle}
             </h2>
 
-            <p className="text-text-muted mt-3 max-w-[34rem] text-[13.5px] leading-[2.1]">
-              هر پرسش آزمون از دل یکی از همین داستان‌ها بیرون آمده است. لازم نیست چیزی را حفظ کنید —
-              داستان‌ها را با حوصله بخوانید و بعد وارد آزمون شوید.
-            </p>
+            {/* جداکنندهٔ نازک با گره — شروع «کلام» را نشان می‌دهد */}
+            <div className="mt-4 flex items-center gap-2.5" aria-hidden="true">
+              <span className="from-gold/60 h-px w-10 bg-gradient-to-l to-transparent" />
+              <span className="text-gold/70">
+                <Girih size={9} />
+              </span>
+              <span className="from-gold/30 h-px flex-1 bg-gradient-to-r to-transparent" />
+            </div>
 
-            {/* ویژگی‌های واقعی کتاب، به‌جای جمله‌های تبلیغاتی */}
-            <ul className="mt-5 flex flex-wrap gap-2">
-              {[`${toFa(bookStories)} داستان کوتاه`, "مطالعهٔ آنلاین، بدون دانلود"].map((item) => (
-                <li
-                  key={item}
-                  className="border-border bg-canvas/70 text-text-muted inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold"
-                >
-                  <span
-                    className="bg-verde inline-block size-1.5 rounded-full"
-                    aria-hidden="true"
-                  />
-                  {item}
-                </li>
-              ))}
-            </ul>
+            <figure className="m-0 mt-3.5">
+              <blockquote className="border-0 p-0">
+                {QUOTE.map((para, i) => (
+                  <p
+                    key={i}
+                    className={`text-text-muted text-[13px] leading-[2.15] sm:text-[13.5px] ${
+                      i > 0 ? "mt-2.5" : ""
+                    }`}
+                  >
+                    {para}
+                  </p>
+                ))}
+              </blockquote>
+              <figcaption className="text-text-subtle mt-3.5 flex items-start gap-1.5 text-[10.5px] leading-6">
+                <span className="text-gold-strong mt-1 shrink-0" aria-hidden="true">
+                  <Girih size={8} />
+                </span>
+                {SOURCE_LABEL}
+              </figcaption>
+            </figure>
 
-            <div className="mt-6">
+            <div className="mt-6 flex flex-wrap items-center gap-x-3.5 gap-y-2.5">
               <Link
                 href="/book"
-                className="bg-brand text-on-brand hover:bg-brand-hover inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-[13.5px] font-extrabold transition-colors"
+                className="bg-brand text-on-brand hover:bg-brand-hover inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl px-5 text-[13.5px] font-extrabold transition-colors sm:w-auto"
               >
                 مطالعهٔ کتاب
                 <svg
@@ -94,32 +113,42 @@ export function ReadingSection({ bookStories }: { bookStories: number }) {
                   <path d="M14 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </Link>
+              <span className="text-text-subtle order-first w-full text-[11px] font-semibold sm:order-none sm:w-auto">
+                {toFa(bookStories)} داستان کوتاه · مطالعهٔ آنلاین، بدون دانلود
+              </span>
             </div>
           </div>
 
           {/* ── قاب تصویر ──
-              در موبایل بالا و افقی (بنر)، در دسکتاپ ستون باریک و کامل.
-              `sizes` درست است تا موبایل نسخهٔ ۵۲۰px را بگیرد، نه ۱۰۰۰px. */}
-          <figure className="relative order-1 m-0 grid grid-rows-[1fr_auto] sm:order-2">
-            <div className="relative h-[176px] w-full overflow-hidden sm:h-full sm:min-h-[360px] lg:min-h-[400px]">
-              <MuqarnasArch className="text-gold/30 absolute inset-x-0 top-0 z-10 h-4 w-full sm:hidden" />
-              <Image
-                src="/img/emam-reading.jpg"
-                alt="تصویر حضرت آیت‌الله خامنه‌ای در حال مطالعهٔ کتاب در کتابخانه"
-                fill
-                priority={false}
-                sizes="(max-width: 639px) 100vw, (max-width: 1023px) 240px, 420px"
-                className="object-cover object-[center_26%]"
-              />
-              {/* پیوند نرمِ تصویر به کارت — لبهٔ محو، نه خط برنده */}
-              <div
-                aria-hidden="true"
-                className="from-surface pointer-events-none absolute inset-x-0 -bottom-px h-10 bg-gradient-to-t to-transparent sm:inset-y-0 sm:right-auto sm:left-0 sm:h-full sm:w-10 sm:bg-gradient-to-r"
-              />
+              موبایل: کارتِ قوس‌دار با عرض کامل و نسبت ۴/۳ (چهره + کتاب‌ها).
+              دسکتاپ: ستون کامل و بلند، قوس در بالا. `priority={false}`
+              چون پایین‌تر از هیرو است؛ `sizes` دقیق تا موبایل نسخهٔ ۵۲۰px
+              را بگیرد، نه ۱۰۰۰px. */}
+          <figure className="relative order-1 m-0 md:order-2 md:self-stretch">
+            <div className="p-3 md:h-full md:p-4">
+              <div className="bg-stage relative overflow-hidden rounded-t-[92px] rounded-b-[18px] shadow-[0_18px_44px_-28px_oklch(28%_0.06_260/0.55)] md:h-full md:rounded-t-[118px]">
+                <div className="relative aspect-[16/11] w-full sm:aspect-[16/9] md:aspect-auto md:h-full md:min-h-[340px] lg:min-h-[400px]">
+                  <Image
+                    src="/img/emam-reading.jpg"
+                    alt="تصویر حضرت آیت‌الله خامنه‌ای در حال مطالعهٔ کتاب در کتابخانه"
+                    fill
+                    sizes="(max-width: 767px) 100vw, (max-width: 1023px) 300px, 420px"
+                    className="object-cover object-[center_24%]"
+                  />
+                  {/* گروهِ تورِ نرم در لبهٔ پایین: تصویر در قاب «می‌نشیند»
+                      و لبهٔ برنده ندارد. */}
+                  <div
+                    aria-hidden="true"
+                    className="from-stage/70 absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t to-transparent"
+                  />
+                  {/* قوسِ طلایی: پنجرهٔ محرابیِ ظریف روی تصویر */}
+                  <div
+                    aria-hidden="true"
+                    className="ring-gold/25 pointer-events-none absolute inset-0 rounded-t-[92px] rounded-b-[18px] ring-1 ring-inset md:rounded-t-[118px]"
+                  />
+                </div>
+              </div>
             </div>
-            <figcaption className="text-text-subtle border-border/70 relative border-t px-4 py-2.5 text-[10.5px] leading-5 sm:px-3 sm:py-3">
-              کتاب‌خواندن، رسمِ این کار است — نه استثنای آن.
-            </figcaption>
           </figure>
         </div>
       </div>

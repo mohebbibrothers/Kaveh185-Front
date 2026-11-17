@@ -3,6 +3,7 @@
 import { SiteHeader } from "@/widgets/site-header/SiteHeader";
 import { SiteFooter } from "@/widgets/site-footer/SiteFooter";
 import { Hero } from "@/widgets/hero/Hero";
+import { ScrollProgress } from "@/shared/ui/ScrollProgress";
 import { useLiveBootstrap } from "@/shared/api/live";
 import { DataContext } from "@/shared/api/data-context";
 import type { Bootstrap } from "@/shared/api/landing";
@@ -43,6 +44,7 @@ export function LandingShell({
 
   return (
     <DataContext.Provider value={{ data, freshness, lastOk }}>
+      <ScrollProgress />
       <SiteHeader />
       <main id="main">
         <Hero status={data.exam_status} serverNow={data.server_time} />

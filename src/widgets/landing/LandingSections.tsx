@@ -1,8 +1,6 @@
 "use client";
 
 import { ReadingSection } from "@/widgets/landing/ReadingSection";
-import { LeaderboardTeaser } from "@/widgets/landing/LeaderboardTeaser";
-import { ClosingBand } from "@/widgets/landing/ClosingBand";
 import { HowItWorks } from "@/widgets/how-it-works/HowItWorks";
 import { SectionTitle } from "@/shared/ui/Ornament";
 import { FreshnessLine } from "@/shared/ui/FreshnessLine";
@@ -12,27 +10,32 @@ import { faJalali } from "@/shared/lib/fa";
 import type { Bootstrap } from "@/shared/api/landing";
 
 /**
- * بخش‌های صفحهٔ اول — زیر هیرو.
+ * بخش‌های صفحهٔ اول — زیر هیرو. سه بخش، هر کدام یک کار.
  *
- * ── نقشهٔ صفحه و منطقِ حذف‌ها ─────────────────────────────────────────────
+ * ── نقشهٔ صفحه ────────────────────────────────────────────────────────────
  *
- *   ۱. **سه گام تا کارنامه**  → «چه کاری باید بکنم؟»
- *   ۲. **کتاب و تصویر مطالعه** → «چه چیزی باید بخوانم و چرا؟»
- *   ۳. **دربارهٔ مسابقه**      → «این چه رویدادی است و چه کسی برگزار می‌کند؟»
- *   ۴. **پیش‌نمایش جدول**      → «رقابت چطور است؟» (سه نفر، نه جدول کامل)
- *   ۵. **بنر پایانی**          → یک اقدام
+ *   هیرو            «این چیست، تا کِی، از کجا شروع کنم؟»
+ *   ۰۱ سه گام        «چه کاری باید بکنم؟»
+ *   —  کتاب + کلام   «چه بخوانم و چرا؟»
+ *   ۰۲ دربارهٔ مسابقه «چه رویدادی است، کِی، برگزارکننده کیست؟»
+ *   فوتر
  *
- * چه چیزی از صفحه حذف شد و **کجا رفت**:
- *   • فهرست ۲۴ مسجد با کد و محله  → صفحهٔ `/mosques` (جست‌وجو + آمار کامل)
- *   • جدول هشت‌ردیفهٔ کامل          → همان صفحه، پیش‌نمایش سه‌ردیفه این‌جا ماند
- *   • چهار قاعدهٔ مسابقه           → صفحهٔ `/rules` (با توضیح و دلیل کامل)
- *   • بلوک چهارعددی آمار           → یک ردیف کوتاه در هیرو، بقیه در گام‌ها
+ * ── چرا صفحه این‌قدر کوتاه شد؟ ────────────────────────────────────────────
+ * این نوبت، سه بخشِ کامل حذف شد به درخواست کاربر:
+ *   • **جدول مساجد** (پیش‌نمایش سه‌نفره + لینک) → کل جدول فقط در `/mosques`.
+ *   • **بنر پایانی «سهم مسجد محله‌ات را از یک کارنامه شروع کن»** → با هیرو
+ *     هم‌پیام و هم‌اقدام بود؛ تکرارِ اقدام در انتهای صفحه، صفحه را «فروشنده»
+ *     نشان می‌داد. اکنون صفحه با «دربارهٔ مسابقه» تمام می‌شود — آرام.
+ *   • **نوارِ «مسابقه رایگان است…» بالای فوتر** → همان اطلاعات در گام اول
+ *     آمده است؛ حذف شد.
  *
- * دلیل: صفحهٔ اول باید «تصمیم بگیر» را بفروشد، نه این‌که همهٔ محتوای سایت
- * را یک‌جا تحویل بدهد. اگر کاربر همه‌چیز را همین‌جا داشته باشد، صفحات
- * دیگر مرده‌اند و سایت به یک صفحهٔ بلند تبدیل می‌شود.
+ * نتیجه: از «شش بلوک سنگین» به «سه بلوک + هیرو». هر بلوک یک تصمیم می‌گیرد
+ * و هیچ بلوکی تکرارِ بلوکِ دیگر نیست.
  *
- * ترتیب، روایت است: انگیزه → کتاب → رویداد → رقابت → اقدام.
+ * ⚠️ دربارهٔ عددِ مشارکت: صفحهٔ اول دیگر هیچ آمارِ زنده‌ای نشان نمی‌دهد،
+ * پس بارِ شبکه‌ای اضافه هم ندارد؛ اما وضعیتِ آزمون و بازهٔ زمانی همچنان
+ * از همان `/api/v1/core/bootstrap/` می‌آید و در هیرو و این بخش استفاده
+ * می‌شود — یک درخواست، دو مصرف.
  */
 export function LandingSections({ initial }: { initial: Bootstrap }) {
   const { data, freshness, lastOk } = useData({
@@ -58,7 +61,7 @@ export function LandingSections({ initial }: { initial: Bootstrap }) {
           title="مسابقه‌ای که از مسجد شروع می‌شود"
           index="۰۲"
         />
-        <div className="border-border bg-surface rounded-2xl border p-5 sm:p-6">
+        <div className="border-border bg-surface relative overflow-hidden rounded-2xl border p-5 sm:p-6">
           <div
             aria-hidden="true"
             className="k185-girih-veil pointer-events-none absolute inset-y-0 left-0 hidden w-[52%] opacity-[0.16] lg:block"
@@ -108,14 +111,6 @@ export function LandingSections({ initial }: { initial: Bootstrap }) {
           </div>
         </div>
       </section>
-
-      <div className="k185-reveal mt-14 scroll-mt-24">
-        <LeaderboardTeaser board={data.leaderboard} />
-      </div>
-
-      <div className="k185-reveal">
-        <ClosingBand />
-      </div>
     </div>
   );
 }

@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { Logo } from "@/shared/ui/Logo";
-import { Girih } from "@/shared/ui/Ornament";
 import { SITE } from "@/shared/config/site";
 
 /**
  * فوتر — سه لایهٔ معنادار، نه یک ردیف لینک.
  *
  * ── چه چیزی این فوتر را از نسخهٔ قبل جدا می‌کند؟ ──────────────────────────
- * ۱) **لایهٔ «فراخوان»**: فوتر فقط جایی برای «حقوق محفوظ» نیست؛ آخرین
- *    نقطه‌ای است که کاربر ممکن است تصمیم بگیرد. پس یک فراخوان روشن دارد.
+ * ۱) **بدونِ نوارِ فراخوان**: نسخهٔ پیش از این، یک نوارِ «مسابقه رایگان
+ *    است…» با دکمهٔ ثبت‌نام بالای فوتر داشت. آن نوار، چهارمین فراخوانِ
+ *    صفحهٔ اول بود و کاربر خواست حذف شود. فوتر وظیفهٔ «حتماً کلیک کن»
+ *    ندارد؛ وظیفهٔ «اگر گم شدی، راه این‌جاست» دارد — و لینک‌های راه در
+ *    ستون «دسترسی سریع» هست.
  * ۲) **ستون کانال رسمی، صادقانه**: حوزه فقط یک کانال دارد — بله،
  *    `@NamjooNewsAgency`. نسخهٔ قبل سه دکمهٔ ایتا/بله/روبیکا داشت که دو
  *    تای آن‌ها وجود نداشت. لینک مرده بدتر از نبودِ لینک است.
@@ -21,31 +23,6 @@ export function SiteFooter() {
 
   return (
     <footer className="border-border bg-surface-2/70 mt-20 border-t">
-      {/* ── یادآوریِ پایانی ──
-          ⚠️ این‌جا قبلاً یک فراخوان کامل با دو دکمه بود («ثبت‌نام و شرکت» +
-          «قوانین مسابقه»). چون صفحهٔ اول پیش از فوتر یک بنرِ اقدام دارد،
-          آن دکمه‌ها **چهارمین تکرار** فراخوان در یک صفحه می‌شدند. اکنون
-          فقط یک جملهٔ گرم و یک لینکِ متنی می‌ماند؛ فوتر وظیفهٔ «حتماً کلیک
-          کن» ندارد، وظیفهٔ «اگر گم شدی، راه این‌جاست» دارد. */}
-      <div className="border-border/70 border-b">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p className="text-text-muted flex items-start gap-2.5 text-[12.5px] leading-7">
-            <span className="text-gold-strong mt-1 shrink-0" aria-hidden="true">
-              <Girih size={16} />
-            </span>
-            <span>
-              مسابقه رایگان است و ثبت‌نامش فقط نام، کد ملی، شمارهٔ تماس و انتخاب مسجد می‌خواهد.
-            </span>
-          </p>
-          <Link
-            href="/register"
-            className="text-brand shrink-0 text-[12.5px] font-extrabold underline decoration-current/30 decoration-1 underline-offset-4 transition-colors hover:decoration-current"
-          >
-            رفتن به فرم ثبت‌نام
-          </Link>
-        </div>
-      </div>
-
       {/* ── ستون‌ها ── */}
       <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.5fr_1fr_1fr_1.1fr]">
         <div>

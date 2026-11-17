@@ -4,28 +4,27 @@ import { useEffect, useRef, useState } from "react";
 import { faDuration, toFa } from "@/shared/lib/fa";
 
 /**
- * شمارش معکوس — بازطراحی‌شده حول سه اصل.
+ * شمارش معکوس — نسخهٔ سوم، این بار «فشرده و بی‌لرزش».
  *
- * ── چه چیزی در نسخهٔ قبل ایراد داشت؟ ──────────────────────────────────────
- * کاربر گفت «روزشمار حرفه‌ای نیست». مشکل واقعی، فقط ظاهر نبود:
+ * ── چه ایرادی گرفته شد و چه شد؟ ───────────────────────────────────────────
+ * کاربر گفت نسخهٔ قبل «گشاد و بدفرم» است. ایراد واقعی سه چیز بود:
  *
- * ۱) **وزن یکسان برای چهار واحد.** «۳۲ روز» مهم است، «۴۲ ثانیه» فقط
- *    هیجان است. در چهار کادر هم‌اندازه، چشم نمی‌داند کدام را بخواند.
- * ۲) **بی‌قرینگی بصری.** کادرها با `flex-1` کشیده می‌شدند و در عرض‌های
- *    مختلف، اعداد تک‌رقمی و دورقمی دو عرض متفاوت می‌گرفتند — شمارنده در
- *    هر ثانیه «می‌لرزید».
- * ۳) **نبودِ حس حرکت.** عدد که عوض می‌شود باید *دیده* شود، وگرنه کاربر
- *    مطمئن نیست زنده است.
+ * ۱) **عرضِ بی‌قید.** قاب `flex-1` تا انتهای ستون کشیده می‌شد و یک
+ *    شمارندهٔ کوچک، نصف صفحه را می‌گرفت. اکنون قاب `inline-flex` است:
+ *    به اندازهٔ محتوای خودش. هیچ فضای مرده‌ای داخلش نمی‌ماند.
+ * ۲) **کادر روزِ ۶۲پیکسلی** جدا از بقیه و بی‌ربط. اکنون چهار واحد هم‌خانواده‌اند
+ *    با یک سلسله‌مراتب ملایم: روز کمی بزرگ‌تر، ساعت/دقیقه/ثانیه کوچک‌تر —
+ *    اما در یک نوارِ یکپارچه با جداکنندهٔ نازک، نه چهار جعبهٔ رقیب.
+ * ۳) **پرشِ رقم بدون مهار.** در `clamp`، عرض عدد تغییر می‌کرد و نوار
+ *    می‌رقصید. حالا هر خانه `min-w` ثابت دارد + `tabular-nums`.
  *
- * ── راه‌حل ────────────────────────────────────────────────────────────────
- * • **سلسله‌مراتب**: روز در تایل بزرگ‌تر و با رنگ برند؛ ساعت/دقیقه/ثانیه
- *   ریزتر و خنثی. سه واحد کوچک با دونقطه به هم وصل‌اند (خوانشِ زمان).
- * • **`tabular-nums` + عرض ثابت** ⇒ هیچ لرزشی در تعویض رقم نیست.
- * • **حرکت هدفمند**: هر رقمِ عوض‌شده یک پرش کوتاه ۲۲۰ms می‌گیرد (با
- *   `prefers-reduced-motion` خاموش می‌شود).
- * • **در پایان**: به‌جای صفرِ مرده، پیام روشن («مهلت آغاز شد» / «پایان
- *   یافت») — وگرنه کاربر فکر می‌کند تایمر خراب است.
- * • **مبنای زمان**: همان قرارداد قبلی؛ ساعت سرور، نه ساعت گوشی.
+ * ── نکتهٔ فنی که به‌ظاهر مربوط نیست ولی مهم است ───────────────────────────
+ * عدد صفرِ پیشوند («۰۹») عمداً حفظ شده: در فارسی، «۹» و «۰۹» هر دو خوانده
+ * می‌شوند، ولی نوارِ ثابت‌عرض با صفر پیشوند، شمارش را قابل‌اسکن می‌کند.
+ *
+ * ── دسترس‌پذیری ───────────────────────────────────────────────────────────
+ * `role="timer"` + `aria-live="off"` (تغییر هر ثانیه نباید صفحه‌خوان را
+ * قطع کند) + یک `sr-only` که کل مدت را یک‌جا می‌گوید.
  */
 export function Countdown({
   targetSeconds,
@@ -66,98 +65,102 @@ export function Countdown({
   const isDark = variant === "dark";
   const finished = left <= 0;
 
-  const shell = isDark
-    ? "border-white/12 bg-white/[0.06] text-white"
-    : "border-border bg-surface text-text";
+  const shell = isDark ? "border-white/12 bg-white/[0.06] text-white" : "border-border bg-surface";
+  const digits = isDark ? "text-white" : "text-text";
   const unitLabel = isDark ? "text-white/55" : "text-text-subtle";
-
-  /** تایل بزرگ «روز» — رنگ برند، عدد درشت‌تر */
-  const dayTone =
+  const lead =
     tone === "upcoming"
       ? isDark
-        ? "border-gold/30 bg-gold/12 text-gold"
-        : "border-gold/45 bg-gold-soft text-gold-strong"
+        ? "text-gold"
+        : "text-gold-strong"
       : isDark
-        ? "border-verde/30 bg-verde/12 text-verde"
-        : "border-verde/40 bg-verde-soft text-verde";
-
-  /**
-   * یک واحد کوچک (ساعت/دقیقه/ثانیه).
-   *
-   * چرا تابع ساده و نه کامپوننت داخلی؟ React Compiler هر کامپوننتی که
-   * داخل رندر ساخته شود را رد می‌کند (هویت آن در هر رندر عوض می‌شود و
-   * state/اثرهای فرزند از دست می‌رود). یک تابع که JSX برمی‌گرداند همان
-   * نتیجه را می‌دهد، بدون آن هزینه.
-   */
-  const renderCell = (value: number, unit: string) => (
-    <span key={unit} className="flex min-w-0 flex-col items-center">
-      <span className="k185-tick text-[clamp(17px,2.1vw,21px)] leading-none font-extrabold tabular-nums">
-        {toFa(String(value).padStart(2, "0"))}
-      </span>
-      <span className={`mt-1 text-[9.5px] font-semibold ${unitLabel}`}>{unit}</span>
-    </span>
-  );
+        ? "text-verde"
+        : "text-verde";
+  const leadBg =
+    tone === "upcoming"
+      ? isDark
+        ? "bg-gold/10"
+        : "bg-gold-soft/70"
+      : isDark
+        ? "bg-verde/12"
+        : "bg-verde-soft/80";
 
   if (finished) {
     return (
       <div
         role="status"
-        className={`flex items-center gap-2.5 rounded-xl border px-3.5 py-3 ${shell}`}
+        className={`inline-flex items-center gap-2.5 rounded-xl border px-3.5 py-2.5 ${shell}`}
       >
-        <span className={`grid size-8 shrink-0 place-items-center rounded-lg ${dayTone}`}>
+        <span className={`grid size-7 shrink-0 place-items-center rounded-lg ${lead} ${leadBg}`}>
           <svg
             viewBox="0 0 24 24"
-            width="15"
-            height="15"
+            width="14"
+            height="14"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="2.4"
             aria-hidden="true"
           >
             <path d="M5 12.5 10 17l9-9.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
-        <span className="min-w-0">
-          <span className="block text-[12.5px] font-extrabold">
-            {endMessage ?? "زمان این مرحله به پایان رسید"}
-          </span>
-          <span className={`block text-[10.5px] ${unitLabel}`}>{label}</span>
+        <span className="text-[12.5px] font-extrabold">
+          {endMessage ?? "زمان این مرحله به پایان رسید"}
         </span>
       </div>
     );
   }
+
+  /**
+   * یک واحد. `min-w` ثابت مهم‌ترین بخش است: بدون آن، رفتن از «۰۹» به «۱۰»
+   * عرض را عوض می‌کند و کل نوار تکان می‌خورد.
+   */
+  const cell = (value: number, unit: string) => (
+    <span className="flex flex-col items-center">
+      <span
+        className={`k185-tick text-[clamp(18px,2.3vw,22px)] leading-none font-extrabold tabular-nums ${digits}`}
+      >
+        {toFa(String(value).padStart(2, "0"))}
+      </span>
+      <span className={`mt-1 text-[9px] font-semibold ${unitLabel}`}>{unit}</span>
+    </span>
+  );
+
+  const sep = (
+    <span
+      aria-hidden="true"
+      className={`mb-3.5 text-[11px] leading-none font-bold ${unitLabel} opacity-50`}
+    >
+      :
+    </span>
+  );
 
   return (
     <div
       role="timer"
       aria-live="off"
       aria-label={`${label}: ${d} روز و ${h} ساعت و ${m} دقیقه`}
-      className={`rounded-xl border p-2.5 ${shell}`}
+      className={`inline-flex max-w-full items-stretch gap-0 overflow-hidden rounded-xl border ${shell}`}
     >
-      <div className="flex items-stretch gap-2">
-        {/* روز — وزن بصری بیشتر */}
+      {/* روز — با پس‌زمینهٔ رنگ‌دار، تنها واحدی که وزن بصری بیشتر دارد */}
+      <span className={`flex flex-col items-center justify-center px-3 py-2 ${leadBg}`}>
         <span
-          className={`flex w-[62px] shrink-0 flex-col items-center justify-center rounded-lg border py-1.5 ${dayTone}`}
+          className={`k185-tick text-[clamp(19px,2.5vw,24px)] leading-none font-extrabold tabular-nums ${lead}`}
         >
-          <span className="k185-tick text-[clamp(20px,2.8vw,26px)] leading-none font-extrabold tabular-nums">
-            {toFa(String(d).padStart(2, "0"))}
-          </span>
-          <span className="mt-1 text-[9.5px] font-bold opacity-80">روز</span>
+          {toFa(String(d).padStart(2, "0"))}
         </span>
+        <span className={`mt-1 text-[9px] font-bold ${lead} opacity-80`}>روز</span>
+      </span>
 
-        {/* ساعت : دقیقه : ثانیه — خوانشِ زمان، ریزتر */}
-        <span className="flex min-w-0 flex-1 items-center justify-around gap-0.5">
-          {renderCell(h, "ساعت")}
-          <span className={`pb-3 text-[13px] font-bold ${unitLabel}`} aria-hidden="true">
-            :
-          </span>
-          {renderCell(m, "دقیقه")}
-          <span className={`pb-3 text-[13px] font-bold ${unitLabel}`} aria-hidden="true">
-            :
-          </span>
-          {renderCell(s, "ثانیه")}
-        </span>
-      </div>
+      {/* ساعت : دقیقه : ثانیه */}
+      <span className="flex items-center gap-2 px-3 py-2">
+        {cell(h, "ساعت")}
+        {sep}
+        {cell(m, "دقیقه")}
+        {sep}
+        {cell(s, "ثانیه")}
+      </span>
+
       <span className="sr-only">{faDuration(left)} باقی مانده</span>
     </div>
   );
