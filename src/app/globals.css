@@ -102,6 +102,56 @@
       );
   }
 
+  /* ── بافتِ گره‌چینیِ محو ──────────────────────────────────────────────
+     یک شبکهٔ هشت‌پر که با ماسکِ گرادیانی محو می‌شود. کارکردش فقط این است
+     که سطوحِ بزرگ «کاغذ تخت» نباشند. با SVG درون‌خطی نوشته شده تا هیچ
+     درخواست شبکه‌ای و هیچ فایل اضافه‌ای در بسته نباشد؛ در حالت چاپ و
+     `prefers-reduced-motion` هم بی‌اثر است چون متحرک نیست. */
+  .k185-girih-veil {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23243a5e' stroke-width='1'%3E%3Cpath d='M28 3l7.5 10.5L47 14l-.5 11.5L57 33l-10.5 7.5.5 11.5-11.5-.5L28 62l-7.5-10.5L9 52l.5-11.5L-1 33l10.5-7.5L9 14l11.5.5z'/%3E%3Ccircle cx='28' cy='33' r='9'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 56px 56px;
+    /* محو از هر چهار طرف: بدون این ماسک، الگو مثل یک «پارچهٔ چاپی» با لبهٔ
+       تیز دیده می‌شد و به‌جای بافت، شبیه یک باگ چیدمان به نظر می‌رسید. */
+    mask-image: radial-gradient(ellipse 70% 62% at 32% 50%, black, transparent 72%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 62% at 32% 50%, black, transparent 72%);
+  }
+
+  /* ── ظهورِ آرام بخش‌ها ────────────────────────────────────────────────
+     ⚠️ عمداً «scroll-linked» نیست. نسخهٔ اول با `animation-timeline: view()`
+     ساخته شده بود و یک عیب واقعی داشت: بخشی که از پنجره بلندتر است هرگز
+     به انتهای بازهٔ `entry` نمی‌رسد و نیمه‌محو می‌ماند؛ همان اتفاقی که در
+     چاپ/PDF و در عکس تمام‌صفحه رخ می‌داد و صفحه را خالی نشان می‌داد.
+     این نسخه یک انیمیشن کوتاهِ یک‌باره است که همیشه در حالت نهایی تمام
+     می‌شود — بدون JS، بدون وابستگی به اسکرول. */
+  @keyframes k185-rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .k185-reveal {
+      animation: k185-rise var(--dur-slower) var(--ease-decelerate) both;
+    }
+  }
+
+  /* لیفت ملایم قاب تصویر در هاور — فقط دستگاه‌های اشاره‌گر دقیق */
+  @media (hover: hover) and (pointer: fine) {
+    .k185-lift {
+      transition:
+        transform var(--dur-slow) var(--ease-standard),
+        box-shadow var(--dur-slow) var(--ease-standard);
+    }
+    .k185-lift:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 26px 56px -30px oklch(28% 0.06 260 / 0.5);
+    }
+  }
+
   /* متن فقط برای صفحه‌خوان */
   .sr-only {
     position: absolute;

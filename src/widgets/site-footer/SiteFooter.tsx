@@ -21,36 +21,28 @@ export function SiteFooter() {
 
   return (
     <footer className="border-border bg-surface-2/70 mt-20 border-t">
-      {/* ── فراخوان پایانی ── */}
+      {/* ── یادآوریِ پایانی ──
+          ⚠️ این‌جا قبلاً یک فراخوان کامل با دو دکمه بود («ثبت‌نام و شرکت» +
+          «قوانین مسابقه»). چون صفحهٔ اول پیش از فوتر یک بنرِ اقدام دارد،
+          آن دکمه‌ها **چهارمین تکرار** فراخوان در یک صفحه می‌شدند. اکنون
+          فقط یک جملهٔ گرم و یک لینکِ متنی می‌ماند؛ فوتر وظیفهٔ «حتماً کلیک
+          کن» ندارد، وظیفهٔ «اگر گم شدی، راه این‌جاست» دارد. */}
       <div className="border-border/70 border-b">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <div className="flex items-start gap-3">
-            <span className="text-gold-strong mt-0.5 shrink-0">
-              <Girih size={22} />
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <p className="text-text-muted flex items-start gap-2.5 text-[12.5px] leading-7">
+            <span className="text-gold-strong mt-1 shrink-0" aria-hidden="true">
+              <Girih size={16} />
             </span>
-            <div>
-              <p className="text-text text-[15px] font-extrabold">
-                پنج پرسش، کمتر از دو دقیقه — سهم مسجدت را بگیر.
-              </p>
-              <p className="text-text-muted mt-1 max-w-[52ch] text-[12.5px] leading-7">
-                ثبت‌نام رایگان است و فقط نام، کد ملی، شمارهٔ تماس و انتخاب مسجد لازم دارد.
-              </p>
-            </div>
-          </div>
-          <div className="flex shrink-0 flex-wrap gap-2">
-            <Link
-              href="/register"
-              className="bg-brand text-on-brand hover:bg-brand-hover inline-flex h-10 items-center rounded-lg px-5 text-[13px] font-extrabold transition-colors"
-            >
-              ثبت‌نام و شرکت
-            </Link>
-            <Link
-              href="/rules"
-              className="border-border-strong text-text hover:bg-surface inline-flex h-10 items-center rounded-lg border px-4 text-[12.5px] font-bold transition-colors"
-            >
-              قوانین مسابقه
-            </Link>
-          </div>
+            <span>
+              مسابقه رایگان است و ثبت‌نامش فقط نام، کد ملی، شمارهٔ تماس و انتخاب مسجد می‌خواهد.
+            </span>
+          </p>
+          <Link
+            href="/register"
+            className="text-brand shrink-0 text-[12.5px] font-extrabold underline decoration-current/30 decoration-1 underline-offset-4 transition-colors hover:decoration-current"
+          >
+            رفتن به فرم ثبت‌نام
+          </Link>
         </div>
       </div>
 
