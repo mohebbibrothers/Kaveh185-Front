@@ -73,7 +73,9 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
 
       <div className="relative py-6 sm:py-7">
         <div className="mx-auto mb-4 flex w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
-          <p
+          {/* عنوانِ بخش به‌صورت `h2` است، نه `p`: نوار شهدا یک بخشِ واقعیِ
+              صفحه است و باید در فهرست عنوان‌های صفحه‌خوان دیده شود. */}
+          <h2
             id="martyrs-title"
             className="text-on-stage-muted flex items-center gap-2 text-[11px] font-extrabold tracking-wide"
           >
@@ -82,7 +84,7 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
               <span className="bg-gold relative inline-flex size-1.5 rounded-full" />
             </span>
             یادِ شهیدان — به نامِ کاوه ۱۸۵
-          </p>
+          </h2>
           <span className="text-on-stage-muted/70 text-[10px] font-semibold tabular-nums">
             {toFaNumber(count)} شهید
           </span>
