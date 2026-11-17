@@ -100,7 +100,15 @@ describe("useBootstrap", () => {
 describe("پیکربندی مسیرها", () => {
   it("مسیرهای اصلی همان‌هایی هستند که وجود دارند", async () => {
     const { PRIMARY } = await import("../../config/site");
-    expect(PRIMARY.map((item) => item.href)).toEqual(["/book", "/rules", "/mosques", "/receipt"]);
+    // «خانه» در این نوبت اضافه شد (خواستهٔ کارفرما) و «مساجد حوزه» به
+    // «رتبه‌بندی مساجد» تغییر نام داد؛ قرارداد همان پنج مقصد واقعی است.
+    expect(PRIMARY.map((item) => item.href)).toEqual([
+      "/",
+      "/book",
+      "/rules",
+      "/mosques",
+      "/receipt",
+    ]);
   });
 
   it("هر مسیر یک برچسب فارسی غیرخالی دارد", async () => {

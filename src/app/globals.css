@@ -138,6 +138,78 @@
     -webkit-mask-image: radial-gradient(ellipse 70% 62% at 32% 50%, black, transparent 72%);
   }
 
+  /* ── برگهٔ پایین‌کشویی موبایل ─────────────────────────────────────────
+     حرکت از پایین با منحنیِ «کِششِ نرم»؛ لایهٔ پشت با محو شدن. هر دو
+     با `prefers-reduced-motion` خاموش می‌شوند (قاعدهٔ عمومی پایین فایل). */
+  @keyframes k185-sheet-up {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  @keyframes k185-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .k185-sheet {
+      animation: k185-sheet-up 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .k185-sheet-backdrop {
+      animation: k185-fade-in 200ms ease-out both;
+    }
+  }
+
+  /* ── نوار شهدا: حرکت پیوسته و بی‌درنگ ────────────────────────────────
+     دو نسخه از محتوا پشت سر هم تکرار می‌شوند و کل نوار به اندازهٔ نصفِ
+     عرضش جابه‌جا می‌شود؛ در نقطهٔ پایان، نسخهٔ دوم دقیقاً جای نسخهٔ اول
+     است، پس حلقه بی‌دردسر است. مکث روی هاور (دسکتاپ) تا کاربر بتواند
+     یک چهره را بخواند. */
+  @keyframes k185-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(50%);
+    }
+  }
+  .k185-marquee-track {
+    animation: k185-marquee var(--marquee-duration, 46s) linear infinite;
+    will-change: transform;
+  }
+  .k185-marquee:hover .k185-marquee-track,
+  .k185-marquee:focus-within .k185-marquee-track {
+    animation-play-state: paused;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .k185-marquee-track {
+      animation: none;
+    }
+  }
+
+  /* ── پالسِ نرم (کانال رسمی در فوتر) ──────────────────────────────────
+     یک حلقه که آرام بزرگ و محو می‌شود؛ حسِ «زنده بودن» بدون چشمک‌زدن. */
+  @keyframes k185-pulse {
+    0% {
+      transform: scale(1);
+      opacity: 0.55;
+    }
+    70% {
+      transform: scale(1.55);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1.55);
+      opacity: 0;
+    }
+  }
+
   /* ── ظهورِ آرام بخش‌ها ────────────────────────────────────────────────
      ⚠️ عمداً «scroll-linked» نیست. نسخهٔ اول با `animation-timeline: view()`
      ساخته شده بود و یک عیب واقعی داشت: بخشی که از پنجره بلندتر است هرگز

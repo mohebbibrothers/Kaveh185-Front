@@ -49,7 +49,7 @@ export function LandingSections({ initial }: { initial: Bootstrap }) {
     <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
       <HowItWorks status={status} />
 
-      <ReadingSection bookStories={SITE.bookStories} />
+      <ReadingSection bookStories={SITE.bookStories} portraits={data.gallery.leader} />
 
       {/* ── دربارهٔ مسابقه ──
           کوتاه و انسانی: یک پاراگراف «چرا» + یک ردیف «چه/کِی/کجا».

@@ -4,27 +4,34 @@ import { useEffect, useRef, useState } from "react";
 import { faDuration, toFa } from "@/shared/lib/fa";
 
 /**
- * شمارش معکوس — نسخهٔ سوم، این بار «فشرده و بی‌لرزش».
+ * شمارش معکوس — نسخهٔ چهارم.
  *
- * ── چه ایرادی گرفته شد و چه شد؟ ───────────────────────────────────────────
- * کاربر گفت نسخهٔ قبل «گشاد و بدفرم» است. ایراد واقعی سه چیز بود:
+ * ── ایراد کاربر و پاسخِ این نسخه ──────────────────────────────────────────
+ * «فونت اعداد جذاب نیست و کادر به اعداد چسبیده است.» هر دو ایراد واقعی
+ * بودند و ریشهٔ فنی روشنی داشتند:
  *
- * ۱) **عرضِ بی‌قید.** قاب `flex-1` تا انتهای ستون کشیده می‌شد و یک
- *    شمارندهٔ کوچک، نصف صفحه را می‌گرفت. اکنون قاب `inline-flex` است:
- *    به اندازهٔ محتوای خودش. هیچ فضای مرده‌ای داخلش نمی‌ماند.
- * ۲) **کادر روزِ ۶۲پیکسلی** جدا از بقیه و بی‌ربط. اکنون چهار واحد هم‌خانواده‌اند
- *    با یک سلسله‌مراتب ملایم: روز کمی بزرگ‌تر، ساعت/دقیقه/ثانیه کوچک‌تر —
- *    اما در یک نوارِ یکپارچه با جداکنندهٔ نازک، نه چهار جعبهٔ رقیب.
- * ۳) **پرشِ رقم بدون مهار.** در `clamp`، عرض عدد تغییر می‌کرد و نوار
- *    می‌رقصید. حالا هر خانه `min-w` ثابت دارد + `tabular-nums`.
+ * ۱) **چسبیدن کادر به اعداد.** نسخهٔ قبل یک نوارِ یکپارچه بود با
+ *    `px-3 py-2`؛ یعنی فقط ۸ پیکسل فاصلهٔ عمودی میان رقم و خطِ کادر،
+ *    در حالی که برچسب واحد هم داخل همان نوار بود. چشم، کادر را «قابِ
+ *    تنگ» می‌خواند. این نسخه چهار **کاشیِ جدا** است با `py-3` و
+ *    `px-3.5`، گوشهٔ `rounded-2xl` و فاصلهٔ روشن بین رقم و برچسب؛
+ *    هر رقم در مرکز کاشیِ خودش «نفس می‌کشد».
  *
- * ── نکتهٔ فنی که به‌ظاهر مربوط نیست ولی مهم است ───────────────────────────
- * عدد صفرِ پیشوند («۰۹») عمداً حفظ شده: در فارسی، «۹» و «۰۹» هر دو خوانده
- * می‌شوند، ولی نوارِ ثابت‌عرض با صفر پیشوند، شمارش را قابل‌اسکن می‌کند.
+ * ۲) **فونتِ بی‌شخصیت.** Vazirmatn ارقامش برای متن طراحی شده، نه برای
+ *    نمایش. سه کارِ ارزان و مؤثر: وزن `black` (۹۰۰)، `tracking` منفی
+ *    برای فشرده‌شدنِ رقم‌ها، و `tabular-nums` تا عرضِ هر رقم ثابت بماند
+ *    و نوار هنگام شمارش نرقصد. کاشیِ «روز» رنگِ لاجوردی می‌گیرد تا عدد
+ *    اصلی وزن بصری داشته باشد و بقیه هم‌خانواده بمانند.
+ *
+ * ── یک بهبودِ جانبی که فقط با دقت دیده می‌شود ─────────────────────────────
+ * پیش‌تر کلاس انیمیشن روی هر چهار رقم بود و با هر tick هر چهار رقم از نو
+ * می‌پریدند (چشمی شبیه لرزش). حالا `key={value}` به هر رقم داده شده؛
+ * یعنی انیمیشن فقط روی رقمی اجرا می‌شود که واقعاً عوض شده است.
  *
  * ── دسترس‌پذیری ───────────────────────────────────────────────────────────
  * `role="timer"` + `aria-live="off"` (تغییر هر ثانیه نباید صفحه‌خوان را
- * قطع کند) + یک `sr-only` که کل مدت را یک‌جا می‌گوید.
+ * قطع کند) + یک `sr-only` که کل مدت را یک‌جا می‌گوید. صفرِ پیشوند عمداً
+ * حفظ شده: «۰۹» عرض را ثابت نگه می‌دارد و شمارشِ سریع را قابل‌اسکن می‌کند.
  */
 export function Countdown({
   targetSeconds,
@@ -65,33 +72,31 @@ export function Countdown({
   const isDark = variant === "dark";
   const finished = left <= 0;
 
-  const shell = isDark ? "border-white/12 bg-white/[0.06] text-white" : "border-border bg-surface";
-  const digits = isDark ? "text-white" : "text-text";
-  const unitLabel = isDark ? "text-white/55" : "text-text-subtle";
-  const lead =
+  /** کاشیِ روز رنگِ لهجه می‌گیرد: موتیف طلایی برای «تا شروع»، سبز برای «تا پایان». */
+  const leadTone =
     tone === "upcoming"
       ? isDark
-        ? "text-gold"
-        : "text-gold-strong"
+        ? "border-gold/35 bg-gold/[0.13] text-gold"
+        : "border-gold/45 bg-gold-soft/70 text-gold-strong"
       : isDark
-        ? "text-verde"
-        : "text-verde";
-  const leadBg =
-    tone === "upcoming"
-      ? isDark
-        ? "bg-gold/10"
-        : "bg-gold-soft/70"
-      : isDark
-        ? "bg-verde/12"
-        : "bg-verde-soft/80";
+        ? "border-verde/35 bg-verde/[0.14] text-verde"
+        : "border-verde/40 bg-verde-soft/80 text-verde";
+
+  const tileTone = isDark
+    ? "border-white/12 bg-white/[0.07] text-white shadow-[inset_0_1px_0_oklch(100%_0_0/0.09)]"
+    : "border-border bg-surface text-text shadow-[inset_0_1px_0_oklch(100%_0_0/0.9),0_1px_2px_oklch(24%_0.05_260/0.06)]";
+
+  const unitTone = isDark ? "text-white/55" : "text-text-subtle";
 
   if (finished) {
     return (
       <div
         role="status"
-        className={`inline-flex items-center gap-2.5 rounded-xl border px-3.5 py-2.5 ${shell}`}
+        className={`inline-flex items-center gap-2.5 rounded-xl border px-3.5 py-2.5 ${
+          isDark ? "border-white/12 bg-white/[0.06] text-white" : "border-border bg-surface"
+        }`}
       >
-        <span className={`grid size-7 shrink-0 place-items-center rounded-lg ${lead} ${leadBg}`}>
+        <span className={`grid size-7 shrink-0 place-items-center rounded-lg ${leadTone}`}>
           <svg
             viewBox="0 0 24 24"
             width="14"
@@ -112,26 +117,35 @@ export function Countdown({
   }
 
   /**
-   * یک واحد. `min-w` ثابت مهم‌ترین بخش است: بدون آن، رفتن از «۰۹» به «۱۰»
-   * عرض را عوض می‌کند و کل نوار تکان می‌خورد.
+   * یک کاشی. `key={value}` عمدی است: انیمیشنِ پرشِ رقم فقط وقتی اجرا
+   * می‌شود که خودِ رقم عوض شده باشد، نه در هر tickِ ثانیه‌ای.
    */
-  const cell = (value: number, unit: string) => (
-    <span className="flex flex-col items-center">
+  const tile = (value: number, unit: string, accent = false) => (
+    <span
+      className={`flex min-w-[3.6rem] flex-col items-center justify-center rounded-2xl border px-3 py-3 sm:min-w-[4.25rem] sm:px-4 sm:py-3.5 ${
+        accent ? leadTone : tileTone
+      }`}
+    >
       <span
-        className={`k185-tick text-[clamp(18px,2.3vw,22px)] leading-none font-extrabold tabular-nums ${digits}`}
+        key={value}
+        className="k185-tick text-[clamp(22px,2.9vw,28px)] leading-none font-black tracking-[-0.03em] tabular-nums"
+        style={{ fontFeatureSettings: '"tnum" 1' }}
       >
         {toFa(String(value).padStart(2, "0"))}
       </span>
-      <span className={`mt-1 text-[9px] font-semibold ${unitLabel}`}>{unit}</span>
+      <span
+        className={`mt-1.5 text-[9.5px] leading-none font-bold ${accent ? "opacity-75" : unitTone}`}
+      >
+        {unit}
+      </span>
     </span>
   );
 
-  const sep = (
-    <span
-      aria-hidden="true"
-      className={`mb-3.5 text-[11px] leading-none font-bold ${unitLabel} opacity-50`}
-    >
-      :
+  /** جداکننده: یک نقطهٔ ریز عمودی‌وسط‌چین. سکوتِ بصری بهتر از «:»ِ پررنگ. */
+  const dot = (
+    <span aria-hidden="true" className="flex flex-col gap-1 self-center px-0.5">
+      <span className={`size-[3px] rounded-full ${isDark ? "bg-white/30" : "bg-border-strong"}`} />
+      <span className={`size-[3px] rounded-full ${isDark ? "bg-white/30" : "bg-border-strong"}`} />
     </span>
   );
 
@@ -140,27 +154,15 @@ export function Countdown({
       role="timer"
       aria-live="off"
       aria-label={`${label}: ${d} روز و ${h} ساعت و ${m} دقیقه`}
-      className={`inline-flex max-w-full items-stretch gap-0 overflow-hidden rounded-xl border ${shell}`}
+      className="inline-flex max-w-full items-stretch gap-1.5 sm:gap-2"
     >
-      {/* روز — با پس‌زمینهٔ رنگ‌دار، تنها واحدی که وزن بصری بیشتر دارد */}
-      <span className={`flex flex-col items-center justify-center px-3 py-2 ${leadBg}`}>
-        <span
-          className={`k185-tick text-[clamp(19px,2.5vw,24px)] leading-none font-extrabold tabular-nums ${lead}`}
-        >
-          {toFa(String(d).padStart(2, "0"))}
-        </span>
-        <span className={`mt-1 text-[9px] font-bold ${lead} opacity-80`}>روز</span>
-      </span>
-
-      {/* ساعت : دقیقه : ثانیه */}
-      <span className="flex items-center gap-2 px-3 py-2">
-        {cell(h, "ساعت")}
-        {sep}
-        {cell(m, "دقیقه")}
-        {sep}
-        {cell(s, "ثانیه")}
-      </span>
-
+      {tile(d, "روز", true)}
+      {dot}
+      {tile(h, "ساعت")}
+      {dot}
+      {tile(m, "دقیقه")}
+      {dot}
+      {tile(s, "ثانیه")}
       <span className="sr-only">{faDuration(left)} باقی مانده</span>
     </div>
   );

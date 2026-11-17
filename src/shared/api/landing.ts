@@ -79,15 +79,46 @@ export const leaderboardSchema = z.object({
   leaderboard: z.array(leaderboardEntrySchema),
 });
 
+/**
+ * گالری محتوایی — تصاویر رهبر (باکس «کتاب و کلام») و نوار شهدا (بالای فوتر).
+ *
+ * ⚠️ هر دو آرایه `.default([])` دارند: نسخهٔ قدیمی بک‌اند این کلید را
+ * نمی‌دهد و فرانت نباید بشکند — صفحه باید بدون گالری هم کامل باشد.
+ * (اصل سازگاری رو‌به‌عقب: استقرار بک و فرانت همیشه هم‌زمان نیست.)
+ */
+export const leaderPortraitSchema = z.object({
+  id: z.number(),
+  image_url: z.string(),
+  alt: z.string(),
+  caption: z.string().default(""),
+  caption_paragraphs: z.array(z.string()).default([]),
+  source: z.string().default(""),
+  show_in_box: z.boolean().default(true),
+});
+export const martyrSchema = z.object({
+  id: z.number(),
+  image_url: z.string(),
+  alt: z.string(),
+  title: z.string(),
+  subtitle: z.string().default(""),
+});
+export const gallerySchema = z.object({
+  leader: z.array(leaderPortraitSchema).default([]),
+  martyrs: z.array(martyrSchema).default([]),
+});
+
 export const bootstrapSchema = z.object({
   server_time: z.string(),
   server_time_jalali: z.string(),
   exam_status: examStatusSchema,
   mosques: z.array(mosqueSchema),
   leaderboard: leaderboardSchema,
+  gallery: gallerySchema.default({ leader: [], martyrs: [] }),
 });
 
 export type Bootstrap = z.infer<typeof bootstrapSchema>;
+export type LeaderPortrait = z.infer<typeof leaderPortraitSchema>;
+export type Martyr = z.infer<typeof martyrSchema>;
 export type ExamStatus = z.infer<typeof examStatusSchema>;
 export type Mosque = z.infer<typeof mosqueSchema>;
 export type Leaderboard = z.infer<typeof leaderboardSchema>;

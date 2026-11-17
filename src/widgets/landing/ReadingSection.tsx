@@ -1,56 +1,77 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Girih } from "@/shared/ui/Ornament";
 import { SITE } from "@/shared/config/site";
 import { toFa } from "@/shared/lib/fa";
+import { LeaderGallery } from "@/widgets/landing/LeaderGallery";
+import type { LeaderPortrait } from "@/shared/api/landing";
 
 /**
- * «کتاب و کلام» — تنها جای تصویرِ مطالعه در صفحه.
+ * «کتاب و کلام» — بخشِ کتاب، با گالریِ تصاویر و کلامِ همراه.
  *
- * ── ایرادِ نسخهٔ قبل که کاربر دید ─────────────────────────────────────────
- * ۱) **قابِ بدشکل.** تصویر در یک ستون با `overflow-hidden` و گردی ۱۶px
- *    نشسته بود، ولی هالهٔ گرادیانی و بریده‌شدن لبه‌ها باعث می‌شد گوشه‌ها
- *    «نوک‌تیز» و ناتمام دیده شوند. اکنون قاب، شکلِ **قوسِ محرابی** دارد
- *    (`rounded-t-[110px]`) که هم با زبان بصری سایت (محراب/کاشی) می‌خواند،
- *    هم هیچ گوشهٔ تیزی در هیچ طرف باقی نمی‌گذارد و در سه اندازه
- *    (۳۲۰/۳۹۰/۴۳۰+) درست می‌نشیند.
- * ۲) **متنِ تبلیغاتی.** پاراگراف «۳۰ داستان کوتاه… لازم نیست حفظ کنید»
- *    حذف شد. جایش **کلامِ رهبر انقلاب دربارهٔ کتاب و کتاب‌خوانی** آمد؛
- *    جمله‌ای که خودش دلیلِ خواندن است و به تصویر معنا می‌دهد — نه توضیحی
- *    که کاربر را به «بروشور» حس کند. برچسبِ کوتاهِ کتاب (نامِ مسابقهٔ
- *    امسال) بالای کلام می‌ماند تا معلوم باشد دربارهٔ چه کتابی است، و
- *    تنها دکمهٔ بخش («مطالعهٔ کتاب») زیر کلام.
- * ۳) **هیچ متنی روی چهره.** برچسب و دکمه بیرونِ قاب‌اند.
+ * ── چه چیزی نسبت به نسخهٔ قبل عوض شد؟ ────────────────────────────────────
+ * ۱) **گالری شد.** پیش‌تر یک تصویر ثابت (`emam-reading.jpg`) با یک متن
+ *    ثابت بود. اکنون تصاویر از پنل ادمین می‌آیند و هر تصویر، کلامِ خودش
+ *    را دارد؛ اگر ادمین چیزی آپلود نکرده باشد، به تصویر و کلامِ
+ *    پیش‌فرضِ سایت برمی‌گردیم تا بخش هرگز خالی نماند.
+ * ۲) **کادرِ حرفه‌ای.** قوسِ محرابی + حلقهٔ طلایی + بندانگشتی + شمارهٔ
+ *    اسلاید (در `LeaderGallery`).
+ * ۳) **متن، ستونِ اصلی شد.** کلام در دسکتاپ ستون بزرگ‌تر را می‌گیرد؛
+ *    تصویر ستونِ کنار است. پیش‌تر تصویر نیمی از کارت را می‌بلعید و متن
+ *    در گوشه‌ای کوچک می‌نشست.
  *
- * ── چرا این کلام و نه چیز دیگر؟ ──────────────────────────────────────────
- * کاربر خواست کلامی دربارهٔ کتاب‌خوانی بیاید. متن انتخابی، پیامِ رسمی
- * دربارهٔ ارزش کتاب است و به تصویر (کسی که در حال خواندن است) پاسخ
- * می‌دهد؛ و به‌جای «شعار»، از «آیه» و «قلم» می‌گوید — همان چیزی که
- * کتاب مسابقه هم بر آن استوار است.
+ * ── ترتیب در موبایل ──────────────────────────────────────────────────────
+ * تصویر **اول** می‌آید (کارتِ قوس‌دار، افقی) و بعد برچسب، تیتر، کلام و
+ * دکمه. دلیل: در گوشی، تصویر تنها چیزی است که در نگاه اول «چیستیِ» بخش
+ * را می‌گوید؛ و چون افقی و کوتاه است، کاربر را از دکمه دور نمی‌کند.
  *
- * ⚠️ انتساب: برای احتیاط، برچسب به‌صورت «از بیانات رهبر انقلاب اسلامی»
- * نوشته شده و نامِ شخص در متن نیامده. اگر متنِ دقیق‌تری خواستید، فقط
- * `SOURCE_LABEL` را عوض کنید؛ ساختار دست‌نخورده می‌ماند.
+ * ── اصل صداقت ────────────────────────────────────────────────────────────
+ * کلامِ پیش‌فرض، همان متنِ مستندِ «از بیانات رهبر انقلاب اسلامی دربارهٔ
+ * کتاب و کتاب‌خوانی» است. برچسبِ منبع همیشه دیده می‌شود. اگر ادمین کلامِ
+ * دیگری بگذارد، همان اولویت دارد.
  */
-const SOURCE_LABEL = "از بیانات رهبر انقلاب اسلامی دربارهٔ کتاب و کتاب‌خوانی";
-
-const QUOTE = [
+const DEFAULT_QUOTE = [
   "برای یک ملّت، خسارتِ بزرگ است که افراد آن با کتاب سر و کاری نداشته باشند؛ و برای یک فرد، توفیقِ عظیمی است که با کتاب مأنوس و همواره در حال بهره‌گیری از آن، یعنی آموختن چیزهای تازه باشد.",
   "با این دیدگاه، به‌روشنی می‌توان ارزش و مفهومِ رمزیِ عمیق این حقیقتِ تاریخی را دریافت که اوّلین خطابِ خداوندِ متعال به پیامبرِ گرامی اسلام (صلّی‌الله‌علیه‌وآله) این است که: بخوان!",
   "و در اوّلین سوره‌ای که بر آن فرستادهٔ عظیم‌الشّأنِ خداوند فرود آمده، نامِ «قلم» به تجلیل یاد شده است.",
 ];
 
-export function ReadingSection({ bookStories }: { bookStories: number }) {
+const DEFAULT_SOURCE = "از بیانات رهبر انقلاب اسلامی دربارهٔ کتاب و کتاب‌خوانی";
+
+/** تصویر پیش‌فرض اگر ادمین هنوز چیزی در پنل نگذاشته باشد. */
+const FALLBACK_PORTRAIT: LeaderPortrait = {
+  id: -1,
+  image_url: "/img/emam-reading.jpg",
+  alt: "تصویر حضرت آیت‌الله خامنه‌ای در حال مطالعهٔ کتاب در کتابخانه",
+  caption: "",
+  caption_paragraphs: [],
+  source: "",
+  show_in_box: true,
+};
+
+export function ReadingSection({
+  bookStories,
+  portraits,
+}: {
+  bookStories: number;
+  portraits: LeaderPortrait[];
+}) {
+  const gallery = portraits.length > 0 ? portraits : [FALLBACK_PORTRAIT];
+  const first = gallery[0] as LeaderPortrait;
+
+  // کلام: اگر ادمین برای تصویر اول متنی نوشته، همان؛ وگرنه پیش‌فرض.
+  const paragraphs = first.caption_paragraphs.length > 0 ? first.caption_paragraphs : DEFAULT_QUOTE;
+  const source = first.source || DEFAULT_SOURCE;
+
   return (
     <section id="book" aria-labelledby="book-title" className="k185-reveal mt-14 scroll-mt-24">
       <div className="border-border bg-surface relative overflow-hidden rounded-3xl border">
-        {/* هالهٔ کرمِ گرم در ستون متن — سطح را از کارت سفید جدا می‌کند */}
+        {/* هالهٔ کرمِ گرم پشتِ ستون متن */}
         <div
           aria-hidden="true"
           className="from-gold/[0.07] pointer-events-none absolute inset-y-0 right-0 w-3/5 bg-gradient-to-l to-transparent"
         />
 
-        <div className="relative grid gap-0 md:grid-cols-[minmax(0,1fr)_minmax(230px,34%)]">
+        <div className="relative grid gap-0 md:grid-cols-[minmax(0,1fr)_minmax(250px,36%)]">
           {/* ── متن / کلام ── */}
           <div className="order-2 flex min-w-0 flex-col justify-center p-5 sm:p-7 md:order-1 md:p-8 lg:p-10">
             <p className="text-gold-strong flex items-center gap-1.5 text-[11px] font-extrabold tracking-wide">
@@ -65,7 +86,6 @@ export function ReadingSection({ bookStories }: { bookStories: number }) {
               {SITE.bookTitle}
             </h2>
 
-            {/* جداکنندهٔ نازک با گره — شروع «کلام» را نشان می‌دهد */}
             <div className="mt-4 flex items-center gap-2.5" aria-hidden="true">
               <span className="from-gold/60 h-px w-10 bg-gradient-to-l to-transparent" />
               <span className="text-gold/70">
@@ -76,7 +96,7 @@ export function ReadingSection({ bookStories }: { bookStories: number }) {
 
             <figure className="m-0 mt-3.5">
               <blockquote className="border-0 p-0">
-                {QUOTE.map((para, i) => (
+                {paragraphs.map((para, i) => (
                   <p
                     key={i}
                     className={`text-text-muted text-[13px] leading-[2.15] sm:text-[13.5px] ${
@@ -91,7 +111,7 @@ export function ReadingSection({ bookStories }: { bookStories: number }) {
                 <span className="text-gold-strong mt-1 shrink-0" aria-hidden="true">
                   <Girih size={8} />
                 </span>
-                {SOURCE_LABEL}
+                {source}
               </figcaption>
             </figure>
 
@@ -119,37 +139,10 @@ export function ReadingSection({ bookStories }: { bookStories: number }) {
             </div>
           </div>
 
-          {/* ── قاب تصویر ──
-              موبایل: کارتِ قوس‌دار با عرض کامل و نسبت ۴/۳ (چهره + کتاب‌ها).
-              دسکتاپ: ستون کامل و بلند، قوس در بالا. `priority={false}`
-              چون پایین‌تر از هیرو است؛ `sizes` دقیق تا موبایل نسخهٔ ۵۲۰px
-              را بگیرد، نه ۱۰۰۰px. */}
-          <figure className="relative order-1 m-0 md:order-2 md:self-stretch">
-            <div className="p-3 md:h-full md:p-4">
-              <div className="bg-stage relative overflow-hidden rounded-t-[92px] rounded-b-[18px] shadow-[0_18px_44px_-28px_oklch(28%_0.06_260/0.55)] md:h-full md:rounded-t-[118px]">
-                <div className="relative aspect-[16/11] w-full sm:aspect-[16/9] md:aspect-auto md:h-full md:min-h-[340px] lg:min-h-[400px]">
-                  <Image
-                    src="/img/emam-reading.jpg"
-                    alt="تصویر حضرت آیت‌الله خامنه‌ای در حال مطالعهٔ کتاب در کتابخانه"
-                    fill
-                    sizes="(max-width: 767px) 100vw, (max-width: 1023px) 300px, 420px"
-                    className="object-cover object-[center_24%]"
-                  />
-                  {/* گروهِ تورِ نرم در لبهٔ پایین: تصویر در قاب «می‌نشیند»
-                      و لبهٔ برنده ندارد. */}
-                  <div
-                    aria-hidden="true"
-                    className="from-stage/70 absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t to-transparent"
-                  />
-                  {/* قوسِ طلایی: پنجرهٔ محرابیِ ظریف روی تصویر */}
-                  <div
-                    aria-hidden="true"
-                    className="ring-gold/25 pointer-events-none absolute inset-0 rounded-t-[92px] rounded-b-[18px] ring-1 ring-inset md:rounded-t-[118px]"
-                  />
-                </div>
-              </div>
-            </div>
-          </figure>
+          {/* ── گالری تصویر ── */}
+          <div className="order-1 p-3 md:order-2 md:self-stretch md:p-4">
+            <LeaderGallery items={gallery} bookTitle={SITE.bookTitle} />
+          </div>
         </div>
       </div>
     </section>

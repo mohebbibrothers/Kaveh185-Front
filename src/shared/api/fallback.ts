@@ -63,6 +63,7 @@ export const FALLBACK_BOOTSTRAP: Bootstrap = {
       },
     ],
   },
+  gallery: { leader: [], martyrs: [] },
   leaderboard: {
     organizer: "حوزهٔ مقاومت بسیج ۱۸۵ شهید کاوه",
     total_mosques: 0,

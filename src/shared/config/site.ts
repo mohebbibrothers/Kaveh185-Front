@@ -52,16 +52,25 @@ export const SITE = {
  *     تا منو شلوغ نشود.
  */
 export const PRIMARY = [
-  { href: "/book", label: "کتاب مسابقه" },
-  { href: "/rules", label: "قوانین" },
-  { href: "/mosques", label: "مساجد حوزه" },
-  { href: "/receipt", label: "کارنامه" },
+  { href: "/", label: "خانه", icon: "home" },
+  { href: "/book", label: "کتاب مسابقه", icon: "book" },
+  { href: "/rules", label: "قوانین", icon: "rules" },
+  // «مساجد حوزه» به «رتبه‌بندی مساجد» تغییر نام داد: کاربر از اسم لینک
+  // باید بفهمد داخلش چه چیزی هست. صفحه همان `/mosques` است و محتوایش
+  // رتبه‌بندی است، پس نام هم باید همان باشد.
+  { href: "/mosques", label: "رتبه‌بندی مساجد", icon: "ranking" },
+  { href: "/receipt", label: "کارنامه", icon: "receipt" },
 ] as const;
 
+/**
+ * لنگرهای صفحهٔ اول — فقط چیزهایی که **همین حالا** روی صفحه وجود دارند.
+ * `#board` (جدول مشارکت) حذف شد چون جدول مساجد از صفحهٔ اول برداشته شد و
+ * لنگر به مقصدی اشاره می‌کرد که وجود نداشت (کلیک = هیچ اتفاقی).
+ */
 export const ANCHORS = [
-  { href: "/#about", label: "دربارهٔ مسابقه" },
   { href: "/#steps", label: "چگونه شرکت کنم" },
-  { href: "/#board", label: "جدول مشارکت مساجد" },
+  { href: "/#book", label: "کتاب و کلام" },
+  { href: "/#about", label: "دربارهٔ مسابقه" },
 ] as const;
 
 /** سازگاری با مصرف‌کننده‌های قبلی: لنگرهای صفحهٔ اول. */
