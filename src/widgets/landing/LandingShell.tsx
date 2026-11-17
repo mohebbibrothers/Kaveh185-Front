@@ -4,6 +4,7 @@ import { SiteHeader } from "@/widgets/site-header/SiteHeader";
 import { SiteFooter } from "@/widgets/site-footer/SiteFooter";
 import { Hero } from "@/widgets/hero/Hero";
 import { useLiveBootstrap } from "@/shared/api/live";
+import { useFooterMartyrs } from "@/shared/api/use-footer-martyrs";
 import { DataContext } from "@/shared/api/data-context";
 import type { Bootstrap } from "@/shared/api/landing";
 
@@ -45,6 +46,8 @@ export function LandingShell({
   children?: React.ReactNode;
 }) {
   const { data, freshness, lastOk } = useLiveBootstrap(initial, initialFetchedAt);
+  // تورِ ایمنیِ یادواره — بی‌صدا در خطا، بی‌داده یعنی «نوار مخفی».
+  const liveMartyrs = useFooterMartyrs();
 
   return (
     <DataContext.Provider value={{ data, freshness, lastOk }}>
@@ -53,8 +56,14 @@ export function LandingShell({
         <Hero status={data.exam_status} serverNow={data.server_time} />
         {children}
       </main>
-      {/* یادوارهٔ شهدا داخلِ فوتر است، پس دادهٔ شهدا به فوتر می‌رود. */}
-      <SiteFooter martyrs={data.gallery.martyrs} />
+      {/* یادوارهٔ شهدا داخلِ فوتر است، پس دادهٔ شهدا به فوتر می‌رود.
+          ⚠️ نسخهٔ اول فقط `data.gallery.martyrs` بود. در خروجیِ ایستا این
+          فهرست عمداً خالی است (اصلِ «هیچ دادهٔ ساختگی») و bootstrapِ زنده
+          هم لزوماً گالری را همراه ندارد؛ نتیجه: HTMLِ منتشرشده نوارِ
+          یادواره را **نداشت** و کاربر آن را نمی‌دید. حالا اگر bootstrap
+          چیزی نداشت، همان مسیرِ صفحه‌های داخلی (`useFooterMartyrs`) شهدا
+          را از `/api/v1/gallery/` می‌گیرد. */}
+      <SiteFooter martyrs={data.gallery.martyrs.length > 0 ? data.gallery.martyrs : liveMartyrs} />
     </DataContext.Provider>
   );
 }

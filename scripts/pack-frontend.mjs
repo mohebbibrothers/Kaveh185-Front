@@ -221,6 +221,12 @@ const pkg = JSON.parse(await readFile(join(ROOT, "package.json"), "utf8"));
 const info = {
   name: pkg.name,
   version: pkg.version,
+  // ── شناسهٔ کامیتِ ساخته‌شده ────────────────────────────────────────────────
+  // اسکریپتِ به‌روزرسانی روی هاست با همین مقدار تطبیق می‌دهد که «همان
+  // نسخه‌ای که در گیت است» سرو می‌شود یا نه. پیش از این، اسکریپت به هشِ
+  // `index.html` (`00228e3c…`) تکیه می‌کرد که هیچ ربطی به کامیت نداشت و
+  // هر بار هشدارِ نادرستِ «نسخهٔ سرو‌شده با بستهٔ تازه نمی‌خواند» می‌داد.
+  commit: (process.env.GITHUB_SHA || process.env.K185_COMMIT || "").slice(0, 12),
   built_at: new Date().toISOString(),
   sha256_index: indexSha,
   routes,
