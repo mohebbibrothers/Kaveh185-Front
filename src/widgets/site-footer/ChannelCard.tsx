@@ -62,7 +62,10 @@ export function ChannelCard() {
         <span className="text-on-band block truncate text-[12.5px] font-extrabold">
           {SITE.channel.name}
         </span>
-        <span className="text-on-band-muted/85 mt-0.5 flex items-center gap-1 text-[10.5px]" dir="ltr">
+        <span
+          className="text-on-band-muted/85 mt-0.5 flex items-center gap-1 text-[10.5px]"
+          dir="ltr"
+        >
           <span className="truncate font-mono">{SITE.channel.handle}</span>
         </span>
         <span className="text-on-band-muted/70 mt-0.5 block text-[9.5px] font-semibold">
@@ -73,9 +76,16 @@ export function ChannelCard() {
       {/* فلشِ رفتن — فقط دسکتاپ */}
       <span
         aria-hidden="true"
-        className="k185-channel-arrow text-on-band-muted/60 hidden size-7 shrink-0 place-items-center rounded-full border border-on-band/15 transition-colors group-hover:border-verde/50 group-hover:text-verde lg:grid"
+        className="k185-channel-arrow text-on-band-muted/60 border-on-band/15 group-hover:border-verde/50 group-hover:text-verde hidden size-7 shrink-0 place-items-center rounded-full border transition-colors lg:grid"
       >
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.4">
+        <svg
+          viewBox="0 0 24 24"
+          width="13"
+          height="13"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.4"
+        >
           <path d="M14 6l6 6-6 6M20 12H4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </span>

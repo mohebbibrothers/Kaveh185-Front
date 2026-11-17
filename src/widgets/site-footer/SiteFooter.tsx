@@ -108,13 +108,15 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                 </span>
                 <span className="flex flex-col leading-tight">
                   <span className="text-[16px] font-extrabold">{SITE.name}</span>
-                  <span className="text-on-band-muted mt-0.5 text-[10.5px]">{SITE.event.title}</span>
+                  <span className="text-on-band-muted mt-0.5 text-[10.5px]">
+                    {SITE.event.title}
+                  </span>
                 </span>
               </div>
 
               <p className="text-on-band-muted mx-auto mt-3.5 max-w-sm text-[12.5px] leading-[2] lg:mx-0">
-                مسابقهٔ کتاب‌خوانی {SITE.bookTitle} به مناسبت هفتهٔ بسیج، میان مساجد حوزهٔ مقاومت
-                بسیج ۱۸۵ شهید کاوه.
+                مسابقهٔ کتاب‌خوانی {SITE.bookTitle} به مناسبت هفتهٔ بسیج، میان مساجد حوزهٔ مقاومت بسیج
+                ۱۸۵ شهید کاوه.
               </p>
 
               <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2 text-[11px] lg:justify-start">
@@ -131,7 +133,11 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
 
             {/* ── دو ستونِ کوتاه: در موبایل کنارِ هم، در دسکتاپ زیرِ هم نمی‌روند ── */}
             <div className="mt-7 grid w-full grid-cols-2 gap-4 lg:mt-0 lg:contents">
-              <nav aria-label="دسترسی سریع" className="k185-footer-col" style={{ animationDelay: "70ms" }}>
+              <nav
+                aria-label="دسترسی سریع"
+                className="k185-footer-col"
+                style={{ animationDelay: "70ms" }}
+              >
                 <h2 className="text-on-band mb-2.5 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide lg:justify-start">
                   <span aria-hidden="true" className="bg-band-accent/70 h-3 w-[2px] rounded-full" />
                   دسترسی سریع
@@ -150,7 +156,11 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                 </ul>
               </nav>
 
-              <nav aria-label="قوانین و حساب" className="k185-footer-col" style={{ animationDelay: "120ms" }}>
+              <nav
+                aria-label="قوانین و حساب"
+                className="k185-footer-col"
+                style={{ animationDelay: "120ms" }}
+              >
                 <h2 className="text-on-band mb-2.5 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide lg:justify-start">
                   <span aria-hidden="true" className="bg-band-accent/70 h-3 w-[2px] rounded-full" />
                   قوانین و حساب

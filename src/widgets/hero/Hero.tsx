@@ -263,17 +263,14 @@ function HeroPortrait({ priority }: { priority: boolean }) {
     <figure className="k185-portrait m-0 w-[clamp(150px,44vw,190px)] shrink-0 lg:w-full lg:max-w-[300px]">
       <div className="relative">
         {/* ۱) هاله */}
-        <div
-          aria-hidden="true"
-          className="bg-gold/25 absolute -inset-5 rounded-[46%] blur-3xl"
-        />
+        <div aria-hidden="true" className="bg-gold/25 absolute -inset-5 rounded-[46%] blur-3xl" />
         <div
           aria-hidden="true"
           className="bg-brand/12 absolute inset-x-6 -bottom-4 h-16 rounded-full blur-2xl"
         />
 
         {/* ۲) بدنهٔ طاق */}
-        <div className="k185-arch relative overflow-hidden rounded-t-[999px] rounded-b-[26px] border border-white/25 bg-gradient-to-b from-white/55 via-gold-soft/45 to-gold-soft/15 p-[5px] shadow-[0_30px_60px_-30px_oklch(24%_0.06_260/0.65),0_2px_0_oklch(100%_0_0/0.75)_inset]">
+        <div className="k185-arch via-gold-soft/45 to-gold-soft/15 relative overflow-hidden rounded-t-[999px] rounded-b-[26px] border border-white/25 bg-gradient-to-b from-white/55 p-[5px] shadow-[0_30px_60px_-30px_oklch(24%_0.06_260/0.65),0_2px_0_oklch(100%_0_0/0.75)_inset]">
           <div className="relative overflow-hidden rounded-t-[999px] rounded-b-[22px] bg-[radial-gradient(120%_90%_at_50%_0%,oklch(100%_0_0/0.96),oklch(94%_0.03_86/0.9)_55%,oklch(90%_0.035_84/0.85))]">
             <Image
               src="/img/emblem-mark.webp"
@@ -296,7 +293,7 @@ function HeroPortrait({ priority }: { priority: boolean }) {
             />
 
             {/* ۴) زیرنویسِ شیشه‌ای */}
-            <figcaption className="absolute inset-x-2 bottom-2 rounded-xl border border-white/25 bg-stage/55 px-2.5 py-1.5 text-center backdrop-blur-md">
+            <figcaption className="bg-stage/55 absolute inset-x-2 bottom-2 rounded-xl border border-white/25 px-2.5 py-1.5 text-center backdrop-blur-md">
               <span className="text-on-stage block text-[10.5px] leading-tight font-extrabold">
                 شهید محمود کاوه
               </span>
@@ -314,7 +311,7 @@ function HeroPortrait({ priority }: { priority: boolean }) {
         />
         <span
           aria-hidden="true"
-          className="border-gold/60 pointer-events-none absolute -bottom-1 -right-1 size-5 rounded-br-xl border-r-2 border-b-2"
+          className="border-gold/60 pointer-events-none absolute -right-1 -bottom-1 size-5 rounded-br-xl border-r-2 border-b-2"
         />
       </div>
     </figure>

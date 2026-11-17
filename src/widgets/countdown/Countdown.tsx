@@ -94,7 +94,9 @@ export function Countdown({
       <div
         role="status"
         className={`inline-flex items-center gap-2.5 rounded-2xl border px-4 py-3 ${
-          isDark ? "border-white/12 bg-white/[0.06] text-white" : "border-border bg-surface text-text"
+          isDark
+            ? "border-white/12 bg-white/[0.06] text-white"
+            : "border-border bg-surface text-text"
         }`}
       >
         <span
@@ -232,13 +234,7 @@ export function Countdown({
  * می‌شود، پس هیچ ماسک، `conic-gradient` یا `mask-composite`ی در کار نیست
  * و در همهٔ مرورگرها یکسان است.
  */
-function ProgressRing({
-  progress,
-  accent,
-}: {
-  progress: number;
-  accent: "gold" | "verde";
-}) {
+function ProgressRing({ progress, accent }: { progress: number; accent: "gold" | "verde" }) {
   const r = 26;
   const circumference = 2 * Math.PI * r;
   const dash = Math.max(0, Math.min(1, progress)) * circumference;

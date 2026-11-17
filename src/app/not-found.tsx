@@ -44,8 +44,8 @@ export default function NotFound() {
               این صفحه پیدا نشد
             </h1>
             <p className="text-text-muted mx-auto mt-2.5 max-w-[42ch] text-[13px] leading-[2] md:mx-0">
-              ممکن است آدرس را دستی عوض کرده باشی، یا این صفحه جابه‌جا شده باشد. راهِ برگشت
-              همیشه باز است.
+              ممکن است آدرس را دستی عوض کرده باشی، یا این صفحه جابه‌جا شده باشد. راهِ برگشت همیشه باز
+              است.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 md:justify-start">
@@ -92,7 +92,7 @@ export default function NotFound() {
               />
             </div>
 
-            <div className="relative hidden h-[190px] w-[130px] overflow-hidden rounded-t-[999px] rounded-b-2xl border border-gold/35 bg-gradient-to-b from-gold-soft/70 to-sunken/40 md:block">
+            <div className="border-gold/35 from-gold-soft/70 to-sunken/40 relative hidden h-[190px] w-[130px] overflow-hidden rounded-t-[999px] rounded-b-2xl border bg-gradient-to-b md:block">
               {/* eslint-disable-next-line @next/next/no-img-element -- تصویر ثابت */}
               <img
                 src="/img/punch-fist.webp"

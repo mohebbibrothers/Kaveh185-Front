@@ -115,8 +115,7 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
           ref={trackRef}
           className={`relative ${canScroll ? "overflow-hidden" : "no-scrollbar overflow-x-auto"}`}
           style={{
-            maskImage:
-              "linear-gradient(to left, transparent, black 6%, black 94%, transparent)",
+            maskImage: "linear-gradient(to left, transparent, black 6%, black 94%, transparent)",
             WebkitMaskImage:
               "linear-gradient(to left, transparent, black 6%, black 94%, transparent)",
           }}
@@ -153,7 +152,7 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
                         {/* حلقهٔ گرادیانی — نازک، طلایی، با درخششِ هاور */}
                         <span
                           aria-hidden="true"
-                          className="from-band-accent/85 via-band-accent/25 to-band-accent/75 absolute -inset-[3px] rounded-full bg-gradient-to-b opacity-80 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100"
+                          className="from-band-accent/85 via-band-accent/25 to-band-accent/75 absolute -inset-[3px] rounded-full bg-gradient-to-b opacity-80 transition-opacity duration-300 group-focus-within:opacity-100 group-hover:opacity-100"
                         />
                         <span className="bg-band relative block size-full overflow-hidden rounded-full">
                           <Image
@@ -161,7 +160,7 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
                             alt={m.alt || m.title}
                             fill
                             sizes="72px"
-                            className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover:scale-[1.08] group-focus-within:scale-[1.08]"
+                            className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] group-focus-within:scale-[1.08] group-hover:scale-[1.08]"
                           />
                           {/* هالهٔ نور از بالا — چهره‌ها را «روشن» می‌کند */}
                           <span
