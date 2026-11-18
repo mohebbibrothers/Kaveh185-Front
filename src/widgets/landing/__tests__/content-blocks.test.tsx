@@ -113,16 +113,19 @@ describe("MartyrsMarquee", () => {
     expect(screen.getByRole("heading", { level: 2, name: "یادوارهٔ شهدا" })).toBeTruthy();
   });
 
-  it("ردیف همیشه به تعدادِ زوج تکرار می‌شود تا حلقه بی‌درز باشد", () => {
-    // با هر تعداد شهید، کلِ چهره‌های رندرشده باید زوج‌تایی از نسخهٔ کامل
-    // باشد؛ وگرنه `translateX(50%)` نیمهٔ ناقص نشان می‌دهد و لبهٔ خالی
-    // همان باگی است که در تبلت/لپ‌تاپ دیده شد.
+  it("ردیف از سه نسخهٔ کاملِ یکسان ساخته می‌شود تا حلقه بی‌درز و بی‌خالی بمانَد", () => {
+    // دورِ ۱۸، نکتهٔ ۱: با `-50%` روی سه نسخهٔ یکسان، پایانِ چرخه دقیقاً
+    // حالتِ شروع را بازتولید می‌کند و دو نسخهٔ اضافه، پوششِ دو طرفِ قاب را
+    // تضمین می‌کنند. این تست همان قرارداد را قفل می‌کند.
     for (const n of [1, 2, 3, 5, 7]) {
       const items = Array.from({ length: n }, (_, i) => martyr({ title: `شهید ${i}` }));
       const { container, unmount } = render(<MartyrsMarquee items={items} />);
       const figures = container.querySelectorAll("figure");
-      expect(figures.length % (n * 2)).toBe(0);
-      expect(figures.length).toBeGreaterThanOrEqual(n * 2);
+      expect(figures.length % n).toBe(0);
+      // ۲۰ کارت در هر نسخه (گردشده به مضربِ تعدادِ شهدا) × ۳ نسخه
+      const cardsPerCopy = figures.length / 3;
+      expect(cardsPerCopy).toBeGreaterThanOrEqual(20);
+      expect(Number.isInteger(cardsPerCopy / n)).toBe(true);
       unmount();
     }
   });

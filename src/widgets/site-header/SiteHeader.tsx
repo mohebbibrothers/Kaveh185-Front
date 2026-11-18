@@ -32,7 +32,7 @@ export function SiteHeader() {
 
   return (
     <header className="border-border/70 bg-canvas/80 sticky top-0 z-40 border-b backdrop-blur-xl">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-2 px-3 sm:px-6 lg:h-[72px]">
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-2 px-3 [contain:layout] sm:px-6 lg:h-[72px]">
         <Link
           href="/"
           className="group flex items-center gap-2 rounded-lg py-1"

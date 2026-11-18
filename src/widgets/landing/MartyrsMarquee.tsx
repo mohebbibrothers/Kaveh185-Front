@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { usePrefersReducedMotion } from "@/shared/lib/motion";
 import { Girih } from "@/shared/ui/Ornament";
 import type { Martyr } from "@/shared/api/landing";
@@ -68,12 +68,12 @@ import type { Martyr } from "@/shared/api/landing";
  *     locale است — همان تکنیکی که در نوارهای حرفه‌ای (اسپلش‌ها، لوگووال‌ها)
  *     استفاده می‌شود.
  */
-const CARD_W_MOBILE = 84;
-const CARD_W_DESKTOP = 100;
-const GAP_MOBILE = 8;
-const GAP_DESKTOP = 12;
-/** حداقل تعداد آیتم در هر نسخه — اگر شهدا کم بودند، فهرست تکرار می‌شود. */
-const MIN_ITEMS = 12;
+/**
+ * پهن‌ترین قابی که سایت در عمل می‌بیند ۱۹۲۰px است. با کارتِ ۱۰۰px و فاصلهٔ
+ * ۱۲px، ۲۰ کارت = ۲۲۴۰px ⇒ یک نسخه همیشه از قاب پهن‌تر است و «خالی‌شدنِ
+ * یک طرف» ساختاراً ناممکن می‌شود (نکتهٔ ۱، دورِ ۱۸).
+ */
+const MIN_ITEMS = 20;
 
 export function MartyrsMarquee({ items }: { items: Martyr[] }) {
   const reduced = usePrefersReducedMotion();
@@ -82,101 +82,55 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
 
   const count = valid.length;
 
-  // عرضِ واقعیِ قاب (با تغییرِ اندازه به‌روز می‌شود) — ریاضیِ «پر بودن» را
-  // از حدس به اندازه‌گیری تبدیل می‌کند.
-  const viewportRef = useRef<HTMLDivElement | null>(null);
-  const listRef = useRef<HTMLUListElement | null>(null);
-  const [viewportW, setViewportW] = useState(0);
-  const [isDesktop, setIsDesktop] = useState(false);
   /**
-   * جابه‌جاییِ دقیقِ یک «دوره» به **پیکسلِ مطلق**.
+   * ═══ بازنویسیِ دورِ ۱۸ — «ریلِ سه‌نسخه‌ای، اندازه‌گیری‌صفر» ═══════════
    *
-   * چرا درصد کافی نیست: `-50%` به عرضِ خودِ `<ul>` بسته است و در RTL جهتِ
-   * تفسیر عوض می‌شود. این‌جا مقدار از روی `offsetLeft` واقعیِ کارتِ اولِ
-   * نسخهٔ دوم منهای کارتِ اولِ نسخهٔ اول خوانده می‌شود؛ یعنی **عرضِ
-   * دقیقِ یک نسخه** — بدونِ خطای گردکردن، بدونِ خطای `gap` انتهایی و
-   * مستقل از تعدادِ آیتم‌ها. اگر اندازه‌گیری نشد (SSR/تست)، `0` می‌ماند و
-   * انیمیشن عملاً حرکتی نمی‌کند؛ هیچ‌وقت نیمه‌خالی نشان داده نمی‌شود.
+   * کاربر برای سومین بار گزارش داد نوار از یک طرف بیرون می‌رود و طرفِ دیگر
+   * خالی می‌شود. دو دورِ قبل دنبالِ «اندازه‌گیریِ درستِ عرض» بودیم؛ ولی
+   * هر راه‌حلی که به جاوااسکریپت وابسته باشد در چند لحظه شکننده است:
+   * فریمِ اول پیش از هیدریشن، بارگذاریِ فونتِ وزیرمتن، باز/بسته شدنِ
+   * اسکرول‌بار، و بدترین حالت: اندازه‌گیریِ صفر ⇒ ایستادنِ ردیف روی `0px`
+   * و دیده‌شدنِ نیمهٔ خالی.
+   *
+   * این‌بار **هیچ اندازه‌گیری‌ای وجود ندارد؛ فقط هندسهٔ CSS:**
+   *
+   *   ۱) ردیف = **سه نسخهٔ کاملِ یکسان** (`A A A`) و انیمیشن
+   *      `0 → -50%`. چون `-50%` روی عرضِ خودِ ردیف حساب می‌شود و ردیف
+   *      زوج‌تایی از نسخه‌های یکسان است، پایانِ چرخه **دقیقاً** حالتِ
+   *      شروع را بازتولید می‌کند ⇒ حلقهٔ بی‌درز، مستقل از عرض، فونت و
+   *      تعدادِ شهدا.
+   *   ۲) در هر لحظه، دو نسخهٔ دیگر (جلو و عقبِ قاب) پوشش را تضمین می‌کنند؛
+   *      بنابراین حتی اگر مرورگر یک فریم دیر جابه‌جا کند یا قاب پهن‌تر از
+   *      یک نسخه باشد، طرفِ خالی **ساختاراً ناممکن** است. این همان دلیلی
+   *      است که این‌جا سه نسخه داریم و نه دو.
+   *   ۳) ردیف `dir="ltr"` است تا `-50%` روی محورِ چپ‌به‌راست تفسیر شود
+   *      (ریشهٔ باگِ RTL) و متنِ هر کارت با `dir="rtl"` سرِ جای خود می‌مانَد.
+   *   ۴) هر نسخه دستِ‌کم `MIN_ITEMS` کارت دارد؛ با کارتِ ۱۰۰px و فاصلهٔ
+   *      ۱۲px یعنی ~۲۲۴۰px ⇒ پهن‌تر از پهن‌ترین قابِ ممکن (۱۹۲۰px).
    */
-  const [shift, setShift] = useState(0);
-
-  useEffect(() => {
-    const el = viewportRef.current;
-    if (!el) return;
-    // ⚠️ محیطِ تست/SSR ممکن است `matchMedia` یا `ResizeObserver` نداشته
-    // باشد؛ آن‌جا مقدارِ محافظه‌کارانهٔ MIN_ITEMS استفاده می‌شود، نه کرش.
-    if (typeof window.matchMedia !== "function" || typeof ResizeObserver === "undefined") {
-      setViewportW(el.clientWidth || 0);
-      return;
-    }
-    const mq = window.matchMedia("(min-width: 640px)");
-    const read = () => {
-      setViewportW(el.clientWidth);
-      setIsDesktop(mq.matches);
-    };
-    read();
-    const ro = new ResizeObserver(read);
-    ro.observe(el);
-    mq.addEventListener("change", read);
-    return () => {
-      ro.disconnect();
-      mq.removeEventListener("change", read);
-    };
-  }, []);
-
-  /**
-   * اندازه‌گیریِ عرضِ یک «نسخه» — همین‌جا، **پیش از** هر بازگشتِ زودهنگام،
-   * چون قاعدهٔ هوک‌ها اجازه نمی‌دهد هوکی بعد از `return null` بیاید
-   * (خطای React #310 دقیقاً همین بود و در بازرسیِ مرورگر گرفته شد).
-   */
-  useEffect(() => {
-    const ul = listRef.current;
-    if (!ul) return;
-    const measure = (): void => {
-      const kids = ul.children;
-      const half = Math.round(kids.length / 2);
-      if (half < 1) return;
-      const first = kids[0] as HTMLElement | undefined;
-      const second = kids[half] as HTMLElement | undefined;
-      if (!first || !second) return;
-      const d = second.offsetLeft - first.offsetLeft;
-      setShift(d > 0 ? d : 0);
-    };
-    measure();
-    // فونتِ وزیرمتن بعد از بارگذاری می‌تواند عرض‌ها را چند پیکسل جابه‌جا
-    // کند؛ یک اندازه‌گیریِ دوباره در آن لحظه، درزِ حلقه را صفر نگه می‌دارد.
-    // ⚠️ jsdom و مرورگرهای خیلی قدیم `document.fonts` ندارند؛ نبودش
-    // نباید تست یا صفحه را بشکند.
-    const fonts = document.fonts as FontFaceSet | undefined;
-    if (fonts) {
-      void fonts.ready.then(() => {
-        measure();
-      });
-    }
-    if (typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(measure);
-    ro.observe(ul);
-    return () => {
-      ro.disconnect();
-    };
-  }, [count, viewportW, isDesktop]);
-
   // ⚠️ قاعدهٔ هوک‌ها: بازگشتِ زودهنگام **بعد** از همهٔ هوک‌ها. وگرنه اگر
   // روزی فهرست خالی به این کامپوننت برسد و بعداً پر شود، تعدادِ هوک‌ها
   // بین دو رندر عوض می‌شود و ری‌اکت می‌شکند.
   if (count === 0) return null;
 
-  const cardW = isDesktop ? CARD_W_DESKTOP : CARD_W_MOBILE;
-  const gap = isDesktop ? GAP_DESKTOP : GAP_MOBILE;
-  // تعدادِ آیتمِ هر نسخه از عرضِ واقعیِ قاب؛ +۲ کارت حاشیهٔ اطمینان.
-  const perCopy =
-    viewportW > 0 ? Math.max(count, Math.ceil(viewportW / (cardW + gap)) + 2) : MIN_ITEMS;
+  /**
+   * تعدادِ کارتِ هر نسخه بدونِ هیچ اندازه‌گیری:
+   *   • حداقل `MIN_ITEMS` کارت (تا در پهن‌ترین قاب هم ردیف پر باشد)؛
+   *   • و مضربی از تعدادِ شهدا تا هر نسخه **کامل** تکرار شود و درزِ چرخه
+   *     دقیقاً روی مرزِ یک شهید بیفتد.
+   * پهن‌ترین قابی که سایت در عمل می‌بیند ۱۹۲۰px است؛ با کارتِ ۱۰۰px + ۱۲px
+   * فاصله، ۲۰ کارت = ۲۲۴۰px ⇒ همیشه بیشتر از قاب. `MIN_ITEMS = 20` این را
+   * با حاشیهٔ اطمینان تضمین می‌کند و «پر بودن» را از اندازه‌گیری بی‌نیاز.
+   */
+  const perCopy = Math.max(MIN_ITEMS, Math.ceil(MIN_ITEMS / count) * count);
   const canScroll = !reduced;
   const copyItems = Array.from({ length: Math.ceil(perCopy / count) }, () => valid).flat();
-  // دو نسخهٔ یکسان ⇒ در `-50%` تصویر عیناً برمی‌گردد ⇒ درز = صفر.
-  const sequence = [...copyItems, ...copyItems];
-  // سرعتِ یکنواختِ دیداری: هر کارت ~۴ ثانیه، مستقل از تعداد.
-  const duration = Math.max(28, Math.round(copyItems.length * 4));
+  // ⚠️ **سه** نسخه و نه دو: با `-50%`، نسخهٔ دوم/سوم پوششِ هر دو طرفِ قاب
+  // را می‌دهند، حتی وقتی قاب از یک نسخه پهن‌تر باشد یا مرورگر یک فریم
+  // دیر جابه‌جا کند. هیچ‌حالتی برای «طرفِ خالی» باقی نمی‌مانَد.
+  const sequence = [...copyItems, ...copyItems, ...copyItems];
+  // سرعتِ یکنواختِ دیداری: هر جابه‌جایی ~۱٫۹ ثانیه، مستقل از تعداد.
+  const duration = Math.max(48, Math.round(copyItems.length * 2.4));
 
   const active = activeIndex !== null ? valid[activeIndex % count] : null;
 
@@ -225,42 +179,45 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
 
         {/* ── ردیفِ اصلی ── */}
         {/* ⚠️ `dir="ltr"` روی همین قاب هم لازم است، نه فقط روی `<ul>`:
-            در RTL یک بلوکِ `w-max` به لبهٔ **راست** چیده می‌شود و آن‌وقت
-            حرکتِ چپ‌رو، سمتِ راست را خالی می‌کند (همان چیزی که کاربر دید).
-            با LTR شدنِ قاب، ردیف از لبهٔ چپ شروع می‌شود و `-shift` دقیقاً
+            در RTL یک بلوکِ پهن به لبهٔ **راست** چیده می‌شود و آن‌وقت حرکتِ
+            چپ‌رو، سمتِ راست را خالی می‌کند (همان چیزی که کاربر دید).
+            با LTR شدنِ قاب، ردیف از لبهٔ چپ شروع می‌شود و `-50%` دقیقاً
             نسخهٔ دوم را جای نسخهٔ اول می‌آورد ⇒ حلقهٔ بی‌درز. متنِ کارت‌ها
             با `dir="rtl"` روی هر `<figure>` سرِ جای خودش است. */}
+        {/* ── این قاب **دوطرفه** است ──────────────────────────────────────
+            نسخهٔ قبل ماسکِ ۶٪ در دو طرف داشت و چون آن‌جا هیچ چهره‌ای نیست
+            (ردیف از لبهٔ کارت شروع می‌شود، نه از وسطِ آن)، همان نوارِ محو
+            به چشمِ کاربر «نیمهٔ خالی» می‌آمد. حالا:
+              • تمام‌عرض و بی‌ماسکِ کناری ⇒ هیچ لبهٔ محوی وجود ندارد؛
+              • در دو انتها یک **سایهٔ نرم ۰٫۵rem** می‌نشیند که چهره‌ها را
+                به‌جای «بریدن»، به لبه «می‌دوزد». */}
         <div
-          ref={viewportRef}
           dir="ltr"
           className={`relative ${canScroll ? "overflow-hidden" : "no-scrollbar overflow-x-auto"}`}
           style={{
-            maskImage: "linear-gradient(to left, transparent, black 6%, black 94%, transparent)",
+            maskImage:
+              "linear-gradient(to right, transparent 0, black 26px, black calc(100% - 26px), transparent 100%)",
             WebkitMaskImage:
-              "linear-gradient(to left, transparent, black 6%, black 94%, transparent)",
+              "linear-gradient(to right, transparent 0, black 26px, black calc(100% - 26px), transparent 100%)",
           }}
           onMouseLeave={() => {
             setActiveIndex(null);
           }}
         >
-          {/* ⚠️ `dir="ltr"` فقط روی ردیف: محورِ `translateX` را از locale
-              جدا می‌کند (ریشهٔ خالی‌شدنِ یک‌طرفه). متنِ هر کارت با
-              `dir="rtl"` سرِ جای خودش می‌مانَد. */}
+          {/* ⚠️ سه ویژگی که این ردیف را از «اندازه‌گیری با جاوااسکریپت» بی‌نیاز
+              می‌کند و باگِ «یک طرف خالی» را ساختاراً ناممکن می‌سازد:
+                ۱) `dir="ltr"` ⇒ محورِ `translateX` از locale جدا می‌شود؛
+                ۲) `w-max` + دستِ‌کم ۲۰ کارت در هر نسخه ⇒ هر نسخه از پهن‌ترین
+                   قاب (۱۹۲۰px) پهن‌تر است، پس هیچ‌وقت جای خالی نمی‌مانَد؛
+                ۳) `--k185-marquee-shift: 50%` ⇒ جابه‌جایی به عرضِ خودِ ردیف
+                   بسته است (نه به قاب، نه به `offsetLeft`)، و چون ردیف دقیقاً
+                   دو نسخهٔ یکسان است، `-50%` همیشه درزِ صفر می‌دهد. */}
           <ul
-            ref={listRef}
             dir="ltr"
             className={`flex w-max items-start gap-2 sm:gap-[12px] ${
               canScroll ? "k185-marquee" : "mx-auto justify-center px-3 sm:px-4"
             }`}
-            style={
-              canScroll
-                ? {
-                    animationDuration: `${duration}s`,
-                    // متغیرِ پیکسلیِ اندازه‌گیری‌شده؛ `globals.css` از آن می‌خواند.
-                    ["--k185-marquee-shift" as string]: `${shift}px`,
-                  }
-                : undefined
-            }
+            style={canScroll ? { animationDuration: `${duration}s` } : undefined}
           >
             {sequence.map((m, i) => {
               const realIndex = i % count;

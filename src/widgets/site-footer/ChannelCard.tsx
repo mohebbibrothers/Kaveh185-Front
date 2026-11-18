@@ -2,57 +2,37 @@ import { SITE } from "@/shared/config/site";
 import { useBootstrap } from "@/shared/api/use-bootstrap";
 
 /**
- * کانال رسمی — **فقط یک آیکونِ سه‌بعدیِ بله**، بی‌هیچ باکس، بی‌هیچ کارت.
+ * کانالِ رسمی — **تیتر + آیکونِ سه‌بعدی + نام**، بی‌هیچ باکس/کارت.
  *
- * ── نکتهٔ ۴ کاربر (دورِ ۱۷، تصویرِ ۴) ─────────────────────────────────────
- * «هنوز اون باکسِ کانالِ رسمی در فوتر هست؛ قرار شد باکس رو برداری و فقط
- * آیکونِ بله با استایلِ سه‌بعدی و پویانماییِ جذاب باشه؛ تهش زیرش بنویسی
- * خبرگزاری میدان نامجو؛ فقط یه تیترِ «کانال رسمی» باشه، زیرش آیکونِ بله،
- * و زیرِ آیکون نوشتهٔ خبرگزاری میدان نامجو — کلیک روی آیکون ⇒ کانال.
- * اگر رنگِ آیکون با تمِ روز/شب یکپارچه شود بهتر است.»
+ * ── نکتهٔ ۴ دورِ ۱۷ و نکتهٔ ۲ دورِ ۱۸ ─────────────────────────────────────
+ * کاربر خواست باکسِ «کانال رسمی» کامل برود، فقط آیکون بمانَد و زیرش نام
+ * بیاید و کلیک ⇒ کانالِ بله. در دورِ ۱۸ یک قدم جلوتر رفت:
  *
- * ── چیدمانِ تازه: عمودی، وسط‌چین، بدونِ هیچ سطحی ──────────────────────────
- *   تیترِ «کانال رسمی»  (با خطِ طلاییِ کوچک، مثلِ بقیهٔ تیترهای فوتر)
- *        ⟐ آیکونِ سه‌بعدی (لینک)
- *   «خبرگزاری میدان نامجو»  (زیرِ آیکون، بخشی از همان لینک)
+ *   ۱) **آیکون عوض شد.** پیش از این از تصویرِ `image-45` (بدنهٔ گِرد با تیکِ
+ *      سفید) استفاده می‌شد؛ فرمِ درخواستیِ کاربر (`image-52`) یک حبابِ
+ *      گفتگو با گوشهٔ تاشده و تیکِ برجسته است. همان تصویر به دو **ماسکِ
+ *      آلفا** تبدیل شد: `bale-mark.png` (بدنه) و `bale-check.png` (تیک).
+ *      چون ماسک است، رنگِ آیکون کاملاً از توکن‌های سایت می‌آید و در تمِ
+ *      روز/شب خودکار عوض می‌شود — همان «یکپارچگی با تم» که خواسته شد.
  *
- * هیچ `border`، هیچ `bg`، هیچ `rounded-2xl`ی در کار نیست؛ در هاور فقط
- * خودِ آیکون واکنش می‌دهد. این تفاوتِ اصلی با نسخهٔ قبل است که یک کارتِ
- * دراز با نام و کد و فلش بود.
+ *   ۲) **سه‌بعدی‌شدن:** بدنه گرادیانِ گنبدیِ زمردی + بازتابِ شعاعیِ بالا-چپ
+ *      + نورِ لبهٔ بالا + **نورِ بازتابیِ لبهٔ پایین** + سایهٔ داخلیِ پایین +
+ *      حلقهٔ طلایی + دو سایهٔ تماس زیرِ آیکون. تیک دو لایه است: یک سایهٔ
+ *      نرم زیر و یک تیکِ کرمِ روشن روی سطح، تا «حکاکی‌شده» دیده شود.
  *
- * ── سه‌بعدی‌شدن، بدونِ تصویرِ اضافه ───────────────────────────────────────
- * آیکون از فایلِ خودِ کاربر (`image-45`) به **دو ماسکِ آلفا** تبدیل شده:
- *   • `bale-body.png` — بدنهٔ حباب (با سوراخِ تیک)
- *   • `bale-tick.png` — خودِ تیک
- * بدنه گرادیانِ گنبدی + سایهٔ داخلیِ بالا/پایین + حلقهٔ طلایی + بازتاب
- * می‌گیرد؛ تیک سفیدِ مات با سایهٔ کوچک زیرش روی سطح می‌نشیند.
- * رنگ **از توکن** می‌آید (`verde-deep` / `on-verde`)، پس در تمِ روز بدنهٔ
- * زمردیِ عمیق با تیکِ کرم و در تمِ شب بدنهٔ روشن‌تر با تیکِ روشن دارد —
- * همان «یکپارچگی با تم» که خواسته شد، بی‌آنکه یک تصویرِ دوم بسازیم.
+ *   ۳) **پویانمایی:** شناوریِ آرام، دو حلقهٔ پالسِ پله‌ای، و در هاور/فوکوس:
+ *      «کلیکِ» تیک، بزرگ‌شدنِ ۴٪، روشن‌شدنِ حلقهٔ طلایی و یک عبورِ
+ *      درخششِ مورب. همه با `transform`/`opacity` ⇒ صفر layout. با
+ *      `prefers-reduced-motion` همه خاموش می‌شوند.
  *
- * ── پویانمایی ────────────────────────────────────────────────────────────
- * شناوریِ آرامِ بی‌وقفه، دو حلقهٔ پالسِ پله‌ای، و در هاور/فوکوس:
- * «کلیکِ» تیک (۰٫۸۶→۱٫۱→۱)، روشن‌شدنِ حلقهٔ طلایی، بزرگ‌شدنِ ۴٪ و یک
- * عبورِ درخششِ مورب. همه با `transform`/`opacity` ⇒ بی‌هیچ layout.
+ *   ۴) **هم‌گامی با بک‌اند:** آدرس/نام از `bootstrap` خوانده می‌شود (همان
+ *      منبعی که صفحهٔ اول و فرمِ ثبت‌نام استفاده می‌کنند) با اعتبارسنجیِ
+ *      `https` و پلتفرم؛ در نبودِ داده، پیکربندیِ ساخت می‌مانَد تا هرگز
+ *      لینکِ خالی یا مرده ساخته نشود.
  *
  * ⚠️ فقط یک کانال رسمی وجود دارد؛ لینکِ مرده بدتر از نبودِ لینک است.
  */
-export function ChannelCard() {
-  /**
-   * ── همگام‌سازی با بک‌اند (نکتهٔ ۶، دورِ ۱۷) ────────────────────────────
-   * آدرس و نامِ کانال پیش‌تر فقط از `SITE` (پیکربندیِ ساخت) می‌آمد؛ اگر
-   * مدیرِ سامانه در پنل، کانالِ رسمی را عوض می‌کرد، فوتر همچنان به کانالِ
-   * قدیمی اشاره می‌کرد. `bootstrap` همان فهرستِ `communication_channels`
-   * را می‌دهد (همان منبعی که صفحهٔ اول و فرمِ ثبت‌نام استفاده می‌کنند).
-   *
-   * سه احتیاط:
-   *   • تا داده نرسیده یا اگر خطا داد، `SITE` می‌مانَد ⇒ هرگز لینکِ خالی.
-   *   • اگر بک‌اند کانالِ غیرِبله بدهد (`platform` دیگر)، آیکونِ سه‌بعدیِ
-   *     بله گم‌کننده است؛ پس فقط وقتی از بک‌اند می‌خوانیم که پلتفرم همان
-   *     بله باشد، وگرنه به پیکربندیِ ساخت برمی‌گردیم.
-   *   • `url` باید با `https://` شروع شود؛ وگرنه لینکِ نسبیِ ناخواسته
-   *     می‌سازیم. اعتبارسنجی همین‌جا، نه در لایهٔ شبکه.
-   */
+export function ChannelCard({ compact = false }: { compact?: boolean }) {
   const boot = useBootstrap();
   const live = boot.phase === "ready" ? boot.data.exam_status.communication_channels[0] : undefined;
   const liveOk =
@@ -60,6 +40,7 @@ export function ChannelCard() {
     live.url.startsWith("https://") &&
     (live.platform === "bale" || live.platform === "بله") &&
     live.title.trim().length > 0;
+
   /**
    * نامِ نمایشی: بک‌اند معمولاً عنوانی بلند و توضیحی می‌فرستد
    * («خبرگزاری میدان نامجو — کانال رسمی حوزهٔ ۱۸۵ شهید کاوه در بله»). زیرِ
@@ -77,7 +58,7 @@ export function ChannelCard() {
     : SITE.channel;
 
   return (
-    <div className="flex flex-col items-center gap-2 text-center">
+    <div className={`flex flex-col items-center gap-2 text-center ${compact ? "" : ""}`}>
       <span className="text-on-band flex items-center gap-2 text-[11.5px] font-extrabold tracking-wide">
         <span aria-hidden="true" className="bg-band-accent/70 h-3 w-[2px] rounded-full" />
         کانال رسمی
@@ -89,63 +70,48 @@ export function ChannelCard() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`کانال رسمی ${channel.name} در پیام‌رسان ${channel.platform} — باز شدن در پنجرهٔ تازه`}
-        className="k185-bale group -m-1 flex min-h-[44px] flex-col items-center justify-center gap-2 rounded-2xl p-1 outline-offset-4"
+        className="k185-bale group -m-1 flex min-h-[44px] flex-col items-center justify-center gap-1.5 rounded-2xl p-1 outline-offset-4"
       >
         <span className="relative grid size-[56px] place-items-center sm:size-[60px]">
-          {/* پالس‌های پشتِ آیکون */}
+          {/* پالس‌های پشتِ آیکون — همان شکلِ حباب، بی‌آنکه کارتی بسازند */}
           <span
             aria-hidden="true"
-            className="k185-bale-ring border-verde/45 absolute inset-1.5 rounded-full border"
-          />
-          <span
-            aria-hidden="true"
-            className="k185-bale-ring k185-bale-ring-2 border-verde/30 absolute inset-1.5 rounded-full border"
-          />
-          {/* سایهٔ تماسِ زیرِ کره — «شناوری» را باورپذیر می‌کند. دو لایه:
-              سایهٔ پهنِ نرم + هستهٔ تیره‌ترِ نزدیک؛ اندازه‌اش با شناوری
-              هماهنگ است (بالا می‌رود ⇒ سایه کوچک‌تر و روشن‌تر). */}
-          <span
-            aria-hidden="true"
-            className="bg-stage/25 absolute -bottom-1.5 h-2.5 w-10 rounded-[50%] blur-[6px]"
-          />
-          <span
-            aria-hidden="true"
-            className="bg-stage/20 absolute -bottom-0.5 h-1.5 w-6 rounded-[50%] blur-[3px]"
+            className="k185-bale-glow absolute inset-1 rounded-full opacity-70 blur-md"
           />
 
-          <span className="k185-bale-body relative grid size-[46px] place-items-center rounded-full sm:size-[50px]">
-            {/* بازتابِ سطح */}
+          {/* ── خودِ آیکون: حبابِ گفتگو با تیکِ برجسته، سه‌بعدی ─────────────
+              بدنهٔ حباب از ماسکِ آلفای تصویرِ کاربر (`bale-mark.png`) می‌آید
+              و روی آن گرادیانِ گنبدی + بازتابِ شعاعی + حلقهٔ طلایی و سایهٔ
+              تماس با `filter: drop-shadow` می‌نشیند — `box-shadow` روی عنصرِ
+              ماسک‌دار دیده نمی‌شود، ولی `drop-shadow` دقیقاً شکلِ ماسک را
+              دنبال می‌کند. تیک هم لایهٔ دومِ ماسک است. */}
+          <span className="k185-bale-icon relative block size-[46px] sm:size-[50px]">
+            {/* هالهٔ طلاییِ نرم پشتِ آیکون */}
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(80%_60%_at_28%_16%,oklch(100%_0_0/0.42),transparent_58%)]"
+              className="k185-bale-mark bg-gold/35 absolute inset-0 scale-[1.06] blur-[3px]"
             />
-            {/* درخششِ موربِ هاور */}
+            {/* بدنهٔ سه‌بعدی */}
+            <span aria-hidden="true" className="k185-bale-mark k185-bale-face absolute inset-0" />
+            {/* بازتابِ شیشه‌ایِ بالای حباب */}
             <span
               aria-hidden="true"
-              className="k185-bale-sheen pointer-events-none absolute inset-0 overflow-hidden rounded-full"
-            >
-              <span className="absolute inset-y-0 -left-1/2 w-1/3 bg-[linear-gradient(90deg,transparent,oklch(100%_0_0/0.55),transparent)]" />
+              className="k185-bale-mark absolute inset-0 bg-[radial-gradient(72%_54%_at_32%_14%,oklch(100%_0_0/0.55),transparent_62%)]"
+            />
+            {/* عبورِ درخششِ هاور */}
+            <span aria-hidden="true" className="k185-bale-sheen absolute inset-0 overflow-hidden">
+              <span className="k185-bale-mark absolute inset-0 bg-[linear-gradient(100deg,transparent_38%,oklch(100%_0_0/0.75)_50%,transparent_62%)] bg-[length:300%_100%]" />
             </span>
-
-            {/* تیکِ برجسته — دو لایه: سایهٔ زیرین + تیکِ روشن */}
-            <span className="k185-bale-tick relative grid size-[27px] place-items-center sm:size-[29px]">
-              <span
-                aria-hidden="true"
-                className="k185-bale-mask absolute inset-0 translate-y-[1.5px] bg-[oklch(0%_0_0/0.3)] blur-[1px]"
-                style={MASK}
-              />
-              <span
-                aria-hidden="true"
-                className="k185-bale-mask bg-on-verde absolute inset-0"
-                style={MASK}
-              />
-            </span>
+            {/* تیک — کرمِ روشن با سایهٔ نرم، «حکاکی‌شده» روی سطح */}
+            <span
+              aria-hidden="true"
+              className="k185-bale-check absolute inset-0 translate-y-[1.5px] bg-[oklch(12%_0.03_160/0.35)] blur-[1px]"
+            />
+            <span aria-hidden="true" className="k185-bale-check bg-on-verde absolute inset-0" />
           </span>
         </span>
 
         {/* نام — زیرِ آیکون، داخلِ همان لینک (ناحیهٔ لمسِ بزرگ‌تر) */}
-        {/* یک‌خطی بمانَد (عنوانِ دو‌خطی در فوتر بد دیده می‌شد)؛ اگر جایی
-            واقعاً تنگ شد، `text-balance` شکستِ متعادل می‌دهد نه شکستِ بدقواره. */}
         <span className="text-on-band-muted group-hover:text-on-band text-[11px] leading-tight font-bold text-balance whitespace-nowrap transition-colors">
           {channel.name}
         </span>
@@ -153,9 +119,3 @@ export function ChannelCard() {
     </div>
   );
 }
-
-/** ماسکِ مشترکِ تیک — یک شیء، دو مصرف (سایه و خودِ تیک). */
-const MASK = {
-  maskImage: "url(/img/bale-tick.png)",
-  WebkitMaskImage: "url(/img/bale-tick.png)",
-} as const;

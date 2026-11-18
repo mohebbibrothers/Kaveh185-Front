@@ -172,43 +172,68 @@ export function ExamRunner() {
     }
   }
 
+  /**
+   * ── سرتیترِ پنهانِ دیداری ولی حاضر برای صفحه‌خوان ────────────────────────
+   * صفحهٔ `/exam` هیچ `h1` نداشت (بازرسیِ دورِ ۱۸): ساختارِ عنوانِ صفحه
+   * ناقص بود و صفحه‌خوان نمی‌دانست این صفحه چیست. `sr-only` فقط برای چشم
+   * پنهان است، پس هیچ تغییری در طراحی ایجاد نمی‌کند ولی ساختار را کامل
+   * می‌کند و صفحه به `aria-labelledby` هم وصل می‌شود.
+   */
+  const heading = (
+    <h1 id="exam-title" className="sr-only">
+      آزمون مسابقهٔ کتاب‌خوانی هفتهٔ بسیج
+    </h1>
+  );
+
   // ── حالت‌های مرزی ──────────────────────────────────────────────────────────
-  if (phase === "loading") return <Skeleton />;
+  if (phase === "loading")
+    return (
+      <>
+        {heading}
+        <Skeleton />
+      </>
+    );
 
   if (phase === "no-session")
     return (
-      <StateCard
-        title="برای شرکت در آزمون ابتدا ثبت‌نام کنید"
-        body="نشست شما روی این دستگاه نیست. ثبت‌نام کمتر از دو دقیقه وقت می‌گیرد و همان مسیر، آزمون را هم آغاز می‌کند."
-        action={
-          <Link
-            href="/register"
-            className="bg-brand text-on-brand inline-flex h-11 items-center rounded-xl px-5 text-[13px] font-extrabold"
-          >
-            ثبت‌نام و شرکت
-          </Link>
-        }
-      />
+      <>
+        {heading}
+        <StateCard
+          title="برای شرکت در آزمون ابتدا ثبت‌نام کنید"
+          body="نشست شما روی این دستگاه نیست. ثبت‌نام کمتر از دو دقیقه وقت می‌گیرد و همان مسیر، آزمون را هم آغاز می‌کند."
+          action={
+            <Link
+              href="/register"
+              className="bg-brand text-on-brand inline-flex h-11 items-center rounded-xl px-5 text-[13px] font-extrabold"
+            >
+              ثبت‌نام و شرکت
+            </Link>
+          }
+        />
+      </>
     );
 
   if (phase === "error" || !attempt)
     return (
-      <StateCard
-        title="آزمون آغاز نشد"
-        body={fatal ?? "ارتباط با سرور برقرار نشد."}
-        action={
-          <button
-            type="button"
-            onClick={() => {
-              setPhase("loading");
-              void enter();
-            }}
-            className="border-border-strong text-text hover:bg-surface-2 inline-flex h-11 items-center rounded-xl border px-5 text-[13px] font-extrabold"
-          >
-            تلاش دوباره
-          </button>
-        }
-      />
+      <>
+        {heading}
+        <StateCard
+          title="آزمون آغاز نشد"
+          body={fatal ?? "ارتباط با سرور برقرار نشد."}
+          action={
+            <button
+              type="button"
+              onClick={() => {
+                setPhase("loading");
+                void enter();
+              }}
+              className="border-border-strong text-text hover:bg-surface-2 inline-flex h-11 items-center rounded-xl border px-5 text-[13px] font-extrabold"
+            >
+              تلاش دوباره
+            </button>
+          }
+        />
+      </>
     );
 
   if (phase === "expired" || phase === "finishing")
@@ -223,231 +248,238 @@ export function ExamRunner() {
   const warn = remaining <= 60 && !danger;
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_270px] lg:items-start">
-      {/* ── ستون پرسش ── */}
-      <div className="order-2 lg:order-1">
-        <div className="border-border bg-surface overflow-hidden rounded-2xl border">
-          <div className="border-border flex items-center justify-between gap-3 border-b px-4 py-3">
-            <p className="text-text text-[13px] font-extrabold">
-              پرسش {toFa(active + 1)}
-              <span className="text-text-subtle font-normal"> از {toFa(total)}</span>
+    <>
+      {heading}
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_270px] lg:items-start">
+        {/* ── ستون پرسش ── */}
+        <div className="order-2 lg:order-1">
+          <div className="border-border bg-surface overflow-hidden rounded-2xl border">
+            <div className="border-border flex items-center justify-between gap-3 border-b px-4 py-3">
+              <p className="text-text text-[13px] font-extrabold">
+                پرسش {toFa(active + 1)}
+                <span className="text-text-subtle font-normal"> از {toFa(total)}</span>
+              </p>
+              <span className="text-text-subtle text-[11px]" aria-live="polite" aria-atomic="true">
+                {saving === q.question_number
+                  ? "در حال ذخیره…"
+                  : q.is_answered
+                    ? "ذخیره شد"
+                    : "بدون پاسخ"}
+              </span>
+            </div>
+
+            <div className="p-4 sm:p-5">
+              <p className="text-text text-[14.5px] leading-[2.1] font-bold">{q.question_text}</p>
+
+              <div
+                role="radiogroup"
+                aria-label={`پرسش ${toFa(active + 1)}`}
+                className="mt-4 space-y-2"
+              >
+                {q.options.map((o) => {
+                  const picked = q.selected_position === o.position;
+                  return (
+                    <button
+                      key={o.position}
+                      type="button"
+                      role="radio"
+                      aria-checked={picked}
+                      onClick={() => void choose(q, o.position)}
+                      className={[
+                        "flex w-full items-start gap-3 rounded-xl border px-3.5 py-3 text-right transition-all",
+                        picked
+                          ? "border-brand bg-brand/[0.07] ring-brand/20 ring-1"
+                          : "border-border-strong bg-surface hover:border-brand/35 hover:bg-surface-2",
+                      ].join(" ")}
+                    >
+                      <span
+                        className={[
+                          "mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border text-[10.5px] font-extrabold",
+                          picked
+                            ? "border-brand bg-brand text-on-brand"
+                            : "border-border-strong text-text-subtle",
+                        ].join(" ")}
+                        aria-hidden="true"
+                      >
+                        {picked ? "✓" : toFa(o.position)}
+                      </span>
+                      <span
+                        className={`text-[13px] leading-7 ${picked ? "text-text font-bold" : "text-text-muted"}`}
+                      >
+                        {o.text}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {saveError ? (
+                <div className="mt-3">
+                  <FormAlert title="پاسخ ذخیره نشد">{saveError}</FormAlert>
+                </div>
+              ) : null}
+
+              <div className="border-border mt-4 flex items-center justify-between gap-2 border-t pt-4">
+                <button
+                  type="button"
+                  disabled={active === 0}
+                  onClick={() => {
+                    setActive((i) => Math.max(0, i - 1));
+                  }}
+                  className="border-border-strong text-text hover:bg-surface-2 inline-flex h-10 items-center rounded-lg border px-3.5 text-[12.5px] font-bold disabled:opacity-40"
+                >
+                  پرسش قبل
+                </button>
+                {active < total - 1 ? (
+                  <PrimaryButton
+                    type="button"
+                    disabled={!q.is_answered}
+                    title={
+                      q.is_answered
+                        ? undefined
+                        : "برای رفتن به پرسش بعد، ابتدا به این پرسش پاسخ دهید"
+                    }
+                    onClick={() => {
+                      setActive((i) => Math.min(total - 1, i + 1));
+                    }}
+                  >
+                    پرسش بعد
+                  </PrimaryButton>
+                ) : (
+                  <PrimaryButton
+                    type="button"
+                    onClick={() => void finalize(false)}
+                    disabled={!attempt.all_answered}
+                    loading={finishing.current}
+                    loadingLabel="در حال ثبت…"
+                  >
+                    پایان و دریافت کارنامه
+                  </PrimaryButton>
+                )}
+              </div>
+              {active === total - 1 && !attempt.all_answered ? (
+                <p className="text-text-subtle mt-2 text-center text-[11px]">
+                  برای ثبت کارنامه باید به همهٔ پرسش‌ها پاسخ دهید ({toFa(total - answered)} پرسش
+                  بی‌پاسخ).
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </div>
+
+        {/* ── ستون وضعیت ── */}
+        <aside className="order-1 space-y-3 lg:sticky lg:top-20 lg:order-2">
+          {/* تایمر */}
+          <div
+            className={[
+              "rounded-2xl border p-4 text-center",
+              danger
+                ? "border-brick/40 bg-brick/[0.07]"
+                : warn
+                  ? "border-gold/45 bg-gold/[0.10]"
+                  : "border-border bg-stage",
+            ].join(" ")}
+            role="timer"
+            aria-live={danger ? "assertive" : "off"}
+          >
+            <p
+              className={`text-[10.5px] font-extrabold tracking-wide ${
+                danger || warn ? "" : "text-on-stage-muted"
+              } ${danger ? "text-brick" : warn ? "text-gold-strong" : ""}`}
+            >
+              زمان باقی‌مانده
             </p>
-            <span className="text-text-subtle text-[11px]" aria-live="polite" aria-atomic="true">
-              {saving === q.question_number
-                ? "در حال ذخیره…"
-                : q.is_answered
-                  ? "ذخیره شد"
-                  : "بدون پاسخ"}
-            </span>
+            <p
+              className={`mt-1 text-[34px] leading-none font-extrabold tabular-nums ${
+                danger ? "text-brick" : warn ? "text-gold-strong" : "text-on-stage"
+              }`}
+              dir="ltr"
+            >
+              {clock(remaining)}
+            </p>
+            <p
+              className={`mt-1.5 text-[10.5px] ${danger || warn ? "text-text-muted" : "text-on-stage-muted"}`}
+            >
+              {danger ? "زمان در حال پایان است" : "شمارش روی سرور انجام می‌شود"}
+            </p>
           </div>
 
-          <div className="p-4 sm:p-5">
-            <p className="text-text text-[14.5px] leading-[2.1] font-bold">{q.question_text}</p>
-
-            <div
-              role="radiogroup"
-              aria-label={`پرسش ${toFa(active + 1)}`}
-              className="mt-4 space-y-2"
-            >
-              {q.options.map((o) => {
-                const picked = q.selected_position === o.position;
+          {/* ناوبری پرسش‌ها */}
+          <div className="border-border bg-surface rounded-2xl border p-3.5">
+            <div className="flex items-baseline justify-between">
+              <p className="text-text text-[12px] font-extrabold">پرسش‌ها</p>
+              <p className="text-text-subtle text-[11px] tabular-nums">
+                {toFa(answered)} / {toFa(total)}
+              </p>
+            </div>
+            <div className="mt-2 flex gap-1.5">
+              {attempt.questions.map((x, i) => {
+                const isActive = i === active;
+                // بک‌اند «رد کردن پرسش» را نمی‌پذیرد؛ پس فقط پرسش‌های رسیده
+                // و پرسش جاری قابل کلیک‌اند و بقیه دیده می‌شوند ولی غیرفعال.
+                const reachable = i <= answered;
                 return (
                   <button
-                    key={o.position}
+                    key={x.question_number}
                     type="button"
-                    role="radio"
-                    aria-checked={picked}
-                    onClick={() => void choose(q, o.position)}
+                    onClick={() => {
+                      if (reachable) setActive(i);
+                    }}
+                    aria-disabled={!reachable}
+                    aria-label={`پرسش ${toFa(i + 1)}${x.is_answered ? " — پاسخ داده شده" : ""}`}
+                    aria-current={isActive ? "true" : undefined}
                     className={[
-                      "flex w-full items-start gap-3 rounded-xl border px-3.5 py-3 text-right transition-all",
-                      picked
-                        ? "border-brand bg-brand/[0.07] ring-brand/20 ring-1"
-                        : "border-border-strong bg-surface hover:border-brand/35 hover:bg-surface-2",
+                      "h-9 flex-1 rounded-lg border text-[12px] font-extrabold tabular-nums transition-colors",
+                      isActive
+                        ? "border-brand bg-brand text-on-brand"
+                        : x.is_answered
+                          ? "border-verde/40 bg-verde/[0.10] text-verde"
+                          : reachable
+                            ? "border-border-strong bg-surface-2 text-text hover:border-brand/35"
+                            : "border-border/60 bg-surface-2/50 text-text-subtle/50 cursor-not-allowed",
                     ].join(" ")}
                   >
-                    <span
-                      className={[
-                        "mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border text-[10.5px] font-extrabold",
-                        picked
-                          ? "border-brand bg-brand text-on-brand"
-                          : "border-border-strong text-text-subtle",
-                      ].join(" ")}
-                      aria-hidden="true"
-                    >
-                      {picked ? "✓" : toFa(o.position)}
-                    </span>
-                    <span
-                      className={`text-[13px] leading-7 ${picked ? "text-text font-bold" : "text-text-muted"}`}
-                    >
-                      {o.text}
-                    </span>
+                    {toFa(i + 1)}
                   </button>
                 );
               })}
             </div>
-
-            {saveError ? (
-              <div className="mt-3">
-                <FormAlert title="پاسخ ذخیره نشد">{saveError}</FormAlert>
-              </div>
-            ) : null}
-
-            <div className="border-border mt-4 flex items-center justify-between gap-2 border-t pt-4">
-              <button
-                type="button"
-                disabled={active === 0}
-                onClick={() => {
-                  setActive((i) => Math.max(0, i - 1));
-                }}
-                className="border-border-strong text-text hover:bg-surface-2 inline-flex h-10 items-center rounded-lg border px-3.5 text-[12.5px] font-bold disabled:opacity-40"
-              >
-                پرسش قبل
-              </button>
-              {active < total - 1 ? (
-                <PrimaryButton
-                  type="button"
-                  disabled={!q.is_answered}
-                  title={
-                    q.is_answered ? undefined : "برای رفتن به پرسش بعد، ابتدا به این پرسش پاسخ دهید"
-                  }
-                  onClick={() => {
-                    setActive((i) => Math.min(total - 1, i + 1));
-                  }}
-                >
-                  پرسش بعد
-                </PrimaryButton>
-              ) : (
-                <PrimaryButton
-                  type="button"
-                  onClick={() => void finalize(false)}
-                  disabled={!attempt.all_answered}
-                  loading={finishing.current}
-                  loadingLabel="در حال ثبت…"
-                >
-                  پایان و دریافت کارنامه
-                </PrimaryButton>
-              )}
-            </div>
-            {active === total - 1 && !attempt.all_answered ? (
-              <p className="text-text-subtle mt-2 text-center text-[11px]">
-                برای ثبت کارنامه باید به همهٔ پرسش‌ها پاسخ دهید ({toFa(total - answered)} پرسش
-                بی‌پاسخ).
+            <div className="text-text-muted mt-2.5 space-y-1 text-[10.5px]">
+              <p className="flex items-center gap-1.5">
+                <span aria-hidden="true" className="bg-verde inline-block size-2 rounded-sm" />
+                پاسخ داده‌شده
               </p>
-            ) : null}
+              <p className="flex items-center gap-1.5">
+                <span
+                  aria-hidden="true"
+                  className="bg-border-strong inline-block size-2 rounded-sm"
+                />
+                بی‌پاسخ
+              </p>
+              <p className="leading-5">
+                ترتیب پاسخ‌ها اجباری است؛ نمی‌توان پرسشی را بی‌پاسخ رد کرد.
+              </p>
+            </div>
           </div>
-        </div>
+
+          {attempt.all_answered ? (
+            <PrimaryButton
+              type="button"
+              onClick={() => void finalize(false)}
+              loading={finishing.current}
+              loadingLabel="در حال ثبت…"
+              className="w-full"
+            >
+              پایان و دریافت کارنامه
+            </PrimaryButton>
+          ) : null}
+
+          <p className="text-text-subtle text-[10.5px] leading-5">
+            بستن صفحه زمان را متوقف نمی‌کند. پاسخ‌ها همین‌جا ذخیره می‌شوند؛ می‌توانید برگردید.
+          </p>
+        </aside>
       </div>
-
-      {/* ── ستون وضعیت ── */}
-      <aside className="order-1 space-y-3 lg:sticky lg:top-20 lg:order-2">
-        {/* تایمر */}
-        <div
-          className={[
-            "rounded-2xl border p-4 text-center",
-            danger
-              ? "border-brick/40 bg-brick/[0.07]"
-              : warn
-                ? "border-gold/45 bg-gold/[0.10]"
-                : "border-border bg-stage",
-          ].join(" ")}
-          role="timer"
-          aria-live={danger ? "assertive" : "off"}
-        >
-          <p
-            className={`text-[10.5px] font-extrabold tracking-wide ${
-              danger || warn ? "" : "text-on-stage-muted"
-            } ${danger ? "text-brick" : warn ? "text-gold-strong" : ""}`}
-          >
-            زمان باقی‌مانده
-          </p>
-          <p
-            className={`mt-1 text-[34px] leading-none font-extrabold tabular-nums ${
-              danger ? "text-brick" : warn ? "text-gold-strong" : "text-on-stage"
-            }`}
-            dir="ltr"
-          >
-            {clock(remaining)}
-          </p>
-          <p
-            className={`mt-1.5 text-[10.5px] ${danger || warn ? "text-text-muted" : "text-on-stage-muted"}`}
-          >
-            {danger ? "زمان در حال پایان است" : "شمارش روی سرور انجام می‌شود"}
-          </p>
-        </div>
-
-        {/* ناوبری پرسش‌ها */}
-        <div className="border-border bg-surface rounded-2xl border p-3.5">
-          <div className="flex items-baseline justify-between">
-            <p className="text-text text-[12px] font-extrabold">پرسش‌ها</p>
-            <p className="text-text-subtle text-[11px] tabular-nums">
-              {toFa(answered)} / {toFa(total)}
-            </p>
-          </div>
-          <div className="mt-2 flex gap-1.5">
-            {attempt.questions.map((x, i) => {
-              const isActive = i === active;
-              // بک‌اند «رد کردن پرسش» را نمی‌پذیرد؛ پس فقط پرسش‌های رسیده
-              // و پرسش جاری قابل کلیک‌اند و بقیه دیده می‌شوند ولی غیرفعال.
-              const reachable = i <= answered;
-              return (
-                <button
-                  key={x.question_number}
-                  type="button"
-                  onClick={() => {
-                    if (reachable) setActive(i);
-                  }}
-                  aria-disabled={!reachable}
-                  aria-label={`پرسش ${toFa(i + 1)}${x.is_answered ? " — پاسخ داده شده" : ""}`}
-                  aria-current={isActive ? "true" : undefined}
-                  className={[
-                    "h-9 flex-1 rounded-lg border text-[12px] font-extrabold tabular-nums transition-colors",
-                    isActive
-                      ? "border-brand bg-brand text-on-brand"
-                      : x.is_answered
-                        ? "border-verde/40 bg-verde/[0.10] text-verde"
-                        : reachable
-                          ? "border-border-strong bg-surface-2 text-text hover:border-brand/35"
-                          : "border-border/60 bg-surface-2/50 text-text-subtle/50 cursor-not-allowed",
-                  ].join(" ")}
-                >
-                  {toFa(i + 1)}
-                </button>
-              );
-            })}
-          </div>
-          <div className="text-text-muted mt-2.5 space-y-1 text-[10.5px]">
-            <p className="flex items-center gap-1.5">
-              <span aria-hidden="true" className="bg-verde inline-block size-2 rounded-sm" />
-              پاسخ داده‌شده
-            </p>
-            <p className="flex items-center gap-1.5">
-              <span
-                aria-hidden="true"
-                className="bg-border-strong inline-block size-2 rounded-sm"
-              />
-              بی‌پاسخ
-            </p>
-            <p className="leading-5">ترتیب پاسخ‌ها اجباری است؛ نمی‌توان پرسشی را بی‌پاسخ رد کرد.</p>
-          </div>
-        </div>
-
-        {attempt.all_answered ? (
-          <PrimaryButton
-            type="button"
-            onClick={() => void finalize(false)}
-            loading={finishing.current}
-            loadingLabel="در حال ثبت…"
-            className="w-full"
-          >
-            پایان و دریافت کارنامه
-          </PrimaryButton>
-        ) : null}
-
-        <p className="text-text-subtle text-[10.5px] leading-5">
-          بستن صفحه زمان را متوقف نمی‌کند. پاسخ‌ها همین‌جا ذخیره می‌شوند؛ می‌توانید برگردید.
-        </p>
-      </aside>
-    </div>
+    </>
   );
 }
 

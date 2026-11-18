@@ -296,8 +296,8 @@
      است و در RTL مرورگر محور/جهتِ تفسیر را عوض می‌کند؛ نتیجه: نیمی از ردیف
      از قاب بیرون می‌رفت و سمتِ دیگر خالی می‌شد. راهکارِ قطعی:
        ۱) ردیف `dir="ltr"` است، پس محورِ حرکت همیشه چپ‌به‌راست است؛
-       ۲) جابه‌جایی با پیکسلِ مطلق (`--k185-marquee-shift`) انجام می‌شود که در زمانِ
-          اجرا از روی عرضِ واقعیِ یک «دورهٔ کامل» اندازه‌گیری می‌شود؛
+       ۲) جابه‌جایی با `-50%` روی **خودِ ردیف** انجام می‌شود؛ چون ردیف دقیقاً
+          دو نسخهٔ عیناً یکسان است، این درصد در هر عرضی درزِ صفر می‌دهد؛
        ۳) `animation-fill-mode: both` تا در فریمِ صفر هم جای درست بایستد.
      هیچ درصدی، هیچ محاسبهٔ سرگردان و هیچ وابستگی به `ResizeObserver` نیست. */
   @keyframes k185-marquee {
@@ -305,7 +305,9 @@
       transform: translate3d(0, 0, 0);
     }
     to {
-      transform: translate3d(calc(-1 * var(--k185-marquee-shift, 0px)), 0, 0);
+      /* `50%` نسبت به عرضِ **خودِ ردیف** است و ردیف دقیقاً دو نسخهٔ یکسان
+         دارد ⇒ همیشه درزِ صفر، بی‌هیچ اندازه‌گیریِ جاوااسکریپت. */
+      transform: translate3d(-50%, 0, 0);
     }
   }
   @media (prefers-reduced-motion: no-preference) {
@@ -345,7 +347,7 @@
     }
   }
   @media (prefers-reduced-motion: no-preference) {
-    .k185-footer-col {
+    .k185-footer-anim {
       animation: k185-footer-col-in 620ms var(--ease-decelerate) both;
     }
   }
@@ -510,61 +512,72 @@
     }
   }
 
-  /* ── آیکونِ سه‌بعدیِ بله (نکتهٔ ۴، دورِ ۱۶) ───────────────────────────
-     بدنه یک کرهٔ زمردی است: گرادیانِ عمودی + بازتابِ بالا + حلقهٔ طلایی +
-     سایهٔ داخلیِ بالا/پایین. تیک با ماسکِ آلفای خودِ تصویرِ کاربر روی
-     سطح می‌نشیند و سایهٔ کوچکی زیرش دارد. هیچ رنگِ ثابتی این‌جا نیست:
-     همه از توکن‌هایی می‌آید که در تمِ روز و شب عوض می‌شوند. */
-  .k185-bale-body {
-    /* بدنه: گنبدِ زمردی — سه لایهٔ عمودی + یک لایهٔ شعاعیِ بالا-چپ برای
-       «براقیِ شیشه‌ای». هر سه لایه از یک توکن ساخته می‌شوند، پس در تمِ
-       شب خودکار روشن‌تر می‌شود و هیچ رنگِ ثابتی ندارد. */
+  /* ── آیکونِ سه‌بعدیِ حبابِ بله (دورِ ۱۸) ───────────────────────────────
+     بدنه با ماسکِ آلفا ساخته می‌شود، پس رنگ از توکن می‌آید و سه‌بعدی‌شدن با
+     گرادیان + `drop-shadow` انجام می‌شود (نه `box-shadow` که روی عنصرِ
+     ماسک‌دار دیده نمی‌شود):
+       • گرادیانِ گنبدیِ زمردی (روشن بالا، عمیق پایین)؛
+       • حلقهٔ طلاییِ نازک دورِ خودِ شکل، به‌شکلِ drop-shadow؛
+       • سایهٔ تماسِ نرم زیرِ شکل.
+     در تمِ شب توکنِ `verde-deep` روشن‌تر است، پس آیکون خودکار با تم
+     هماهنگ می‌شود — خواستهٔ صریحِ کاربر. */
+  .k185-bale-face {
     background-color: var(--c-verde-deep);
     background-image:
-      radial-gradient(
-        72% 64% at 30% 20%,
-        oklch(100% 0 0 / 0.34) 0%,
-        oklch(100% 0 0 / 0.1) 38%,
-        transparent 64%
-      ),
+      radial-gradient(66% 50% at 32% 16%, oklch(100% 0 0 / 0.28), transparent 62%),
       linear-gradient(
-        180deg,
-        color-mix(in oklab, var(--c-verde-deep) 66%, white) 0%,
-        var(--c-verde-deep) 44%,
-        color-mix(in oklab, var(--c-verde-deep) 74%, black) 100%
+        172deg,
+        color-mix(in oklab, var(--c-verde-deep) 62%, white) 0%,
+        var(--c-verde-deep) 48%,
+        color-mix(in oklab, var(--c-verde-deep) 76%, black) 100%
       );
-    box-shadow:
-      /* نورِ لبهٔ بالا — حسِ انحنای سطح */
-      inset 0 1.5px 0 oklch(100% 0 0 / 0.5),
-      /* نورِ بازتابیِ لبهٔ پایین — همان چیزی که کره را «توپُر» نشان می‌دهد */ inset 0 -2px 1px -1px
-        oklch(88% 0.06 160 / 0.55),
-      /* سایهٔ داخلیِ پایین */ inset 0 -9px 14px -4px
-        color-mix(in oklab, var(--c-verde-deep) 62%, black),
-      /* حلقهٔ طلاییِ نازک */ 0 0 0 1px color-mix(in oklab, var(--c-gold) 60%, transparent),
-      /* سایهٔ محیطی — آیکون روی سطح می‌نشیند */ 0 10px 18px -10px
-        color-mix(in oklab, var(--c-stage) 85%, transparent),
-      0 2px 4px -1px color-mix(in oklab, var(--c-stage) 45%, transparent);
-    transition:
-      transform var(--dur-slow) var(--ease-decelerate),
-      box-shadow var(--dur-base) var(--ease-standard);
+    filter: drop-shadow(0 0 0.6px color-mix(in oklab, var(--c-gold) 85%, transparent))
+      drop-shadow(0 1px 0 color-mix(in oklab, var(--c-gold) 70%, transparent))
+      drop-shadow(0 5px 7px color-mix(in oklab, var(--c-stage) 45%, transparent));
+    transition: filter var(--dur-base) var(--ease-standard);
   }
   @media (hover: hover) and (pointer: fine) {
-    .k185-bale:hover .k185-bale-body,
-    .k185-bale:focus-visible .k185-bale-body {
-      transform: translateY(-2px) scale(1.045);
-      box-shadow:
-        inset 0 1.5px 0 oklch(100% 0 0 / 0.58),
-        inset 0 -2px 1px -1px oklch(92% 0.06 160 / 0.65),
-        inset 0 -10px 16px -4px color-mix(in oklab, var(--c-verde-deep) 66%, black),
-        0 0 0 1px color-mix(in oklab, var(--c-gold) 92%, transparent),
-        0 16px 30px -12px color-mix(in oklab, var(--c-stage) 90%, transparent),
-        0 3px 6px -2px color-mix(in oklab, var(--c-stage) 50%, transparent);
+    .k185-bale:hover .k185-bale-face,
+    .k185-bale:focus-visible .k185-bale-face {
+      filter: drop-shadow(0 0 0.8px color-mix(in oklab, var(--c-gold) 95%, transparent))
+        drop-shadow(0 1px 0 color-mix(in oklab, var(--c-gold) 85%, transparent))
+        drop-shadow(0 9px 12px color-mix(in oklab, var(--c-stage) 55%, transparent));
     }
   }
-  .k185-bale-mask {
+  .k185-bale-glow {
+    background: radial-gradient(
+      circle,
+      color-mix(in oklab, var(--c-verde) 55%, transparent) 0%,
+      transparent 70%
+    );
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .k185-bale:hover .k185-bale-face,
+    .k185-bale:focus-visible .k185-bale-face {
+      filter: drop-shadow(0 0 0.8px color-mix(in oklab, var(--c-gold) 95%, transparent))
+        drop-shadow(0 1px 0 color-mix(in oklab, var(--c-gold) 85%, transparent))
+        drop-shadow(0 9px 12px color-mix(in oklab, var(--c-stage) 55%, transparent));
+    }
+  }
+
+  /* ── ماسک‌های آیکونِ بله (دورِ ۱۸) ─────────────────────────────────────
+     تصویرِ کاربر (`image-52`) به دو ماسکِ آلفا تبدیل شد: بدنهٔ حبابِ گفتگو
+     و خودِ تیک. ماسک بودن یعنی رنگ کاملاً از توکن می‌آید (تمِ روز/شب) و
+     هیچ رنگی در تصویر قفل نمی‌شود. */
+  .k185-bale-mark,
+  .k185-bale-check {
+    -webkit-mask-image: url(/img/bale-mark.png);
+    mask-image: url(/img/bale-mark.png);
+    -webkit-mask-size: contain;
     mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
+    -webkit-mask-position: center;
     mask-position: center;
+  }
+  .k185-bale-check {
+    -webkit-mask-image: url(/img/bale-check.png);
+    mask-image: url(/img/bale-check.png);
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -578,8 +591,9 @@
         transform: translateY(-3px);
       }
     }
-    .k185-bale-float,
-    .k185-bale .k185-bale-body {
+    /* شناوریِ کلِ آیکون؛ بدنه خودش یک عنصرِ ماسک‌دار است و انیمیشنِ
+       جدا روی آن، لبه‌های ماسک را می‌لرزاند. */
+    .k185-bale-icon {
       animation: k185-bale-float 4.6s var(--ease-standard) infinite;
     }
     /* پالس‌های پشتِ آیکون */
@@ -615,8 +629,10 @@
         transform: scale(1);
       }
     }
-    .k185-bale:hover .k185-bale-tick,
-    .k185-bale:focus-visible .k185-bale-tick {
+    .k185-bale:hover .k185-bale-mark,
+    .k185-bale:focus-visible .k185-bale-mark,
+    .k185-bale:hover .k185-bale-check,
+    .k185-bale:focus-visible .k185-bale-check {
       animation: k185-bale-tick-pop 620ms var(--ease-standard) 1;
     }
     /* درخششِ موربِ یک‌باره */

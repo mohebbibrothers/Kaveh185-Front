@@ -117,14 +117,27 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
         </div>
 
         <div className="relative mx-auto w-full max-w-6xl px-4 pt-9 pb-2 sm:px-6 sm:pt-11">
-          {/* ── سربرگِ هویت: در موبایل وسط‌چین، در دسکتاپ ستونِ اول ── */}
-          <div className="k185-footer-col flex flex-col items-center text-center md:grid md:grid-cols-[1.7fr_1fr_1fr] md:items-start md:gap-7 md:text-start lg:grid-cols-[1.9fr_1fr_1fr] lg:gap-10">
-            <div className="w-full md:w-auto">
+          {/* ═══ چیدمانِ دورِ ۱۸ — «همیشه یک ردیف» ═══════════════════════════
+              کاربر صریح گفت: در لپ‌تاپ «کانال رسمی» به ردیفِ دوم افتاده و
+              باید همه‌چیز یک ردیف باشد — حتی اگر بخشی از محتوا روی واترمارکِ
+              مشت (پس‌زمینه) بیفتد. پس نه گریدِ سه‌ستونیِ شکننده و نه
+              `md:contents`؛ بلکه یک **ردیفِ واحدِ flex** از `md` به بالا:
+
+                [ هویت: نشان + نام + توضیح + چیپ‌ها ]  [ دسترسی ]  [ قوانین ]  [ کانال ]
+
+              و برای اینکه هیچ ستونی محتوا را نشکند، از `md` به بالا
+              `min-w-0` + `whitespace-nowrap` روی لینک‌ها ست شده و اندازه‌ها
+              با `clamp` کاهشی‌اند؛ در تبلت هم ردیف می‌مانَد، فقط فشرده‌تر.
+              در موبایل (زیرِ `md`) مثل قبل ستونی می‌شود — همان‌جا هم
+              «کانال» کنارِ چیپ‌ها می‌نشیند، نه در ته فوتر. */}
+          <div className="k185-footer-row flex flex-col flex-wrap items-center text-center md:flex-row md:flex-nowrap md:items-start md:gap-5 md:text-start lg:gap-8">
+            {/* ── ستونِ هویت ── */}
+            <div className="k185-footer-anim w-full md:min-w-0 md:flex-1">
               <div className="flex flex-col items-center gap-2.5 md:flex-row md:items-center md:gap-3">
-                <span className="k185-footer-badge block transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-rotate-3">
-                  <Logo size={64} variant="emblem" />
+                <span className="k185-footer-badge block shrink-0 transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-rotate-3">
+                  <Logo size={56} variant="emblem" />
                 </span>
-                <span className="flex flex-col leading-tight">
+                <span className="flex min-w-0 flex-col leading-tight">
                   <span className="text-[16px] font-extrabold">{SITE.name}</span>
                   <span className="text-on-band-muted mt-0.5 text-[10.5px]">
                     {SITE.event.title}
@@ -132,12 +145,12 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                 </span>
               </div>
 
-              <p className="text-on-band-muted mx-auto mt-3.5 max-w-sm text-[12.5px] leading-[2] md:mx-0">
+              <p className="text-on-band-muted mx-auto mt-3 max-w-[46ch] text-[12px] leading-[1.9] md:mx-0">
                 مسابقهٔ کتاب‌خوانی {SITE.bookTitle} به مناسبت هفتهٔ بسیج، میان مساجد حوزهٔ مقاومت بسیج
                 ۱۸۵ شهید کاوه.
               </p>
 
-              <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2 text-[11px] md:justify-start">
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-[11px] md:justify-start">
                 <span className="border-on-band/15 text-on-band-muted inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-semibold">
                   <span aria-hidden="true" className="bg-verde size-1.5 rounded-full" />
                   شرکت رایگان
@@ -147,24 +160,16 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                   یک‌بار برای هر کد ملی
                 </span>
               </div>
-
-              {/* ── کانالِ رسمی — تیتر + آیکونِ سه‌بعدی + نام، بی‌هیچ باکس ──
-                  (نکتهٔ ۴، دورِ ۱۷) در ستونِ هویت می‌نشیند تا فوتر در هیچ
-                  عرضی دو ردیفه نشود؛ خودش هم «کارت» نیست، فقط یک لینکِ
-                  عمودیِ فشرده است. در دسکتاپ با خطِ نازک از متن جدا می‌شود. */}
-              <div className="border-on-band/10 mt-4 flex w-full justify-center border-t pt-4 md:mt-4 md:justify-start md:pt-4">
-                <ChannelCard />
-              </div>
             </div>
 
-            {/* ── دو ستونِ کوتاه: در موبایل کنارِ هم، در دسکتاپ زیرِ هم نمی‌روند ── */}
-            <div className="mt-7 grid w-full grid-cols-2 gap-4 md:mt-0 md:contents">
+            {/* ── دو ستونِ کوتاه ── */}
+            <div className="mt-6 grid w-full grid-cols-2 gap-4 md:mt-0 md:flex md:w-auto md:shrink-0 md:gap-5 lg:gap-7">
               <nav
                 aria-label="دسترسی سریع"
                 className="k185-footer-col"
                 style={{ animationDelay: "70ms" }}
               >
-                <h2 className="text-on-band mb-2.5 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide md:justify-start">
+                <h2 className="text-on-band mb-2 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide md:justify-start">
                   <span aria-hidden="true" className="bg-band-accent/70 h-3 w-[2px] rounded-full" />
                   دسترسی سریع
                 </h2>
@@ -173,7 +178,7 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                     <li key={l.href} className="text-center md:text-start">
                       <Link
                         href={l.href}
-                        className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[36px] items-center px-1 text-[12px] transition-colors"
+                        className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[36px] items-center px-1 text-[12px] whitespace-nowrap transition-colors"
                       >
                         <span className="k185-footer-link-text relative">{l.label}</span>
                       </Link>
@@ -187,7 +192,7 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                 className="k185-footer-col"
                 style={{ animationDelay: "120ms" }}
               >
-                <h2 className="text-on-band mb-2.5 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide md:justify-start">
+                <h2 className="text-on-band mb-2 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide md:justify-start">
                   <span aria-hidden="true" className="bg-band-accent/70 h-3 w-[2px] rounded-full" />
                   قوانین و حساب
                 </h2>
@@ -196,7 +201,7 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                     <li key={l.href} className="text-center md:text-start">
                       <Link
                         href={l.href}
-                        className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[36px] items-center px-1 text-[12px] transition-colors"
+                        className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[36px] items-center px-1 text-[12px] whitespace-nowrap transition-colors"
                       >
                         <span className="k185-footer-link-text relative">{l.label}</span>
                       </Link>
@@ -204,6 +209,14 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                   ))}
                 </ul>
               </nav>
+            </div>
+
+            {/* ── کانالِ رسمی: ستونِ چهارم، در همان **یک ردیف** ── */}
+            <div
+              className="mt-6 w-full border-t border-[color-mix(in_oklab,var(--c-on-band)_10%,transparent)] pt-4 md:mt-0 md:w-auto md:shrink-0 md:border-s md:border-t-0 md:ps-5 md:pt-0 lg:ps-7"
+              style={{ animationDelay: "170ms" }}
+            >
+              <ChannelCard />
             </div>
           </div>
 

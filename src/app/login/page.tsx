@@ -28,7 +28,10 @@ export default function Page() {
 
         <p className="text-text-subtle mt-5 text-center text-[11.5px]">
           مسجد یا اطلاعاتتان اشتباه ثبت شده؟{" "}
-          <Link href="/rules" className="text-brand font-bold underline underline-offset-4">
+          <Link
+            href="/rules"
+            className="text-brand inline-flex min-h-[28px] items-center font-bold underline underline-offset-4"
+          >
             قوانین
           </Link>{" "}
           را ببینید.

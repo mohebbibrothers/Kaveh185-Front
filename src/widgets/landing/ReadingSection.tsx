@@ -1,12 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Girih } from "@/shared/ui/Ornament";
 import { SITE } from "@/shared/config/site";
 import { toFa } from "@/shared/lib/fa";
 import { useData } from "@/shared/api/data-context";
 import { LeaderGallery } from "./LeaderGallery";
+import type { LeaderPortrait } from "@/shared/api/landing";
 import { useState } from "react";
 
 /**
@@ -39,6 +39,30 @@ const BASE_QUOTE = [
 ];
 
 const BASE_SOURCE = "از بیانات رهبر انقلاب اسلامی دربارهٔ کتاب و کتاب‌خوانی";
+
+/**
+ * ── اسلایدِ «پایه» (دورِ ۱۸، نکتهٔ ۳) ────────────────────────────────────
+ * کاربر گزارش داد با رفرش، اول نسخهٔ قدیمیِ باکس دیده می‌شد و بعد «می‌پرید»
+ * به نسخهٔ تازه. ریشه: دو **چیدمانِ متفاوت** برای دو حالت وجود داشت —
+ * حالتِ پایه تصویر را در ستونِ ۳۶٪ و سمتِ مقابل می‌گذاشت و گالری، تصویر را
+ * در ستونِ ۴۶٪ سمتِ دیگر. پس با رسیدنِ دادهٔ ادمین، تصویر جابه‌جا و
+ * اندازه‌اش عوض می‌شد ⇒ پرش.
+ *
+ * راهِ ریشه‌ای: **یک چیدمان، دو محتوا.** حالتِ پایه دیگر یک چیدمانِ جدا
+ * نیست؛ همان `LeaderGallery` است با یک اسلاید (تصویرِ رسمیِ بستهٔ فرانت +
+ * کلامِ رسمی). نتیجه: HTMLِ پیش‌رندر همان هندسهٔ نهایی را دارد، پس با
+ * رسیدنِ دادهٔ ادمین فقط **محتوا** با یک گذارِ نرم عوض می‌شود و هیچ
+ * جابه‌جاییِ چیدمانی رخ نمی‌دهد.
+ */
+const BASE_SLIDE: LeaderPortrait = {
+  image_url: "/img/emam-reading.jpg",
+  alt: "تصویر حضرت آیت‌الله خامنه‌ای در حال مطالعهٔ کتاب در کتابخانه",
+  caption: BASE_QUOTE[0] ?? "",
+  caption_paragraphs: BASE_QUOTE,
+  source: BASE_SOURCE,
+  show_in_box: true,
+  order: 0,
+};
 
 export function ReadingSection({ bookStories }: { bookStories: number }) {
   const { data } = useData();
@@ -91,55 +115,13 @@ export function ReadingSection({ bookStories }: { bookStories: number }) {
           </div>
         </div>
 
-        {hasAdminGallery ? (
-          /* ── حالت گالری: خودِ گالری تمام‌عرضِ باکس است ──
-             ⚠️ نسخهٔ اول گالری را داخل ستونِ ۳۶٪ می‌گذاشت و گالری هم
-             خودش دو ستون بود؛ نتیجه: ستونِ متن به یک نوارِ باریک تبدیل
-             می‌شد و نصفِ باکس خالی می‌ماند. گالری باید فضای کاملِ باکس را
-             بگیرد. */
-          <div className="relative">
-            <LeaderGallery items={leader} onProgress={setSlide} />
-          </div>
-        ) : (
-          <div className="relative grid gap-0 md:grid-cols-[minmax(0,1fr)_minmax(250px,36%)]">
-            <div className="order-1 md:order-2 md:self-stretch">
-              <BasePortrait />
-            </div>
-
-            <div className="order-2 flex min-w-0 flex-col justify-center p-5 sm:p-7 md:order-1 md:p-8 lg:p-10">
-              <div className="flex items-center gap-2.5" aria-hidden="true">
-                <span className="from-gold/60 h-px w-10 bg-gradient-to-l to-transparent" />
-                <span className="text-gold/70">
-                  <Girih size={9} />
-                </span>
-                <span className="from-gold/30 h-px flex-1 bg-gradient-to-r to-transparent" />
-              </div>
-
-              <figure className="m-0 mt-3.5">
-                <blockquote className="border-0 p-0">
-                  {BASE_QUOTE.map((para, i) => (
-                    <p
-                      key={i}
-                      className={`text-text-muted text-[12.5px] leading-[2.15] sm:text-[13.5px] ${
-                        i > 0 ? "mt-2.5" : ""
-                      }`}
-                    >
-                      {para}
-                    </p>
-                  ))}
-                </blockquote>
-                <figcaption className="text-text-subtle mt-3.5 flex items-start gap-1.5 text-[10.5px] leading-6">
-                  <span className="text-gold-strong mt-1 shrink-0" aria-hidden="true">
-                    <Girih size={8} />
-                  </span>
-                  {BASE_SOURCE}
-                </figcaption>
-              </figure>
-
-              <BookFacts bookStories={bookStories} />
-            </div>
-          </div>
-        )}
+        {/* ⚠️ یک چیدمان برای هر دو حالت (نکتهٔ ۳، دورِ ۱۸): دادهٔ ادمین
+            نبود ⇒ همان گالری با یک اسلایدِ «پایه». یعنی حتی پیش از رسیدنِ
+            پاسخِ سرور، HTMLِ پیش‌رندر هندسهٔ نهایی را دارد و «پرش» ناممکن
+            است؛ فقط محتوا با گذارِ نرم عوض می‌شود. */}
+        <div className="relative">
+          <LeaderGallery items={hasAdminGallery ? leader : [BASE_SLIDE]} onProgress={setSlide} />
+        </div>
 
         {/* نوارِ پایین: دکمه + توضیح — در هر دو حالت یکسان */}
         <div className="border-border/70 relative border-t px-4 py-3 sm:px-7 md:px-8 lg:px-10">
@@ -201,40 +183,6 @@ function BookFacts({
       <span className="text-text-subtle text-[11px] font-semibold">
         {toFa(bookStories)} داستان کوتاه · بدون دانلود
       </span>
-    </div>
-  );
-}
-
-/**
- * قابِ پایه — تصویر رسمیِ داخل بستهٔ فرانت، با همان زبانِ بصریِ گالری.
- * عمداً ساده است: هیچ نشانگر و نوار زمانی‌ای ندارد، چون فقط یک تصویر است.
- */
-function BasePortrait() {
-  return (
-    <div className="relative p-2.5 md:p-3.5">
-      <div className="bg-stage relative overflow-hidden rounded-t-[78px] rounded-b-[20px] shadow-[0_24px_60px_-30px_oklch(24%_0.05_260/0.6)] md:rounded-t-[104px]">
-        <div className="relative aspect-[4/5] w-full sm:aspect-[16/11] md:aspect-auto md:h-full md:min-h-[300px] lg:min-h-[360px]">
-          <Image
-            src="/img/emam-reading.jpg"
-            alt="تصویر حضرت آیت‌الله خامنه‌ای در حال مطالعهٔ کتاب در کتابخانه"
-            fill
-            sizes="(max-width: 767px) 92vw, (max-width: 1200px) 320px, 420px"
-            className="object-cover object-[center_22%]"
-          />
-          <div
-            aria-hidden="true"
-            className="from-stage/75 pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t to-transparent"
-          />
-          <div
-            aria-hidden="true"
-            className="ring-gold/30 pointer-events-none absolute inset-0 rounded-t-[78px] rounded-b-[20px] ring-1 ring-inset md:rounded-t-[104px]"
-          />
-          <span
-            aria-hidden="true"
-            className="border-gold/55 pointer-events-none absolute top-3 right-3 size-6 rounded-tr-2xl border-t-2 border-r-2"
-          />
-        </div>
-      </div>
     </div>
   );
 }
