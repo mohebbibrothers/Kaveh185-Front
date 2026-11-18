@@ -173,9 +173,13 @@ export function Hero({ status, serverNow }: { status: HeroStatus; serverNow?: st
             </div>
 
             {/* ── اقدام ──
-                دکمهٔ اصلی «مشاهدهٔ قوانین» است، دکمهٔ دوم به رتبه‌بندی
-                مساجد می‌رود و «ثبت‌نام و شرکت» فقط یک لینکِ کم‌رنگ است:
-                تکرارِ دکمهٔ هدر در هیرو هم شلوغی بود هم وزنِ بی‌جا. */}
+                ⚠️ نکتهٔ ۱ کاربر (دورِ ۱۶): لینکِ کم‌رنگِ «ثبت‌نام در مسابقه» /
+                «ورود به آزمون» زیرِ تایمر **کامل حذف شد**. دو دلیل:
+                ۱) همان دکمه با همان مقصد در هدر، دو کلیک‌بالا‌تر، هست؛
+                   تکرارش هم شلوغی بود و هم وزنِ بصریِ بی‌جا.
+                ۲) زیرِ تایمر، کاربر دنبالِ «زمان» است نه یک لینکِ سوم؛
+                   لینکِ کوچک آن‌جا فقط تمرکزِ شمارشِ معکوس را می‌شکست.
+                پس اقدام‌های هیرو دقیقاً دو دکمه‌اند: قوانین و رتبه‌بندی مساجد. */}
             <div className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2.5 sm:mt-7 md:justify-start">
               <Link
                 href="/rules"
@@ -204,12 +208,6 @@ export function Hero({ status, serverNow }: { status: HeroStatus; serverNow?: st
                   <path d="M7 20v-6M12 20V9M17 20v-9" />
                 </svg>
                 رتبه‌بندی مساجد
-              </Link>
-              <Link
-                href={state === "open" ? "/exam" : "/register"}
-                className="text-text-muted hover:text-brand inline-flex items-center gap-1 text-[12px] font-bold underline-offset-4 hover:underline"
-              >
-                {state === "open" ? "ورود به آزمون" : "ثبت‌نام در مسابقه"}
               </Link>
             </div>
           </div>

@@ -70,6 +70,11 @@ const PAIRS = [
   ["on-band-muted", "band", 4.5],
   ["band-accent", "band", 3],
   ["on-band", "band-2", 7],
+  // آیکونِ بله (نکتهٔ ۴، دورِ ۱۶): تیک روی بدنهٔ سبز و بدنه روی نوار.
+  // این‌ها هم مثل `band` در هر دو تم عوض می‌شوند، پس هر دو تم سنجیده می‌شوند.
+  ["on-verde", "verde-deep", 4.5],
+  ["verde-deep", "band", 3],
+  ["bale-tick", "verde-deep", 4.5],
 ];
 const fails = [];
 for (const theme of ["light", "dark"]) {
@@ -148,6 +153,10 @@ ${Object.entries(light)
   --radius-2xl: var(--radius-2xl);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
+${Object.entries(tokens.space)
+  .filter(([k, v]) => !k.startsWith("$") && typeof v === "string")
+  .map(([k]) => `  --spacing-${k}: var(--space-${k});`)
+  .join("\n")}
 }
 `;
 

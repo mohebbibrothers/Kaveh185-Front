@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePrefersReducedMotion } from "@/shared/lib/motion";
 import { Girih } from "@/shared/ui/Ornament";
 import type { Martyr } from "@/shared/api/landing";
@@ -43,29 +43,92 @@ import type { Martyr } from "@/shared/api/landing";
  * • **بدونِ داده ⇒ `null`**. هیچ شهیدی از خودمان ساخته نمی‌شود.
  */
 
-/** عرضِ تقریبیِ هر کارت + فاصله — برای محاسبهٔ تعداد تکرار. */
-const CARD_W = 118;
-/** سقفِ تعداد تکرار هر نسخه؛ از ۱۰ بیشتر لازم نمی‌شود. */
-const MAX_REPEATS = 10;
+/**
+ * ── بازنویسیِ دورِ ۱۶ (نکته‌های ۲ و ۳ کاربر) ─────────────────────────────
+ *
+ * ۲) **«بیش از حد به باکسِ بالایی چسبیده»**: نسخهٔ قبل `pt-5` داشت و کاربر
+ *    درست دید — نوار درست زیرِ «باکسِ اطلاعاتِ مسابقه» چسبیده بود و «هیچ
+ *    نفس» نداشت. حالا یک توکنِ فاصلهٔ صریح (`--space-12` = ۳rem در دسکتاپ،
+ *    `--space-8` در موبایل) بالای سرتیتر است و خودِ نوار با خطِ طلاییِ
+ *    بالایش از بخشِ قبل جدا می‌شود. عددِ جادویی نیست؛ از توکن می‌آید.
+ *
+ * ۳) **«از سمت چپ خالی می‌شود»**: ریشهٔ باگ ریاضی بود، نه سرعت. نسخهٔ قبل
+ *    `translateX(+50%)` روی یک ردیفِ `w-max` اجرا می‌شد و فرض می‌کرد نیمهٔ
+ *    اول عیناً تکرارِ نیمهٔ دوم است. این فرض **فقط وقتی** درست است که
+ *    عرضِ یک نسخه از عرضِ قاب بیشتر باشد؛ با ۴ شهید و کارتِ ۹۶px عرضِ
+ *    کلِ ردیف کمتر از قاب بود و در انتهای چرخه لبهٔ چپ (در RTL: انتهای
+ *    مسیر) خالی می‌ماند. راه‌حلِ قطعی:
+ *      • دو نسخهٔ **کامل و پشتِ سرِ هم** در یک ردیف (`[A][A]`) با
+ *        `width: max-content`؛
+ *      • حرکت از `0` به `-50%` (منفی، نه مثبت) تا نسخهٔ دوم دقیقاً جای
+ *        نسخهٔ اول بنشیند ⇒ حلقه **بی‌درز و بی‌پایان**؛
+ *      • تضمینِ پر بودنِ قاب: تعدادِ آیتم در هر نسخه با `MIN_ITEMS`
+ *        محاسبه می‌شود از **عرضِ واقعیِ قاب** (با `ResizeObserver`)، نه از
+ *        عددِ ثابتِ ۱۷۰۰px. پس در ۴K هم خالی نمی‌شود.
+ *    `will-change` و `translate3d` هم گذاشته شد تا در موبایلِ کم‌رمق
+ *    پرش نداشته باشد.
+ */
+const CARD_W_MOBILE = 84;
+const CARD_W_DESKTOP = 112;
+const GAP_MOBILE = 8;
+const GAP_DESKTOP = 12;
+/** کمینهٔ آیتم در هر نسخه — اگر تعدادِ شهدا کم بود، فهرست تکرار می‌شود. */
+const MIN_ITEMS = 14;
 
 export function MartyrsMarquee({ items }: { items: Martyr[] }) {
   const reduced = usePrefersReducedMotion();
   const valid = useMemo(() => items.filter((m) => m.image_url && m.title), [items]);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const trackRef = useRef<HTMLDivElement | null>(null);
 
   const count = valid.length;
+
+  // عرضِ واقعیِ قاب (با تغییرِ اندازه به‌روز می‌شود) — ریاضیِ «پر بودن» را
+  // از حدس به اندازه‌گیری تبدیل می‌کند.
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const [viewportW, setViewportW] = useState(0);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+    // ⚠️ محیطِ تست/SSR ممکن است `matchMedia` یا `ResizeObserver` نداشته
+    // باشد؛ آن‌جا مقدارِ محافظه‌کارانهٔ MIN_ITEMS استفاده می‌شود، نه کرش.
+    if (typeof window.matchMedia !== "function" || typeof ResizeObserver === "undefined") {
+      setViewportW(el.clientWidth || 0);
+      return;
+    }
+    const mq = window.matchMedia("(min-width: 640px)");
+    const read = () => {
+      setViewportW(el.clientWidth);
+      setIsDesktop(mq.matches);
+    };
+    read();
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    mq.addEventListener("change", read);
+    return () => {
+      ro.disconnect();
+      mq.removeEventListener("change", read);
+    };
+  }, []);
+
+  // ⚠️ قاعدهٔ هوک‌ها: بازگشتِ زودهنگام **بعد** از همهٔ هوک‌ها. وگرنه اگر
+  // روزی فهرست خالی به این کامپوننت برسد و بعداً پر شود، تعدادِ هوک‌ها
+  // بین دو رندر عوض می‌شود و ری‌اکت می‌شکند.
   if (count === 0) return null;
 
-  // تعدادِ تکرارِ لازم: یک نسخه باید از پهن‌ترین چیدمان (۱۶۲۰px) پهن‌تر باشد.
-  // ⚠️ زوج (even) بماند: حرکت با `translateX(50%)` انجام می‌شود و فقط با
-  // تعدادِ زوجِ نسخه‌ها، نیمهٔ اول دقیقاً تکرارِ نیمهٔ دوم است ⇒ حلقه بی‌درز.
-  const needed = Math.min(MAX_REPEATS, Math.max(2, Math.ceil(1700 / (count * CARD_W)) + 1));
-  const repeats = needed % 2 === 0 ? needed : needed + 1;
-  const sequence = Array.from({ length: repeats }, () => valid).flat();
+  const cardW = isDesktop ? CARD_W_DESKTOP : CARD_W_MOBILE;
+  const gap = isDesktop ? GAP_DESKTOP : GAP_MOBILE;
+  // +۲ کارتِ اضافه: حاشیهٔ اطمینان تا قاب در هیچ عرضی (تا ۴K) خالی نشود.
+  const perCopy =
+    viewportW > 0 ? Math.max(count, Math.ceil(viewportW / (cardW + gap)) + 2) : MIN_ITEMS;
+  // با احترام به `prefers-reduced-motion` حرکت قطع و ردیف اسکرول‌پذیر می‌شود.
   const canScroll = !reduced;
-  // سرعتِ یکنواخت: هر کارت ~۴٫۶ ثانیه، صرف‌نظر از تعدادِ شهدا.
-  const duration = Math.max(26, Math.round((sequence.length * 4.6) / 2));
+  // یک نسخه = فهرستِ واقعی که تا پر شدنِ قاب تکرار می‌شود.
+  const copyItems = Array.from({ length: Math.ceil(perCopy / count) }, () => valid).flat();
+  // دو نسخهٔ عیناً یکسان ⇒ `-50%` همیشه درز ندارد.
+  const sequence = [...copyItems, ...copyItems];
+  const duration = Math.max(30, Math.round(copyItems.length * 4.2));
 
   const active = activeIndex !== null ? valid[activeIndex % count] : null;
 
@@ -94,7 +157,9 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-[var(--c-band-accent)] to-transparent opacity-70"
       />
 
-      <div className="relative pt-5 pb-6 sm:pt-6 sm:pb-7">
+      {/* فاصلهٔ استاندارد از بخشِ بالایی (نکتهٔ ۲): `--space-8` در موبایل،
+          `--space-12` در دسکتاپ — از توکن، نه عددِ جادویی. */}
+      <div className="relative pt-[var(--space-8)] pb-[var(--space-6)] sm:pt-[var(--space-12)] sm:pb-[var(--space-8)] lg:pt-[var(--space-16)]">
         {/* ── سرتیتر ── */}
         <div className="mx-auto mb-4 flex w-full max-w-6xl items-center justify-center gap-3 px-4 sm:px-6">
           <span aria-hidden="true" className="bg-band-accent/45 h-px w-8 sm:w-16" />
@@ -112,7 +177,7 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
 
         {/* ── ردیفِ اصلی ── */}
         <div
-          ref={trackRef}
+          ref={viewportRef}
           className={`relative ${canScroll ? "overflow-hidden" : "no-scrollbar overflow-x-auto"}`}
           style={{
             maskImage: "linear-gradient(to left, transparent, black 6%, black 94%, transparent)",
@@ -124,8 +189,8 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
           }}
         >
           <ul
-            className={`flex w-max items-start gap-1 px-3 sm:gap-2 sm:px-4 ${
-              canScroll ? "k185-marquee" : "mx-auto justify-center"
+            className={`flex w-max items-start gap-2 sm:gap-[12px] ${
+              canScroll ? "k185-marquee" : "mx-auto justify-center px-3 sm:px-4"
             }`}
             style={canScroll ? { animationDuration: `${duration}s` } : undefined}
           >
@@ -133,7 +198,7 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
               const realIndex = i % count;
               return (
                 <li key={`${m.title}-${i}`} className="shrink-0">
-                  <figure className="group m-0 flex w-[96px] flex-col items-center sm:w-[112px]">
+                  <figure className="group m-0 flex w-[84px] flex-col items-center sm:w-[100px]">
                     <button
                       type="button"
                       onFocus={() => {
@@ -171,7 +236,11 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
                       </span>
 
                       <figcaption className="mt-2 w-full text-center">
-                        <span className="text-on-band block truncate text-[10.5px] leading-tight font-extrabold">
+                        {/* ⚠️ `truncate` روی موبایل عنوان را می‌بُرید («سیدشهدای
+                            مقاو…»). حالا حداکثر دو خط با ارتفاعِ ثابت: هر
+                            کارت هم‌قد می‌مانَد، هیچ عنوانی بریده نمی‌شود و
+                            ردیف یک‌خطِ صاف می‌مانَد. */}
+                        <span className="text-on-band line-clamp-2 block min-h-[2.1em] text-[10.5px] leading-[1.15] font-extrabold">
                           {m.title}
                         </span>
                         {m.subtitle ? (

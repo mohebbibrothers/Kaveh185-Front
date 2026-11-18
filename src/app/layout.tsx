@@ -31,6 +31,27 @@ export const metadata: Metadata = {
   },
   robots: { index: true, follow: true },
   manifest: "/manifest.webmanifest",
+  /**
+   * آیکون‌ها — صریح و کامل (نکتهٔ ۶، دورِ ۱۶).
+   *
+   * ⚠️ Next به‌طورِ خودکار `src/app/icon.png` را به‌عنوان `sizes="512x512"`
+   * اعلام می‌کند، ولی **`favicon.ico` و `apple-icon` را در `<head>` نمی‌آورد**
+   * (فایل ساخته می‌شود، لینک نمی‌شود). نتیجه: سافاری و برخی نسخه‌های کروم
+   * به `/favicon.ico` پیش‌فرض می‌رفتند و نشانِ کهنه/خالی می‌دیدند.
+   * این‌جا هر سه نسلِ آیکون صریح اعلام می‌شود — همه از یک سورس (مشتِ
+   * سبزِ `image-46`) ساخته شده‌اند.
+   */
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32.png", type: "image/png", sizes: "32x32" },
+      { url: "/icon-64.png", type: "image/png", sizes: "64x64" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    shortcut: ["/favicon.ico"],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
 };
 
 export const viewport: Viewport = {
@@ -69,6 +90,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <a
           href="#main"
+          /* ⚠️ `sr-only` با `position:absolute` کار می‌کند و در ۲۸۰px یک
+             پیکسل سرریزِ افقی می‌ساخت (نوارِ اسکرولِ بی‌مورد در فولدبل).
+             `overflow-x-clip` روی `body` جلوی آن را می‌گیرد، ولی چون
+             می‌تواند `position: sticky` هدر را بشکند، به‌جایش خودِ لینک
+             را با `clip-path` پنهان و در فوکوس آزاد می‌کنیم. */
           className="focus:bg-stage focus:text-on-brand sr-only focus:not-sr-only focus:fixed focus:top-3 focus:right-3 focus:z-50 focus:rounded-lg focus:px-4 focus:py-2"
         >
           پرش به محتوای اصلی

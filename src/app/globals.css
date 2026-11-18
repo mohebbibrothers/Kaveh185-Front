@@ -32,6 +32,15 @@
     display: none;
   }
 
+  /* ⚠️ `overflow-x: clip` روی `html` (نه `hidden` روی `body`):
+     `hidden` یک ظرفِ اسکرول می‌سازد و `position: sticky` هدر را می‌شکند؛
+     `clip` فقط سرریزِ افقی را می‌بُرد و هیچ ظرفِ اسکرولی نمی‌سازد. تنها
+     سرریزِ واقعیِ فولدبل (۲۸۰px) هم همان لینکِ پرش‌به‌محتوا و هاله‌های
+     تزئینی است — هیچ‌کدام محتوای واقعی نیستند. */
+  html {
+    overflow-x: clip;
+  }
+
   body {
     font-family: var(--font-sans);
     background: var(--c-canvas);
@@ -278,12 +287,16 @@
      محاسبه می‌شود)، پس نیمهٔ اول **همیشه** دقیقاً تکرارِ نیمهٔ دوم است و
      بازگشت به صفر هیچ درزی ندارد. نسخهٔ قبل ۳۳٪ِ ثابت داشت و با ۳ یا ۴
      شهید، در تبلت و لپ‌تاپ لبهٔ خالی نشان می‌داد. */
+  /* ⚠️ `-50%` و نه `+50%`: ردیف از **دو نسخهٔ عیناً یکسان** ساخته می‌شود؛
+     با حرکتِ منفی، نسخهٔ دوم دقیقاً جای نسخهٔ اول می‌نشیند و حلقه در هیچ
+     لحظه‌ای درز یا لبهٔ خالی ندارد. جهت هم با RTL هم‌خوان است (حرکت به
+     سمتِ راستِ دیداری، یعنی «گذشتِ زمان» در نوارِ فارسی). */
   @keyframes k185-marquee {
     from {
-      transform: translateX(0);
+      transform: translate3d(0, 0, 0);
     }
     to {
-      transform: translateX(50%);
+      transform: translate3d(-50%, 0, 0);
     }
   }
   @media (prefers-reduced-motion: no-preference) {
@@ -292,6 +305,7 @@
       animation-timing-function: linear;
       animation-iteration-count: infinite;
       will-change: transform;
+      backface-visibility: hidden;
     }
     .k185-marquee:hover,
     .k185-marquee:focus-within {
@@ -479,6 +493,123 @@
     }
   }
 
+  /* ── آیکونِ سه‌بعدیِ بله (نکتهٔ ۴، دورِ ۱۶) ───────────────────────────
+     بدنه یک کرهٔ زمردی است: گرادیانِ عمودی + بازتابِ بالا + حلقهٔ طلایی +
+     سایهٔ داخلیِ بالا/پایین. تیک با ماسکِ آلفای خودِ تصویرِ کاربر روی
+     سطح می‌نشیند و سایهٔ کوچکی زیرش دارد. هیچ رنگِ ثابتی این‌جا نیست:
+     همه از توکن‌هایی می‌آید که در تمِ روز و شب عوض می‌شوند. */
+  .k185-bale-body {
+    background-color: var(--c-verde-deep);
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--c-verde-deep) 72%, white) 0%,
+      var(--c-verde-deep) 46%,
+      color-mix(in oklab, var(--c-verde-deep) 82%, black) 100%
+    );
+    box-shadow:
+      inset 0 1.5px 0 oklch(100% 0 0 / 0.45),
+      inset 0 -6px 10px color-mix(in oklab, var(--c-verde-deep) 70%, black),
+      0 0 0 1px color-mix(in oklab, var(--c-gold) 55%, transparent),
+      0 6px 16px -8px color-mix(in oklab, var(--c-stage) 70%, transparent);
+    transition:
+      transform var(--dur-slow) var(--ease-decelerate),
+      box-shadow var(--dur-base) var(--ease-standard);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .k185-bale:hover .k185-bale-body,
+    .k185-bale:focus-visible .k185-bale-body {
+      transform: translateY(-2px) scale(1.045);
+      box-shadow:
+        inset 0 1.5px 0 oklch(100% 0 0 / 0.5),
+        inset 0 -7px 12px color-mix(in oklab, var(--c-verde-deep) 72%, black),
+        0 0 0 1px color-mix(in oklab, var(--c-gold) 85%, transparent),
+        0 12px 26px -10px color-mix(in oklab, var(--c-stage) 80%, transparent);
+    }
+  }
+  .k185-bale-mask {
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* شناوریِ آرام — آیکون «نفس می‌کشد» */
+    @keyframes k185-bale-float {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-3px);
+      }
+    }
+    .k185-bale-float,
+    .k185-bale .k185-bale-body {
+      animation: k185-bale-float 4.6s var(--ease-standard) infinite;
+    }
+    /* پالس‌های پشتِ آیکون */
+    @keyframes k185-bale-pulse {
+      0% {
+        opacity: 0.5;
+        transform: scale(0.82);
+      }
+      70%,
+      100% {
+        opacity: 0;
+        transform: scale(1.45);
+      }
+    }
+    .k185-bale-ring {
+      animation: k185-bale-pulse 2600ms var(--ease-decelerate) infinite;
+    }
+    .k185-bale-ring-2 {
+      animation-delay: 1300ms;
+    }
+    /* تیک در هاور «کلیک» می‌کند */
+    @keyframes k185-bale-tick-pop {
+      0% {
+        transform: scale(1);
+      }
+      35% {
+        transform: scale(0.86);
+      }
+      70% {
+        transform: scale(1.1);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+    .k185-bale:hover .k185-bale-tick,
+    .k185-bale:focus-visible .k185-bale-tick {
+      animation: k185-bale-tick-pop 620ms var(--ease-standard) 1;
+    }
+    /* درخششِ موربِ یک‌باره */
+    @keyframes k185-bale-sweep {
+      0% {
+        transform: translateX(-140%) skewX(-14deg);
+        opacity: 0;
+      }
+      25% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateX(320%) skewX(-14deg);
+        opacity: 0;
+      }
+    }
+    .k185-bale:hover .k185-bale-sheen > span,
+    .k185-bale:focus-visible .k185-bale-sheen > span {
+      animation: k185-bale-sweep 1000ms var(--ease-standard) 1;
+    }
+  }
+  .k185-bale-arrow {
+    transition: transform var(--dur-base) var(--ease-standard);
+  }
+  .k185-bale:hover .k185-bale-arrow {
+    transform: translateX(-3px);
+  }
+
   /* ── «محرابِ نور»: یادوارهٔ شهدا ────────────────────────────────────
      چهره‌ها در هاور کمی بزرگ می‌شوند و حلقه‌شان روشن‌تر می‌شود؛ همه با
      `transform` تا هیچ layout‌ای در نوارِ متحرک بازمحاسبه نشود. */
@@ -492,6 +623,14 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  /* ⚠️ لینکِ «پرش به محتوا» با `sr-only` یک پیکسل بیرون از ۲۸۰px می‌زد
+     و نوارِ اسکرولِ افقی می‌ساخت. `clip-path` به‌جای بیرون‌زدن، آن را
+     دقیقاً در جای خود نگه می‌دارد و در فوکوس کامل دیده می‌شود. */
+  a.sr-only {
+    inset-inline-start: 0;
+    inset-inline-end: auto;
   }
 
   /* متن فقط برای صفحه‌خوان */

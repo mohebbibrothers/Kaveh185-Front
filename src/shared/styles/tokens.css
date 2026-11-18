@@ -22,6 +22,9 @@
   --c-on-gold: oklch(26% 0.05 70);
   --c-verde: oklch(48% 0.085 165);
   --c-verde-soft: oklch(94.6% 0.028 168);
+  --c-verde-deep: oklch(42% 0.100 160);
+  --c-on-verde: oklch(98% 0.010 160);
+  --c-bale-tick: oklch(98% 0.010 160);
   --c-brick: oklch(52% 0.17 28);
   --c-brick-soft: oklch(95% 0.028 32);
   --c-focus: oklch(58% 0.108 72);
@@ -57,6 +60,9 @@
   --c-on-gold: oklch(20% 0.04 70);
   --c-verde: oklch(76% 0.078 165);
   --c-verde-soft: oklch(30% 0.040 165);
+  --c-verde-deep: oklch(54% 0.112 162);
+  --c-on-verde: oklch(99% 0.006 160);
+  --c-bale-tick: oklch(99% 0.006 160);
   --c-brick: oklch(73% 0.125 30);
   --c-brick-soft: oklch(31% 0.052 30);
   --c-focus: oklch(82% 0.108 84);
@@ -93,6 +99,9 @@
     --c-on-gold: oklch(20% 0.04 70);
     --c-verde: oklch(76% 0.078 165);
     --c-verde-soft: oklch(30% 0.040 165);
+    --c-verde-deep: oklch(54% 0.112 162);
+    --c-on-verde: oklch(99% 0.006 160);
+    --c-bale-tick: oklch(99% 0.006 160);
     --c-brick: oklch(73% 0.125 30);
     --c-brick-soft: oklch(31% 0.052 30);
     --c-focus: oklch(82% 0.108 84);

@@ -34,7 +34,23 @@ import type { Martyr } from "@/shared/api/landing";
  *      • نوارِ پایانی با یک خطِ اعتبارِ کوتاه و «بازگشت به بالا».
  *
  * ۴) **پویانماییِ واقعی**: ستون‌ها با تأخیرِ پله‌ای، لنگرهای لینک با خطِ
- *    طلایی، نشان با چرخشِ کوچک، و آیکونِ بله با پالس و تکان.
+ *    طلایی، نشان با چرخشِ کوچک، و آیکونِ بله با پالس و شناوری.
+ *
+ * ── تغییرهای دورِ ۱۶ (نکته‌های ۴، ۵ و ۹) ─────────────────────────────────
+ *
+ * ۵) **هرگز دو ردیفه نمی‌شود** (نکتهٔ ۵): نسخهٔ قبل از `lg` یک گریدِ
+ *    سه‌ستونی می‌ساخت و ستونِ «کانال رسمی» را با `lg:contents` به ردیفِ
+ *    دوم می‌انداخت؛ در لپ‌تاپ و تبلتِ افقی نتیجه یک فوترِ دوطبقه با
+ *    ارتفاعِ زیاد بود. حالا از `md` به بالا **یک ردیفِ سه‌ستونی** است و
+ *    بلوکِ کانال داخلِ ستونِ هویت (زیرِ چیپ‌ها) می‌نشیند — پس با هیچ
+ *    عرضی به ردیفِ دوم نمی‌رود. فقط زیرِ `md` (موبایل/فولدبل) ستون‌ها
+ *    پشتِ سرِ هم می‌آیند، که خودِ کاربر هم مجاز دانست.
+ * ۶) **حذفِ باکسِ «کانال رسمی»** (نکتهٔ ۴): عنوانِ ستون و کارتِ دراز رفت؛
+ *    فقط `ChannelCard` (آیکونِ سه‌بعدیِ بله + نام) مانده که یک لینکِ
+ *    فشرده است، نه یک بلوکِ جداست.
+ * ۷) **واترمارکِ مشت** (نکتهٔ ۹): به‌جای دایرهٔ سبز، از سیلوئتِ سفیدِ مشت
+ *    (`fist-silhouette.webp`) با `mix-blend` استفاده می‌شود؛ در تمِ روز
+ *    تیره و در تمِ شب روشن دیده می‌شود و هیچ‌وقت مثل «لکه» نیست.
  */
 export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
   const year = new Intl.DateTimeFormat("fa-IR", { year: "numeric" }).format(new Date());
@@ -84,25 +100,25 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
             موبایل پنهان است (جایی که فقط شلوغی می‌شود). */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 -left-4 hidden w-[240px] opacity-[0.07] lg:block"
+          className="pointer-events-none absolute inset-y-0 -left-4 hidden w-[240px] opacity-[0.14] mix-blend-luminosity lg:block"
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- واترمارکِ تزئینی */}
           <img
-            src="/img/punch-fist.webp"
+            src="/img/fist-silhouette.webp"
             alt=""
             className="size-full object-contain object-bottom"
             style={{
-              maskImage: "linear-gradient(to top, black 55%, transparent 95%)",
-              WebkitMaskImage: "linear-gradient(to top, black 55%, transparent 95%)",
+              maskImage: "linear-gradient(to top, black 45%, transparent 92%)",
+              WebkitMaskImage: "linear-gradient(to top, black 45%, transparent 92%)",
             }}
           />
         </div>
 
         <div className="relative mx-auto w-full max-w-6xl px-4 pt-9 pb-2 sm:px-6 sm:pt-11">
           {/* ── سربرگِ هویت: در موبایل وسط‌چین، در دسکتاپ ستونِ اول ── */}
-          <div className="k185-footer-col flex flex-col items-center text-center lg:grid lg:grid-cols-[1.5fr_1fr_1.1fr] lg:items-start lg:gap-10 lg:text-start">
-            <div className="w-full lg:w-auto">
-              <div className="flex flex-col items-center gap-2.5 lg:flex-row lg:items-center lg:gap-3">
+          <div className="k185-footer-col flex flex-col items-center text-center md:grid md:grid-cols-[1.7fr_1fr_1fr] md:items-start md:gap-7 md:text-start lg:grid-cols-[1.9fr_1fr_1fr] lg:gap-10">
+            <div className="w-full md:w-auto">
+              <div className="flex flex-col items-center gap-2.5 md:flex-row md:items-center md:gap-3">
                 <span className="k185-footer-badge block transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-rotate-3">
                   <Logo size={64} variant="emblem" />
                 </span>
@@ -114,12 +130,12 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                 </span>
               </div>
 
-              <p className="text-on-band-muted mx-auto mt-3.5 max-w-sm text-[12.5px] leading-[2] lg:mx-0">
+              <p className="text-on-band-muted mx-auto mt-3.5 max-w-sm text-[12.5px] leading-[2] md:mx-0">
                 مسابقهٔ کتاب‌خوانی {SITE.bookTitle} به مناسبت هفتهٔ بسیج، میان مساجد حوزهٔ مقاومت بسیج
                 ۱۸۵ شهید کاوه.
               </p>
 
-              <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2 text-[11px] lg:justify-start">
+              <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2 text-[11px] md:justify-start">
                 <span className="border-on-band/15 text-on-band-muted inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-semibold">
                   <span aria-hidden="true" className="bg-verde size-1.5 rounded-full" />
                   شرکت رایگان
@@ -129,22 +145,29 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                   یک‌بار برای هر کد ملی
                 </span>
               </div>
+
+              {/* ── کانال رسمی — بی‌باکس، بی‌عنوان، فقط آیکونِ سه‌بعدی ──
+                  در ستونِ هویت می‌نشیند تا فوتر در هیچ عرضی دو ردیفه نشود
+                  (نکتهٔ ۵) و خودش هم «کارت» نباشد (نکتهٔ ۴). */}
+              <div className="mt-4 flex w-full justify-center md:justify-start">
+                <ChannelCard />
+              </div>
             </div>
 
             {/* ── دو ستونِ کوتاه: در موبایل کنارِ هم، در دسکتاپ زیرِ هم نمی‌روند ── */}
-            <div className="mt-7 grid w-full grid-cols-2 gap-4 lg:mt-0 lg:contents">
+            <div className="mt-7 grid w-full grid-cols-2 gap-4 md:mt-0 md:contents">
               <nav
                 aria-label="دسترسی سریع"
                 className="k185-footer-col"
                 style={{ animationDelay: "70ms" }}
               >
-                <h2 className="text-on-band mb-2.5 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide lg:justify-start">
+                <h2 className="text-on-band mb-2.5 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide md:justify-start">
                   <span aria-hidden="true" className="bg-band-accent/70 h-3 w-[2px] rounded-full" />
                   دسترسی سریع
                 </h2>
                 <ul className="space-y-0.5">
                   {quick.map((l) => (
-                    <li key={l.href} className="text-center lg:text-start">
+                    <li key={l.href} className="text-center md:text-start">
                       <Link
                         href={l.href}
                         className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[32px] items-center text-[12px] transition-colors"
@@ -161,13 +184,13 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                 className="k185-footer-col"
                 style={{ animationDelay: "120ms" }}
               >
-                <h2 className="text-on-band mb-2.5 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide lg:justify-start">
+                <h2 className="text-on-band mb-2.5 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide md:justify-start">
                   <span aria-hidden="true" className="bg-band-accent/70 h-3 w-[2px] rounded-full" />
                   قوانین و حساب
                 </h2>
                 <ul className="space-y-0.5">
                   {legal.map((l) => (
-                    <li key={l.href} className="text-center lg:text-start">
+                    <li key={l.href} className="text-center md:text-start">
                       <Link
                         href={l.href}
                         className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[32px] items-center text-[12px] transition-colors"
@@ -178,18 +201,6 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                   ))}
                 </ul>
               </nav>
-            </div>
-
-            {/* ── کانال رسمی: آیکونِ گردِ بزرگ، نه باکسِ دراز ── */}
-            <div
-              className="k185-footer-col mt-7 flex w-full flex-col items-center lg:mt-0 lg:items-start"
-              style={{ animationDelay: "170ms" }}
-            >
-              <h2 className="text-on-band mb-2.5 flex items-center gap-2 text-[11.5px] font-extrabold tracking-wide">
-                <span aria-hidden="true" className="bg-band-accent/70 h-3 w-[2px] rounded-full" />
-                کانال رسمی
-              </h2>
-              <ChannelCard />
             </div>
           </div>
 

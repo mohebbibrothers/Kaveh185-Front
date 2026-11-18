@@ -19,8 +19,16 @@
  * ── قاعده‌ای که دیگر نقض نمی‌شود ─────────────────────────────────────────
  * **هرگز چهره را با `object-cover` در دایره نگذارید.** تصویری که خودش
  * کادرِ تزئینی دارد، وقتی داخل دایره برش بخورد، تاجِ شمسه‌اش می‌رود.
- * این‌جا تصویر با `object-contain` داخلِ یک قابِ گرد می‌نشیند: هیچ بخشی
- * بریده نمی‌شود و خودِ شفافیت باعث می‌شود قاب «پس‌زمینه» نباشد.
+ *
+ * ── نکتهٔ ۷ کاربر (دورِ ۱۶): آواتارِ موبایل «ناقص و بی‌کادر» بود ──────────
+ * ریشه در دو لایه بود:
+ *   ۱) خودِ فایلِ `emblem-avatar.webp` یک **برشِ مربعِ شفاف** بود؛ داخلِ
+ *      قابِ گرد، چهار گوشه‌اش می‌بُرید (مخصوصاً در ۲۶–۳۴px منوی موبایل).
+ *   ۲) CSS هم `object-cover` می‌گذاشت و همان برش را تشدید می‌کرد.
+ * حالا **خودِ فایل دایره است**: بومِ کرمِ هم‌رنگِ کادرِ گنبدی + حلقهٔ
+ * مویِ طلایی + ماسکِ آلفای گرد (در `build_front_assets.py`). پس در هر
+ * اندازه‌ای کامل است و هیچ برشی لازم ندارد. `GoldRing` هم دیگر حلقهٔ دوم
+ * نمی‌کشد (قاب داخلِ تصویر است) و فقط سایه/هالهٔ بیرونی می‌دهد.
  */
 const AVATAR_SRC = "/img/emblem-avatar.webp";
 const AVATAR_SM_SRC = "/img/emblem-avatar-sm.webp";
@@ -28,14 +36,16 @@ const MARK_SRC = "/img/emblem-mark.webp";
 const MARK_SM_SRC = "/img/emblem-mark-sm.webp";
 
 function GoldRing({ size }: { size: number }) {
+  // قابِ طلایی **داخلِ خودِ تصویر** است (تا در هر اندازه‌ای سالم بمانَد)؛
+  // این لایه فقط هالهٔ نرمِ بیرونی و یک لبهٔ نوری می‌دهد که آواتار را از
+  // پشتِ هدر جدا می‌کند — بدونِ حلقهٔ دوم.
   return (
     <span
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 rounded-full"
       style={{
-        // لبهٔ دولایه: یک خط زر نازک بیرون، یک هالهٔ نرم داخل.
         boxShadow:
-          "0 0 0 1px color-mix(in oklab, var(--c-gold) 62%, transparent), inset 0 0 0 1px color-mix(in oklab, var(--c-gold) 22%, transparent), 0 6px 18px -10px color-mix(in oklab, var(--c-stage) 55%, transparent)",
+          "0 1px 2px color-mix(in oklab, var(--c-stage) 30%, transparent), 0 6px 18px -10px color-mix(in oklab, var(--c-stage) 55%, transparent)",
         width: size,
         height: size,
       }}
@@ -151,16 +161,18 @@ export function Logo({
     >
       <GoldRing size={size} />
       <span
-        className="bg-gold-soft/40 relative grid size-full place-items-center overflow-hidden rounded-full"
+        className="relative grid size-full place-items-center overflow-hidden rounded-full"
         style={{ width: size, height: size }}
       >
+        {/* `object-contain` و نه `cover`: فایل خودش دایره است؛ `cover` فقط
+            لبه‌ها را می‌بُرید (همان ایرادِ «آواتارِ ناقص» در موبایل). */}
         {/* eslint-disable-next-line @next/next/no-img-element -- ۴۰px، از قبل بهینه */}
         <img
-          src={size <= 44 ? AVATAR_SM_SRC : AVATAR_SRC}
+          src={size <= 56 ? AVATAR_SM_SRC : AVATAR_SRC}
           alt=""
           width={size}
           height={size}
-          className="size-full object-cover"
+          className="size-full object-contain"
           decoding="async"
         />
       </span>

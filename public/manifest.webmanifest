@@ -4,16 +4,45 @@
   "description": "مسابقهٔ کتابخوانی هفتهٔ بسیج حوزهٔ مقاومت بسیج ۱۸۵ شهید کاوه",
   "start_url": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#faf7f0",
   "theme_color": "#1a2233",
   "dir": "rtl",
   "lang": "fa-IR",
   "scope": "/",
-  "categories": ["education", "social", "events"],
+  "categories": [
+    "education",
+    "social",
+    "events"
+  ],
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    {
+      "src": "/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-64.png",
+      "sizes": "64x64",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/icon-maskable-512.png",
       "sizes": "512x512",

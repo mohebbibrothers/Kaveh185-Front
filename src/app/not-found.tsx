@@ -9,15 +9,14 @@ export const metadata: Metadata = {
 };
 
 /**
- * صفحهٔ ۴۰۴ — با **نشانِ بدونِ پس‌زمینه** و مشتِ شهید کاوه.
+ * صفحهٔ ۴۰۴ — با **نشانِ کاملِ بدونِ پس‌زمینه**، و فقط همان.
  *
- * ── نکتهٔ ۱ و ۱۱ کاربر ───────────────────────────────────────────────────
- * ۱) لوگوی ۴۰۴ حالا همان نشانِ کاملِ بدونِ بک‌گراند است (پیش‌تر یک آواتارِ
- *    کوچکِ گرد بود).
- * ۲) **مشتِ شهید کاوه** برای اولین بار جایی نشسته که معنا دارد: «راه را
- *    پیدا نکردی، ولی جا نمی‌زنی». مشت در یک قابِ تیرهٔ محرابی، کنارِ متن،
- *    با ماسکِ محو در لبه — و در موبایل بالای متن، وسط‌چین و کوچک‌تر، تا
- *    صفحه را نبلعد.
+ * ── نکتهٔ ۸ کاربر (دورِ ۱۶) ──────────────────────────────────────────────
+ * «صفحهٔ ۴۰۴ دو تصویرِ زیرِ هم دارد؛ مشت را بردار، فقط تصویرِ شهید کاوه
+ * بماند.» — تصویرِ مشت (هم قابِ محرابیِ دسکتاپ) **کامل حذف شد**. حالا
+ * یک نشانِ واحد در یک ستونِ کنارِ متن می‌نشیند: همان هویت، با نصفِ
+ * شلوغی. در موبایل هم نشان بالای متن و وسط‌چین است، نه دو تصویر پشتِ
+ * هم.
  *
  * ساختار: هدر + بدنه + فوتر (با یادوارهٔ شهدا) — همان اسکلتِ بقیهٔ صفحات،
  * چون کاربری که به ۴۰۴ می‌رسد باید بتواند بدونِ «تله» بیرون بیاید.
@@ -75,12 +74,12 @@ export default function NotFound() {
             </div>
           </div>
 
-          {/* ── نشان + مشت ── */}
-          <div className="order-1 flex items-center justify-center gap-3 md:order-2 md:flex-col">
+          {/* ── نشانِ شهیدِ کاوه — تنها تصویرِ صفحه (نکتهٔ ۸) ── */}
+          <div className="order-1 flex items-center justify-center md:order-2">
             <div className="relative">
               <div
                 aria-hidden="true"
-                className="bg-gold/20 absolute -inset-4 rounded-full blur-2xl"
+                className="bg-gold/20 absolute -inset-5 rounded-full blur-2xl"
               />
               {/* eslint-disable-next-line @next/next/no-img-element -- نشانِ ثابتِ بهینه */}
               <img
@@ -88,20 +87,7 @@ export default function NotFound() {
                 alt="نشان یادبود شهید محمود کاوه، حوزهٔ مقاومت بسیج ۱۸۵"
                 width={190}
                 height={311}
-                className="relative h-[150px] w-auto drop-shadow-[0_14px_30px_oklch(24%_0.05_260/0.3)] sm:h-[190px]"
-              />
-            </div>
-
-            <div className="border-gold/35 from-gold-soft/70 to-sunken/40 relative hidden h-[190px] w-[130px] overflow-hidden rounded-t-[999px] rounded-b-2xl border bg-gradient-to-b md:block">
-              {/* eslint-disable-next-line @next/next/no-img-element -- تصویر ثابت */}
-              <img
-                src="/img/punch-fist.webp"
-                alt="نماد مشت گره‌کردهٔ شهید کاوه"
-                className="absolute inset-0 size-full object-contain p-1.5"
-                style={{
-                  maskImage: "linear-gradient(to bottom, black 72%, transparent)",
-                  WebkitMaskImage: "linear-gradient(to bottom, black 72%, transparent)",
-                }}
+                className="relative h-[168px] w-auto drop-shadow-[0_16px_34px_oklch(24%_0.05_260/0.32)] sm:h-[210px] md:h-[240px]"
               />
             </div>
           </div>

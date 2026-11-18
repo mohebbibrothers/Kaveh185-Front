@@ -63,7 +63,7 @@ export function LandingSections({ initial }: { initial: Bootstrap }) {
         <section
           id="about"
           aria-labelledby="about-title"
-          className="k185-reveal mt-14 scroll-mt-24"
+          className="k185-reveal mt-[var(--space-12)] scroll-mt-24 pb-[var(--space-10)] sm:pb-[var(--space-16)]"
         >
           <SectionTitle
             id="about-title"
