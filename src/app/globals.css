@@ -536,6 +536,31 @@
       drop-shadow(0 5px 7px color-mix(in oklab, var(--c-stage) 45%, transparent));
     transition: filter var(--dur-base) var(--ease-standard);
   }
+  /* تمِ شب: گرادیان باید «زمردیِ سیر» بمانَد. اگر مثل تمِ روز با سفید
+     مخلوط شود، روی پس‌زمینهٔ سرمه‌ای به سبزِ پریده و کم‌کنتراست تبدیل
+     می‌شود و تیکِ روشن هم گم می‌شود (در بازرسیِ دیداری دیده شد). */
+  [data-theme="dark"] .k185-bale-face {
+    background-image:
+      radial-gradient(66% 50% at 32% 16%, oklch(100% 0 0 / 0.22), transparent 60%),
+      linear-gradient(
+        172deg,
+        color-mix(in oklab, var(--c-verde-deep) 90%, white) 0%,
+        var(--c-verde-deep) 46%,
+        color-mix(in oklab, var(--c-verde-deep) 78%, black) 100%
+      );
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .k185-bale-face {
+      background-image:
+        radial-gradient(66% 50% at 32% 16%, oklch(100% 0 0 / 0.22), transparent 60%),
+        linear-gradient(
+          172deg,
+          color-mix(in oklab, var(--c-verde-deep) 90%, white) 0%,
+          var(--c-verde-deep) 46%,
+          color-mix(in oklab, var(--c-verde-deep) 78%, black) 100%
+        );
+    }
+  }
   @media (hover: hover) and (pointer: fine) {
     .k185-bale:hover .k185-bale-face,
     .k185-bale:focus-visible .k185-bale-face {
