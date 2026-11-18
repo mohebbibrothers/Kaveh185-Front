@@ -130,9 +130,20 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
               با `clamp` کاهشی‌اند؛ در تبلت هم ردیف می‌مانَد، فقط فشرده‌تر.
               در موبایل (زیرِ `md`) مثل قبل ستونی می‌شود — همان‌جا هم
               «کانال» کنارِ چیپ‌ها می‌نشیند، نه در ته فوتر. */}
-          <div className="k185-footer-row flex flex-col flex-wrap items-center text-center md:flex-row md:flex-nowrap md:items-start md:gap-5 md:text-start lg:gap-8">
+          {/* ═══ توزیعِ فاصله (نکتهٔ ۱، دورِ ۱۹) ═══════════════════════════
+              ایرادِ کاربر: فاصلهٔ سه شیءِ سمت چپ از برند (آیکون + نوشته) زیاد بود.
+              ریشه: ستونِ هویت `md:flex-1` داشت، ولی متنش با `max-w-[46ch]`
+              کوتاه بود و به لبهٔ راست می‌چسبید ⇒ یک «حفرهٔ» خالی داخلِ خودِ
+              ستونِ هویت می‌ماند (۲۶۰px در ۱۴۴۰) در حالی که فاصلهٔ خودِ سه
+              ستونِ لینک فقط ۲۰px بود: یعنی فاصله‌ها ناهمگون بودند، نه فقط زیاد.
+              راهکارِ استاندارد: ستونِ هویت با پهنای محتواییِ محدود
+              (`max-w-[30rem]`) + پاراگرافی که همان پهنا را پر می‌کند (حفره حذف)
+              + **یک بازهٔ فاصلهٔ یکسان** (`gap-x`) بین هر سه همسایگی؛ و
+              `max-w-[46ch]` فقط تا موبایل. نتیجه: سه فاصلهٔ دقیقاً برابر در
+              همهٔ عرض‌ها (۱۴۴۰: ۴۸/۴۸ — ۹۰۰: ۳۲/۳۲) و ردیفِ تک‌خطی از ۷۶۸ به بالا. */}
+          <div className="k185-footer-row flex flex-col flex-wrap items-center text-center md:flex-row md:flex-nowrap md:items-start md:justify-start md:gap-x-8 md:text-start lg:gap-x-12">
             {/* ── ستونِ هویت ── */}
-            <div className="k185-footer-anim w-full md:min-w-0 md:flex-1">
+            <div className="k185-footer-anim w-full md:max-w-[30rem] md:min-w-0">
               <div className="flex flex-col items-center gap-2.5 md:flex-row md:items-center md:gap-3">
                 <span className="k185-footer-badge block shrink-0 transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-rotate-3">
                   <Logo size={56} variant="emblem" />
@@ -145,7 +156,7 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                 </span>
               </div>
 
-              <p className="text-on-band-muted mx-auto mt-3 max-w-[46ch] text-[12px] leading-[1.9] md:mx-0">
+              <p className="text-on-band-muted mx-auto mt-3 max-w-[46ch] text-[12px] leading-[1.9] text-pretty md:mx-0 md:max-w-none">
                 مسابقهٔ کتاب‌خوانی {SITE.bookTitle} به مناسبت هفتهٔ بسیج، میان مساجد حوزهٔ مقاومت بسیج
                 ۱۸۵ شهید کاوه.
               </p>
@@ -163,13 +174,18 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
             </div>
 
             {/* ── دو ستونِ کوتاه ── */}
-            <div className="mt-6 grid w-full grid-cols-2 gap-4 md:mt-0 md:flex md:w-auto md:shrink-0 md:gap-5 lg:gap-7">
+            {/* ستونِ لینک‌ها: در موبایل گریدِ ۲ستونیِ تمام‌عرض، از `md` به بالا
+                دو ستونِ جدا در ردیفِ اصلی. `md:contents` باعث می‌شد ناوبری‌ها
+                به‌عنوانِ «فرزندِ flex» شناخته نشوند و فاصله‌ها اشتباه
+                اندازه‌گیری/توزیع شوند؛ پس در حالتِ دسکتاپ هیچ گرهٔ میانی
+                نمی‌گذاریم و خودِ ناوبری‌ها ستون می‌شوند. */}
+            <div className="mt-6 grid w-full grid-cols-2 gap-4 md:mt-0 md:flex md:w-auto md:shrink-0 md:gap-x-8 lg:gap-x-11">
               <nav
                 aria-label="دسترسی سریع"
                 className="k185-footer-col"
                 style={{ animationDelay: "70ms" }}
               >
-                <h2 className="text-on-band mb-2 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide md:justify-start">
+                <h2 className="text-on-band mb-2 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide whitespace-nowrap md:justify-start">
                   <span aria-hidden="true" className="bg-band-accent/70 h-3 w-[2px] rounded-full" />
                   دسترسی سریع
                 </h2>
@@ -192,7 +208,7 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                 className="k185-footer-col"
                 style={{ animationDelay: "120ms" }}
               >
-                <h2 className="text-on-band mb-2 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide md:justify-start">
+                <h2 className="text-on-band mb-2 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide whitespace-nowrap md:justify-start">
                   <span aria-hidden="true" className="bg-band-accent/70 h-3 w-[2px] rounded-full" />
                   قوانین و حساب
                 </h2>

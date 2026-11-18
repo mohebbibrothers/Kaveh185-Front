@@ -237,7 +237,16 @@ export function LeaderGallery({
       </div>
 
       {/* ── کلام ── */}
-      <div className="order-2 flex min-w-0 flex-col justify-center px-1 pb-2 md:order-2 md:py-6 md:ps-7 md:pe-2">
+      {/* ═══ نکتهٔ ۲، دورِ ۱۹: تنفسِ متنِ بیانات ═════════════════════════
+          ایرادِ کاربر: در موبایل/فولدبل خطوط به کادر می‌چسبیدند و بعضی نه.
+          ریشه: ستون فقط `px-1` (۴px) پدینگِ افقی داشت، پس متن تا ۴px مانده
+          به لبهٔ کارت می‌رفت؛ «نامنظمی» هم از همین بود که خطوطِ پر و کوتاه در
+          یک عرضِ تنگ کنارِ هم می‌نشستند.
+          اصلاح: پدینگِ افقیِ واقعی (۱۷→۱۸px در موبایل، ۲۸px از md) + فاصلهٔ
+          عمودیِ منظم؛ متن همچنان راست‌چین می‌ماند (جاستیفای در فارسی با
+          کشیدگیِ ناهمگونِ کلمات بدتر می‌شود) اما `text-pretty`/`balance` روشن
+          است تا خطِ آخر یتیم نماند. */}
+      <div className="order-2 flex min-w-0 flex-col justify-center px-[1.1rem] pb-4 sm:px-6 md:order-2 md:py-6 md:ps-8 md:pe-5 lg:ps-9">
         {active.source ? (
           <p className="text-gold-strong mb-2 flex items-center gap-1.5 text-[10.5px] font-extrabold">
             <span
@@ -259,8 +268,8 @@ export function LeaderGallery({
             paragraphs.map((para, i) => (
               <p
                 key={i}
-                className={`text-text text-[13px] leading-[2.15] sm:text-[14.5px] ${
-                  i > 0 ? "mt-3" : ""
+                className={`text-text text-justify text-[13px] leading-[2.15] text-pretty hyphens-none [text-justify:inter-word] sm:text-[14.5px] ${
+                  i > 0 ? "mt-3.5" : ""
                 }`}
               >
                 {para}
