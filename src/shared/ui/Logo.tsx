@@ -32,6 +32,8 @@
  */
 const AVATAR_SRC = "/img/emblem-avatar.webp";
 const AVATAR_SM_SRC = "/img/emblem-avatar-sm.webp";
+/** نسخهٔ ۴۸px — برای اندازه‌های ۲۴ تا ۳۴ که هیچ‌جای هدر و منو نیست. */
+const AVATAR_XS_SRC = "/img/emblem-avatar-xs.webp";
 const MARK_SRC = "/img/emblem-mark.webp";
 const MARK_SM_SRC = "/img/emblem-mark-sm.webp";
 
@@ -165,10 +167,18 @@ export function Logo({
         style={{ width: size, height: size }}
       >
         {/* `object-contain` و نه `cover`: فایل خودش دایره است؛ `cover` فقط
-            لبه‌ها را می‌بُرید (همان ایرادِ «آواتارِ ناقص» در موبایل). */}
-        {/* eslint-disable-next-line @next/next/no-img-element -- ۴۰px، از قبل بهینه */}
+            لبه‌ها را می‌بُرید (همان ایرادِ «آواتارِ ناقص» در موبایل).
+
+            ⚠️ نکتهٔ ۳ دورِ ۱۷ — چرا نسخهٔ ۴۸px اضافه شد:
+            پیش‌تر برای هر اندازهٔ ≤۵۶ همان `emblem-avatar-sm` (۱۲۸px) با
+            `object-contain` کشیده می‌شد. در ۲۶px مرورگر یک تصویرِ ۱۲۸px را
+            به ۲۶px کوچک می‌کرد و چون حلقهٔ طلایی فقط ۳٪ ضخامت داشت، در
+            کوچک‌شدن محو/ناقص دیده می‌شد. حالا یک فایلِ بهینهٔ ۴۸px با
+            حلقهٔ ضخیم‌تر برای اندازه‌های کوچک داریم و `1x/2x` هم با
+            `sizes` منطقی انتخاب می‌شود. */}
+        {/* eslint-disable-next-line @next/next/no-img-element -- ابعاد مشخص، از قبل بهینه */}
         <img
-          src={size <= 56 ? AVATAR_SM_SRC : AVATAR_SRC}
+          src={size <= 34 ? AVATAR_XS_SRC : size <= 56 ? AVATAR_SM_SRC : AVATAR_SRC}
           alt=""
           width={size}
           height={size}

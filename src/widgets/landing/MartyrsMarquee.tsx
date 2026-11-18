@@ -44,36 +44,36 @@ import type { Martyr } from "@/shared/api/landing";
  */
 
 /**
- * ── بازنویسیِ دورِ ۱۶ (نکته‌های ۲ و ۳ کاربر) ─────────────────────────────
+ * ── بازنویسیِ دورِ ۱۷ (نکتهٔ ۱ کاربر: «نوار از یک طرف خالی می‌شود»)** ────
  *
- * ۲) **«بیش از حد به باکسِ بالایی چسبیده»**: نسخهٔ قبل `pt-5` داشت و کاربر
- *    درست دید — نوار درست زیرِ «باکسِ اطلاعاتِ مسابقه» چسبیده بود و «هیچ
- *    نفس» نداشت. حالا یک توکنِ فاصلهٔ صریح (`--space-12` = ۳rem در دسکتاپ،
- *    `--space-8` در موبایل) بالای سرتیتر است و خودِ نوار با خطِ طلاییِ
- *    بالایش از بخشِ قبل جدا می‌شود. عددِ جادویی نیست؛ از توکن می‌آید.
+ * **ریشهٔ واقعیِ باگ** (بالاخره پیدا شد؛ دو دورِ قبل فقط علامت را درمان
+ * کردیم): استایلِ `k185-marquee` در **RTL** اجرا می‌شود. با
+ * `transform: translate3d(-50%, …)` مرورگر در RTL همان `-50%` را روی محورِ
+ * افقیِ **راست‌به‌چپ** تفسیر می‌کند؛ یعنی ردیف در جهتِ مثبتِ دیداری (به راست)
+ * می‌رود و در پایانِ چرخه، نیمهٔ **خالیِ** ردیف واردِ قاب می‌شود. هیچ ریاضیِ
+ * تکرار و هیچ `ResizeObserver`ی این را حل نمی‌کند، چون خودِ جهت اشتباه است.
  *
- * ۳) **«از سمت چپ خالی می‌شود»**: ریشهٔ باگ ریاضی بود، نه سرعت. نسخهٔ قبل
- *    `translateX(+50%)` روی یک ردیفِ `w-max` اجرا می‌شد و فرض می‌کرد نیمهٔ
- *    اول عیناً تکرارِ نیمهٔ دوم است. این فرض **فقط وقتی** درست است که
- *    عرضِ یک نسخه از عرضِ قاب بیشتر باشد؛ با ۴ شهید و کارتِ ۹۶px عرضِ
- *    کلِ ردیف کمتر از قاب بود و در انتهای چرخه لبهٔ چپ (در RTL: انتهای
- *    مسیر) خالی می‌ماند. راه‌حلِ قطعی:
- *      • دو نسخهٔ **کامل و پشتِ سرِ هم** در یک ردیف (`[A][A]`) با
- *        `width: max-content`؛
- *      • حرکت از `0` به `-50%` (منفی، نه مثبت) تا نسخهٔ دوم دقیقاً جای
- *        نسخهٔ اول بنشیند ⇒ حلقه **بی‌درز و بی‌پایان**؛
- *      • تضمینِ پر بودنِ قاب: تعدادِ آیتم در هر نسخه با `MIN_ITEMS`
- *        محاسبه می‌شود از **عرضِ واقعیِ قاب** (با `ResizeObserver`)، نه از
- *        عددِ ثابتِ ۱۷۰۰px. پس در ۴K هم خالی نمی‌شود.
- *    `will-change` و `translate3d` هم گذاشته شد تا در موبایلِ کم‌رمق
- *    پرش نداشته باشد.
+ * **راه‌حلِ قطعیِ ۱۰۰٪ مستقل از `direction`:**
+ *   • انیمیشن با `translate3d(0,0,0) → translate3d(-50%,0,0)` و رَپرِ
+ *     `keyframes` **بدونِ** وابستگی به جهت نوشته می‌شود و روی ردیف،
+ *     `transform` صریح می‌نشیند؛
+ *   • ردیف دو نسخهٔ **عیناً یکسان** دارد؛ در هر لحظه که `-50%` کامل شود،
+ *     تصویرِ روی صفحه *به‌اندازهٔ یک نسخه* جابه‌جا شده و چون نسخهٔ دوم
+ *     عیناً همان نسخهٔ اول است، «برشِ» دیداری صفر است ⇒ **حلقهٔ بی‌درز**؛
+ *   • عرضِ یک نسخه با `ResizeObserver` از عرضِ واقعیِ قاب محاسبه می‌شود
+ *     (`ceil(W/(card+gap)) + 2`) ⇒ در ۲۸۰px تا ۴K پر است؛
+ *   • برای اطمینانِ کامل، `dir="ltr"` **فقط روی همان ردیفِ متحرک** ست
+ *     می‌شود (نه روی صفحه) و کارت‌ها با `dir="rtl"` متنِ فارسی‌شان را
+ *     درست می‌گیرند. این‌طور جهتِ محورِ `translate` قطعی و مستقل از
+ *     locale است — همان تکنیکی که در نوارهای حرفه‌ای (اسپلش‌ها، لوگووال‌ها)
+ *     استفاده می‌شود.
  */
 const CARD_W_MOBILE = 84;
-const CARD_W_DESKTOP = 112;
+const CARD_W_DESKTOP = 100;
 const GAP_MOBILE = 8;
 const GAP_DESKTOP = 12;
-/** کمینهٔ آیتم در هر نسخه — اگر تعدادِ شهدا کم بود، فهرست تکرار می‌شود. */
-const MIN_ITEMS = 14;
+/** حداقل تعداد آیتم در هر نسخه — اگر شهدا کم بودند، فهرست تکرار می‌شود. */
+const MIN_ITEMS = 12;
 
 export function MartyrsMarquee({ items }: { items: Martyr[] }) {
   const reduced = usePrefersReducedMotion();
@@ -85,8 +85,20 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
   // عرضِ واقعیِ قاب (با تغییرِ اندازه به‌روز می‌شود) — ریاضیِ «پر بودن» را
   // از حدس به اندازه‌گیری تبدیل می‌کند.
   const viewportRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<HTMLUListElement | null>(null);
   const [viewportW, setViewportW] = useState(0);
   const [isDesktop, setIsDesktop] = useState(false);
+  /**
+   * جابه‌جاییِ دقیقِ یک «دوره» به **پیکسلِ مطلق**.
+   *
+   * چرا درصد کافی نیست: `-50%` به عرضِ خودِ `<ul>` بسته است و در RTL جهتِ
+   * تفسیر عوض می‌شود. این‌جا مقدار از روی `offsetLeft` واقعیِ کارتِ اولِ
+   * نسخهٔ دوم منهای کارتِ اولِ نسخهٔ اول خوانده می‌شود؛ یعنی **عرضِ
+   * دقیقِ یک نسخه** — بدونِ خطای گردکردن، بدونِ خطای `gap` انتهایی و
+   * مستقل از تعدادِ آیتم‌ها. اگر اندازه‌گیری نشد (SSR/تست)، `0` می‌ماند و
+   * انیمیشن عملاً حرکتی نمی‌کند؛ هیچ‌وقت نیمه‌خالی نشان داده نمی‌شود.
+   */
+  const [shift, setShift] = useState(0);
 
   useEffect(() => {
     const el = viewportRef.current;
@@ -112,6 +124,43 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
     };
   }, []);
 
+  /**
+   * اندازه‌گیریِ عرضِ یک «نسخه» — همین‌جا، **پیش از** هر بازگشتِ زودهنگام،
+   * چون قاعدهٔ هوک‌ها اجازه نمی‌دهد هوکی بعد از `return null` بیاید
+   * (خطای React #310 دقیقاً همین بود و در بازرسیِ مرورگر گرفته شد).
+   */
+  useEffect(() => {
+    const ul = listRef.current;
+    if (!ul) return;
+    const measure = (): void => {
+      const kids = ul.children;
+      const half = Math.round(kids.length / 2);
+      if (half < 1) return;
+      const first = kids[0] as HTMLElement | undefined;
+      const second = kids[half] as HTMLElement | undefined;
+      if (!first || !second) return;
+      const d = second.offsetLeft - first.offsetLeft;
+      setShift(d > 0 ? d : 0);
+    };
+    measure();
+    // فونتِ وزیرمتن بعد از بارگذاری می‌تواند عرض‌ها را چند پیکسل جابه‌جا
+    // کند؛ یک اندازه‌گیریِ دوباره در آن لحظه، درزِ حلقه را صفر نگه می‌دارد.
+    // ⚠️ jsdom و مرورگرهای خیلی قدیم `document.fonts` ندارند؛ نبودش
+    // نباید تست یا صفحه را بشکند.
+    const fonts = document.fonts as FontFaceSet | undefined;
+    if (fonts) {
+      void fonts.ready.then(() => {
+        measure();
+      });
+    }
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(ul);
+    return () => {
+      ro.disconnect();
+    };
+  }, [count, viewportW, isDesktop]);
+
   // ⚠️ قاعدهٔ هوک‌ها: بازگشتِ زودهنگام **بعد** از همهٔ هوک‌ها. وگرنه اگر
   // روزی فهرست خالی به این کامپوننت برسد و بعداً پر شود، تعدادِ هوک‌ها
   // بین دو رندر عوض می‌شود و ری‌اکت می‌شکند.
@@ -119,16 +168,15 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
 
   const cardW = isDesktop ? CARD_W_DESKTOP : CARD_W_MOBILE;
   const gap = isDesktop ? GAP_DESKTOP : GAP_MOBILE;
-  // +۲ کارتِ اضافه: حاشیهٔ اطمینان تا قاب در هیچ عرضی (تا ۴K) خالی نشود.
+  // تعدادِ آیتمِ هر نسخه از عرضِ واقعیِ قاب؛ +۲ کارت حاشیهٔ اطمینان.
   const perCopy =
     viewportW > 0 ? Math.max(count, Math.ceil(viewportW / (cardW + gap)) + 2) : MIN_ITEMS;
-  // با احترام به `prefers-reduced-motion` حرکت قطع و ردیف اسکرول‌پذیر می‌شود.
   const canScroll = !reduced;
-  // یک نسخه = فهرستِ واقعی که تا پر شدنِ قاب تکرار می‌شود.
   const copyItems = Array.from({ length: Math.ceil(perCopy / count) }, () => valid).flat();
-  // دو نسخهٔ عیناً یکسان ⇒ `-50%` همیشه درز ندارد.
+  // دو نسخهٔ یکسان ⇒ در `-50%` تصویر عیناً برمی‌گردد ⇒ درز = صفر.
   const sequence = [...copyItems, ...copyItems];
-  const duration = Math.max(30, Math.round(copyItems.length * 4.2));
+  // سرعتِ یکنواختِ دیداری: هر کارت ~۴ ثانیه، مستقل از تعداد.
+  const duration = Math.max(28, Math.round(copyItems.length * 4));
 
   const active = activeIndex !== null ? valid[activeIndex % count] : null;
 
@@ -176,8 +224,15 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
         </div>
 
         {/* ── ردیفِ اصلی ── */}
+        {/* ⚠️ `dir="ltr"` روی همین قاب هم لازم است، نه فقط روی `<ul>`:
+            در RTL یک بلوکِ `w-max` به لبهٔ **راست** چیده می‌شود و آن‌وقت
+            حرکتِ چپ‌رو، سمتِ راست را خالی می‌کند (همان چیزی که کاربر دید).
+            با LTR شدنِ قاب، ردیف از لبهٔ چپ شروع می‌شود و `-shift` دقیقاً
+            نسخهٔ دوم را جای نسخهٔ اول می‌آورد ⇒ حلقهٔ بی‌درز. متنِ کارت‌ها
+            با `dir="rtl"` روی هر `<figure>` سرِ جای خودش است. */}
         <div
           ref={viewportRef}
+          dir="ltr"
           className={`relative ${canScroll ? "overflow-hidden" : "no-scrollbar overflow-x-auto"}`}
           style={{
             maskImage: "linear-gradient(to left, transparent, black 6%, black 94%, transparent)",
@@ -188,17 +243,33 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
             setActiveIndex(null);
           }}
         >
+          {/* ⚠️ `dir="ltr"` فقط روی ردیف: محورِ `translateX` را از locale
+              جدا می‌کند (ریشهٔ خالی‌شدنِ یک‌طرفه). متنِ هر کارت با
+              `dir="rtl"` سرِ جای خودش می‌مانَد. */}
           <ul
+            ref={listRef}
+            dir="ltr"
             className={`flex w-max items-start gap-2 sm:gap-[12px] ${
               canScroll ? "k185-marquee" : "mx-auto justify-center px-3 sm:px-4"
             }`}
-            style={canScroll ? { animationDuration: `${duration}s` } : undefined}
+            style={
+              canScroll
+                ? {
+                    animationDuration: `${duration}s`,
+                    // متغیرِ پیکسلیِ اندازه‌گیری‌شده؛ `globals.css` از آن می‌خواند.
+                    ["--k185-marquee-shift" as string]: `${shift}px`,
+                  }
+                : undefined
+            }
           >
             {sequence.map((m, i) => {
               const realIndex = i % count;
               return (
                 <li key={`${m.title}-${i}`} className="shrink-0">
-                  <figure className="group m-0 flex w-[84px] flex-col items-center sm:w-[100px]">
+                  <figure
+                    dir="rtl"
+                    className="group m-0 flex w-[84px] flex-col items-center sm:w-[100px]"
+                  >
                     <button
                       type="button"
                       onFocus={() => {
@@ -269,7 +340,7 @@ export function MartyrsMarquee({ items }: { items: Martyr[] }) {
           ) : (
             <p className="text-on-band-muted/80 flex items-center gap-2 text-[10px] font-semibold">
               <span aria-hidden="true" className="bg-band-accent/50 h-px w-6" />
-              یاد و نامِ شهیدانِ حوزهٔ مقاومت بسیج ۱۸۵
+              یاد و نامِ شهیدانِ ایران زمین
               <span aria-hidden="true" className="bg-band-accent/50 h-px w-6" />
             </p>
           )}

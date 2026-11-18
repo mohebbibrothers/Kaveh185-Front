@@ -48,9 +48,11 @@ import type { Martyr } from "@/shared/api/landing";
  * ۶) **حذفِ باکسِ «کانال رسمی»** (نکتهٔ ۴): عنوانِ ستون و کارتِ دراز رفت؛
  *    فقط `ChannelCard` (آیکونِ سه‌بعدیِ بله + نام) مانده که یک لینکِ
  *    فشرده است، نه یک بلوکِ جداست.
- * ۷) **واترمارکِ مشت** (نکتهٔ ۹): به‌جای دایرهٔ سبز، از سیلوئتِ سفیدِ مشت
- *    (`fist-silhouette.webp`) با `mix-blend` استفاده می‌شود؛ در تمِ روز
- *    تیره و در تمِ شب روشن دیده می‌شود و هیچ‌وقت مثل «لکه» نیست.
+ * ۷) **واترمارکِ مشت** — دورِ ۱۷، نکتهٔ ۲: کاربر خواست مشتِ رهبر به
+ *    همان جای نسخهٔ قبل (گوشهٔ چپِ فوتر) و به همان شکل برگردد. فایلِ تازه
+ *    `fist-watermark.webp` از تصویرِ خودِ کاربر (`image-41`) با آلفای
+ *    تمیز ساخته شد؛ اندازه با `clamp` (۱۳۲px در تبلت تا ۲۴۸px در دسکتاپ)
+ *    و شفافیت با کلاسِ `k185-fist-watermark` که در تمِ شب هم تنظیم می‌شود.
  */
 export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
   const year = new Intl.DateTimeFormat("fa-IR", { year: "numeric" }).format(new Date());
@@ -100,17 +102,17 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
             موبایل پنهان است (جایی که فقط شلوغی می‌شود). */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 -left-4 hidden w-[240px] opacity-[0.14] mix-blend-luminosity lg:block"
+          className="k185-fist-watermark pointer-events-none absolute inset-y-0 -left-7 hidden md:block"
         >
+          {/* مشتِ سیاه‌وسفید در گوشهٔ چپِ فوتر — همان جای نسخهٔ قبل
+              (نکتهٔ ۲، دورِ ۱۷). فایل تازه از تصویرِ خودِ کاربر ساخته شده
+              و آلفای تمیزی دارد؛ شفافیت و رنگِ وابسته به تم با کلاسِ
+              `k185-fist-watermark`. */}
           {/* eslint-disable-next-line @next/next/no-img-element -- واترمارکِ تزئینی */}
           <img
-            src="/img/fist-silhouette.webp"
+            src="/img/fist-watermark.webp"
             alt=""
             className="size-full object-contain object-bottom"
-            style={{
-              maskImage: "linear-gradient(to top, black 45%, transparent 92%)",
-              WebkitMaskImage: "linear-gradient(to top, black 45%, transparent 92%)",
-            }}
           />
         </div>
 
@@ -146,10 +148,11 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                 </span>
               </div>
 
-              {/* ── کانال رسمی — بی‌باکس، بی‌عنوان، فقط آیکونِ سه‌بعدی ──
-                  در ستونِ هویت می‌نشیند تا فوتر در هیچ عرضی دو ردیفه نشود
-                  (نکتهٔ ۵) و خودش هم «کارت» نباشد (نکتهٔ ۴). */}
-              <div className="mt-4 flex w-full justify-center md:justify-start">
+              {/* ── کانالِ رسمی — تیتر + آیکونِ سه‌بعدی + نام، بی‌هیچ باکس ──
+                  (نکتهٔ ۴، دورِ ۱۷) در ستونِ هویت می‌نشیند تا فوتر در هیچ
+                  عرضی دو ردیفه نشود؛ خودش هم «کارت» نیست، فقط یک لینکِ
+                  عمودیِ فشرده است. در دسکتاپ با خطِ نازک از متن جدا می‌شود. */}
+              <div className="border-on-band/10 mt-4 flex w-full justify-center border-t pt-4 md:mt-4 md:justify-start md:pt-4">
                 <ChannelCard />
               </div>
             </div>
@@ -170,7 +173,7 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                     <li key={l.href} className="text-center md:text-start">
                       <Link
                         href={l.href}
-                        className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[32px] items-center text-[12px] transition-colors"
+                        className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[36px] items-center px-1 text-[12px] transition-colors"
                       >
                         <span className="k185-footer-link-text relative">{l.label}</span>
                       </Link>
@@ -193,7 +196,7 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                     <li key={l.href} className="text-center md:text-start">
                       <Link
                         href={l.href}
-                        className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[32px] items-center text-[12px] transition-colors"
+                        className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[36px] items-center px-1 text-[12px] transition-colors"
                       >
                         <span className="k185-footer-link-text relative">{l.label}</span>
                       </Link>

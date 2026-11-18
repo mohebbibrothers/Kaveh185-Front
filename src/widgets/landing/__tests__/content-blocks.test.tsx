@@ -131,4 +131,24 @@ describe("MartyrsMarquee", () => {
     render(<MartyrsMarquee items={[martyr(), martyr({ title: "ب" }), martyr({ title: "ج" })]} />);
     expect(screen.getAllByRole("img").length).toBeGreaterThan(3);
   });
+
+  it("ردیف و قابش هر دو LTR هستند — ریشهٔ باگِ «یک طرف خالی» در RTL", () => {
+    // دورِ ۱۷، نکتهٔ ۱: در RTL مرورگر `translate3d(-x)` را روی محورِ
+    // راست‌به‌چپ تفسیر می‌کرد و نیمهٔ خالیِ ردیف واردِ قاب می‌شد. درمانِ
+    // ریشه‌ای این است که محورِ حرکت از locale جدا شود.
+    const { container } = render(<MartyrsMarquee items={[martyr(), martyr({ title: "ب" })]} />);
+    const strip = container.querySelector("ul");
+    const frame = strip?.parentElement;
+    expect(strip?.getAttribute("dir")).toBe("ltr");
+    expect(frame?.getAttribute("dir")).toBe("ltr");
+    // متنِ فارسیِ هر کارت باید RTL بمانَد؛ وگرنه نامِ شهید وارونه می‌شود.
+    expect(container.querySelector("figure")?.getAttribute("dir")).toBe("rtl");
+  });
+
+  it("متنِ زیرِ نوار «یاد و نامِ شهیدانِ ایران زمین» است", () => {
+    // دورِ ۱۷، نکتهٔ ۵ — متنِ پیشین «… حوزهٔ مقاومت بسیج ۱۸۵» بود.
+    render(<MartyrsMarquee items={[martyr()]} />);
+    expect(screen.getByText("یاد و نامِ شهیدانِ ایران زمین")).toBeTruthy();
+    expect(screen.queryByText(/حوزهٔ مقاومت بسیج/)).toBeNull();
+  });
 });

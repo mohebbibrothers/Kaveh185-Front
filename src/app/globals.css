@@ -291,12 +291,21 @@
      با حرکتِ منفی، نسخهٔ دوم دقیقاً جای نسخهٔ اول می‌نشیند و حلقه در هیچ
      لحظه‌ای درز یا لبهٔ خالی ندارد. جهت هم با RTL هم‌خوان است (حرکت به
      سمتِ راستِ دیداری، یعنی «گذشتِ زمان» در نوارِ فارسی). */
+  /* ── نوارِ شهدا — حرکتِ اندازه‌گیری‌شده ────────────────────────────────
+     ریشهٔ خرابیِ پیشین: `translate3d(-50%)` درصدی به عرضِ خودِ عنصر وابسته
+     است و در RTL مرورگر محور/جهتِ تفسیر را عوض می‌کند؛ نتیجه: نیمی از ردیف
+     از قاب بیرون می‌رفت و سمتِ دیگر خالی می‌شد. راهکارِ قطعی:
+       ۱) ردیف `dir="ltr"` است، پس محورِ حرکت همیشه چپ‌به‌راست است؛
+       ۲) جابه‌جایی با پیکسلِ مطلق (`--k185-marquee-shift`) انجام می‌شود که در زمانِ
+          اجرا از روی عرضِ واقعیِ یک «دورهٔ کامل» اندازه‌گیری می‌شود؛
+       ۳) `animation-fill-mode: both` تا در فریمِ صفر هم جای درست بایستد.
+     هیچ درصدی، هیچ محاسبهٔ سرگردان و هیچ وابستگی به `ResizeObserver` نیست. */
   @keyframes k185-marquee {
     from {
       transform: translate3d(0, 0, 0);
     }
     to {
-      transform: translate3d(-50%, 0, 0);
+      transform: translate3d(calc(-1 * var(--k185-marquee-shift, 0px)), 0, 0);
     }
   }
   @media (prefers-reduced-motion: no-preference) {
@@ -304,12 +313,20 @@
       animation-name: k185-marquee;
       animation-timing-function: linear;
       animation-iteration-count: infinite;
+      animation-fill-mode: both;
+      animation-direction: normal;
       will-change: transform;
       backface-visibility: hidden;
+      transform: translate3d(0, 0, 0);
     }
     .k185-marquee:hover,
     .k185-marquee:focus-within {
       animation-play-state: paused;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .k185-marquee {
+      animation: none;
     }
   }
 
@@ -499,18 +516,34 @@
      سطح می‌نشیند و سایهٔ کوچکی زیرش دارد. هیچ رنگِ ثابتی این‌جا نیست:
      همه از توکن‌هایی می‌آید که در تمِ روز و شب عوض می‌شوند. */
   .k185-bale-body {
+    /* بدنه: گنبدِ زمردی — سه لایهٔ عمودی + یک لایهٔ شعاعیِ بالا-چپ برای
+       «براقیِ شیشه‌ای». هر سه لایه از یک توکن ساخته می‌شوند، پس در تمِ
+       شب خودکار روشن‌تر می‌شود و هیچ رنگِ ثابتی ندارد. */
     background-color: var(--c-verde-deep);
-    background-image: linear-gradient(
-      180deg,
-      color-mix(in oklab, var(--c-verde-deep) 72%, white) 0%,
-      var(--c-verde-deep) 46%,
-      color-mix(in oklab, var(--c-verde-deep) 82%, black) 100%
-    );
+    background-image:
+      radial-gradient(
+        72% 64% at 30% 20%,
+        oklch(100% 0 0 / 0.34) 0%,
+        oklch(100% 0 0 / 0.1) 38%,
+        transparent 64%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in oklab, var(--c-verde-deep) 66%, white) 0%,
+        var(--c-verde-deep) 44%,
+        color-mix(in oklab, var(--c-verde-deep) 74%, black) 100%
+      );
     box-shadow:
-      inset 0 1.5px 0 oklch(100% 0 0 / 0.45),
-      inset 0 -6px 10px color-mix(in oklab, var(--c-verde-deep) 70%, black),
-      0 0 0 1px color-mix(in oklab, var(--c-gold) 55%, transparent),
-      0 6px 16px -8px color-mix(in oklab, var(--c-stage) 70%, transparent);
+      /* نورِ لبهٔ بالا — حسِ انحنای سطح */
+      inset 0 1.5px 0 oklch(100% 0 0 / 0.5),
+      /* نورِ بازتابیِ لبهٔ پایین — همان چیزی که کره را «توپُر» نشان می‌دهد */ inset 0 -2px 1px -1px
+        oklch(88% 0.06 160 / 0.55),
+      /* سایهٔ داخلیِ پایین */ inset 0 -9px 14px -4px
+        color-mix(in oklab, var(--c-verde-deep) 62%, black),
+      /* حلقهٔ طلاییِ نازک */ 0 0 0 1px color-mix(in oklab, var(--c-gold) 60%, transparent),
+      /* سایهٔ محیطی — آیکون روی سطح می‌نشیند */ 0 10px 18px -10px
+        color-mix(in oklab, var(--c-stage) 85%, transparent),
+      0 2px 4px -1px color-mix(in oklab, var(--c-stage) 45%, transparent);
     transition:
       transform var(--dur-slow) var(--ease-decelerate),
       box-shadow var(--dur-base) var(--ease-standard);
@@ -520,10 +553,12 @@
     .k185-bale:focus-visible .k185-bale-body {
       transform: translateY(-2px) scale(1.045);
       box-shadow:
-        inset 0 1.5px 0 oklch(100% 0 0 / 0.5),
-        inset 0 -7px 12px color-mix(in oklab, var(--c-verde-deep) 72%, black),
-        0 0 0 1px color-mix(in oklab, var(--c-gold) 85%, transparent),
-        0 12px 26px -10px color-mix(in oklab, var(--c-stage) 80%, transparent);
+        inset 0 1.5px 0 oklch(100% 0 0 / 0.58),
+        inset 0 -2px 1px -1px oklch(92% 0.06 160 / 0.65),
+        inset 0 -10px 16px -4px color-mix(in oklab, var(--c-verde-deep) 66%, black),
+        0 0 0 1px color-mix(in oklab, var(--c-gold) 92%, transparent),
+        0 16px 30px -12px color-mix(in oklab, var(--c-stage) 90%, transparent),
+        0 3px 6px -2px color-mix(in oklab, var(--c-stage) 50%, transparent);
     }
   }
   .k185-bale-mask {
@@ -613,6 +648,36 @@
   /* ── «محرابِ نور»: یادوارهٔ شهدا ────────────────────────────────────
      چهره‌ها در هاور کمی بزرگ می‌شوند و حلقه‌شان روشن‌تر می‌شود؛ همه با
      `transform` تا هیچ layout‌ای در نوارِ متحرک بازمحاسبه نشود. */
+  /* ── واترمارکِ مشت در فوتر (نکتهٔ ۲، دورِ ۱۷) ────────────────────────
+     کاربر خواست «مشتِ رهبر» با همان حال‌وهوای نسخهٔ قبل (سیاه‌وسفیدِ
+     برجسته در گوشهٔ چپِ فوتر) برگردد. این‌جا رنگِ سیلوئت با تم عوض
+     می‌شود: در تمِ روز تیره روی نوارِ روشن، در تمِ شب روشن روی نوارِ
+     تیره — یعنی همیشه «حکاکی» دیده می‌شود و هیچ‌وقت لکه نیست. */
+  .k185-fist-watermark {
+    /* در تبلت باریک‌تر، در دسکتاپ کامل — بی‌آنکه به `display` دست بزنیم. */
+    width: clamp(132px, 17vw, 248px);
+    /* ماسکِ دوگانه: از پایین و از لبهٔ داخلی محو می‌شود تا سیلوئت در صفحه
+       «شناور» دیده شود، نه چسبیده به لبه‌ها. */
+    mask-image:
+      linear-gradient(to top, black 46%, transparent 98%),
+      linear-gradient(to left, black 62%, transparent 100%);
+    mask-composite: intersect;
+    -webkit-mask-image:
+      linear-gradient(to top, black 46%, transparent 98%),
+      linear-gradient(to left, black 62%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    opacity: 0.16;
+    filter: none;
+  }
+  [data-theme="dark"] .k185-fist-watermark {
+    opacity: 0.12;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .k185-fist-watermark {
+      opacity: 0.12;
+    }
+  }
+
   .k185-martyr-card img {
     transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }

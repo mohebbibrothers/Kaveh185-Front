@@ -453,7 +453,10 @@ export function RegisterForm() {
         </PrimaryButton>
         <p className="text-text-subtle text-center text-[11px] leading-6">
           با ثبت‌نام،{" "}
-          <Link href="/rules" className="text-brand font-bold underline underline-offset-4">
+          <Link
+            href="/rules"
+            className="text-brand inline-flex min-h-[28px] items-center font-bold underline underline-offset-4"
+          >
             قوانین مسابقه
           </Link>{" "}
           را می‌پذیرید. اطلاع‌رسانی رسمی در کانال {SITE.channel.handle} انجام می‌شود.

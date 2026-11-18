@@ -113,7 +113,7 @@ export function LandingSections({ initial }: { initial: Bootstrap }) {
                   href={SITE.channel.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-brand font-bold hover:underline"
+                  className="text-brand inline-flex min-h-[26px] items-center font-bold hover:underline"
                 >
                   {SITE.channel.name}
                 </a>{" "}

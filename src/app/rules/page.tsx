@@ -27,7 +27,10 @@ export default function Page() {
           aria-label="مسیر"
           className="text-text-subtle mb-5 flex items-center gap-1.5 text-[11.5px]"
         >
-          <Link href="/" className="hover:text-text transition-colors">
+          <Link
+            href="/"
+            className="hover:text-text -my-2 inline-flex min-h-[32px] items-center px-1 transition-colors"
+          >
             خانه
           </Link>
           <span aria-hidden="true">/</span>
