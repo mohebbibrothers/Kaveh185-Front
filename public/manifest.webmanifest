@@ -4,20 +4,13 @@
   "description": "مسابقهٔ کتابخوانی هفتهٔ بسیج حوزهٔ مقاومت بسیج ۱۸۵ شهید کاوه",
   "start_url": "/",
   "display": "standalone",
-  "display_override": [
-    "standalone",
-    "minimal-ui"
-  ],
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#faf7f0",
   "theme_color": "#1a2233",
   "dir": "rtl",
   "lang": "fa-IR",
   "scope": "/",
-  "categories": [
-    "education",
-    "social",
-    "events"
-  ],
+  "categories": ["education", "social", "events"],
   "icons": [
     {
       "src": "/favicon-32.png",
