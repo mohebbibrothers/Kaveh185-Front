@@ -3,8 +3,15 @@
 import { useMemo, useState } from "react";
 import { useBootstrap } from "@/shared/api/use-bootstrap";
 import { MosqueMark, Girih, Medal } from "@/shared/ui/Ornament";
+import { Podium, LeaderLine, type PodiumRow } from "./Podium";
 import { toEn, toFa, toSearch, faPercent } from "@/shared/lib/fa";
-import { assignRanks, mosqueCoreName, mosqueInitial } from "@/shared/lib/mosque-rank";
+import {
+  assignRanks,
+  markTies,
+  mosqueCoreName,
+  mosqueInitial,
+  selectPodium,
+} from "@/shared/lib/mosque-rank";
 
 /**
  * جدولِ رقابتیِ مساجد.
@@ -48,6 +55,8 @@ type Row = {
   share: number;
   /** حرفِ نشان از سرور (اگر بک‌اند تازه مستقر شده باشد). */
   initial?: string;
+  /** پاسخِ سرور به «هم‌رتبه است؟» — اگر بک‌اندِ قدیمی باشد، undefined می‌ماند. */
+  serverTied?: boolean;
 };
 
 type Ranked = Row & { rank: number; tied: boolean };
@@ -96,6 +105,7 @@ export function MosquesDirectory() {
         registered: e?.registered_users_count ?? 0,
         share: e?.participation_share_percent ?? (total > 0 ? (completed / total) * 100 : 0),
         initial: e?.initial,
+        serverTied: e?.is_tied,
       };
     });
   }, [state]);
@@ -118,15 +128,28 @@ export function MosquesDirectory() {
   const totalCompleted = rows.reduce((s, r) => s + r.completed, 0);
   const activeCount = rows.filter((r) => r.completed > 0).length;
 
-  /* سه رتبهٔ اول — فقط اگر واقعاً مشارکتی هست (سکوی افتخار با صفر معنا ندارد) */
-  const podium = anyParticipation ? ranked.filter((r) => r.rank > 0).slice(0, 3) : [];
-  const podiumIds = new Set(podium.map((p) => p.id));
-  /** ستون‌های سکو به ترتیب بصری ۲-۱-۳ (مرکز، بلندترین). */
-  const podiumOrder = podium.length === 3 ? [1, 0, 2] : podium.map((_, i) => i);
+  /* ═══ چه کسی «مشترک» است و چه کسی رویِ سکو می‌رود؟ ═════════════════
+     `rank` از قاعدهٔ ۱۲۲۴ می‌آید (۱، ۱، ۳ …) ولی عددِ رتبه نمی‌گوید
+     «هم‌رتبه دارم یا نه»؛ پس نشانه‌گذاریِ تساوی و انتخابِ نفراتِ سکو هر دو
+     در `mosque-rank.ts` انجام و تست می‌شوند (یک منبعِ حقیقت برای فرانت).
+     • «مشترک» = عضویت در گروهِ چندنفرهٔ یک رتبه (اول حرفِ سرور، بعد شمارش).
+     • سکو = رتبه‌های ۱ تا ۳، نه «سه ردیفِ اول» — تا با ۱۴/۱۱/۱۱ هر دو
+       مسجدِ رتبهٔ ۲ رویِ سکو بیایند و رتبهٔ ۴ جایش را نگیرد. */
+  const tiedRows = useMemo(() => markTies(ranked), [ranked]);
+  const podiumRows: PodiumRow[] = useMemo(
+    () => (anyParticipation ? (selectPodium(tiedRows) as PodiumRow[]) : []),
+    [anyParticipation, tiedRows],
+  );
+  const leader = podiumRows[0];
+  const runnerUp = podiumRows[1];
 
-  const rest = shown.filter((r) => !podiumIds.has(r.id) || q.length > 0);
-  const leader = podium[0];
-  const runnerUp = podium[1];
+  /* ═══ جدول، **همه** را دارد ═══════════════════════════════════════════
+     رتبه‌های ۱ تا ۳ هم رویِ سکو هستند و هم در جدول — چون جدول «فهرستِ
+     کاملِ رقابت» است و کاربر باید بتواند مسجدِ برنده را کنارِ عددها و
+     نوارِ سهمش ببیند؛ سکو فقط تجلیل است، نه جایگزینِ ردیف. */
+  /* جدول **همه** را دارد — رتبه‌های ۱ تا ۳ هم رویِ سکو هستند و هم این‌جا؛
+     سکو تجلیل است، نه جایگزینِ ردیف. با جست‌وجو هم فهرست کامل فیلتر می‌شود. */
+  const rest = useMemo(() => markTies(shown), [shown]);
 
   return (
     <div className="mt-6">
@@ -246,73 +269,13 @@ export function MosquesDirectory() {
       ) : null}
 
       {/* ── سکوی افتخار ────────────────────────────────────────────────────
-          دو چیدمان از یک داده:
-            • زیرِ `sm`: سه کارتِ ۹۰ پیکسلی به هم می‌چسبند؛ پس **قهرمان**
-              تمام‌عرض و برجسته می‌شود و نفر دوم/سوم زیرش کنارِ هم می‌آیند —
-              همان سلسله‌مراتبی که چشم انتظارش است.
-            • از `sm` به بالا: سکوی کلاسیک ۲-۱-۳ با کارتِ مرکزیِ بلندتر. */}
-      {podium.length > 0 && q.length === 0 ? (
-        <section aria-label="سکوی افتخار" className="mt-6">
-          {/* موبایل */}
-          <div className="pt-4 sm:hidden">
-            {podium[0] ? <PodiumCard place={1} row={podium[0]} hero /> : null}
-            {podium.length > 1 ? (
-              <div className="mt-2 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
-                {podium.slice(1, 3).map((p, i) => (
-                  <PodiumCard key={p.id} place={i === 0 ? 2 : 3} row={p} />
-                ))}
-              </div>
-            ) : null}
-          </div>
-          {/* تبلت و دسکتاپ */}
-          <div className="hidden grid-cols-3 items-end gap-3 pt-5 sm:grid">
-            {podiumOrder.map((idx, visual) => {
-              const p = podium[idx];
-              if (!p) return null;
-              const place: 1 | 2 | 3 = p.rank === 1 ? 1 : p.rank === 2 ? 2 : 3;
-              return (
-                <PodiumCard
-                  key={p.id}
-                  place={place}
-                  row={p}
-                  hero={visual === 1 && podium.length === 3}
-                />
-              );
-            })}
-          </div>
-          <div
-            aria-hidden="true"
-            className="via-border-strong/50 mt-3 h-px bg-gradient-to-l from-transparent to-transparent"
-          />
-        </section>
-      ) : null}
+          سه جایگاه، با قدمگاهِ سنگی و ارتفاعِ متفاوت (قهرمان بلندترین).
+          در موبایل قهرمان تمام‌عرض می‌شود و نفرِ دوم/سوم زیرش؛ کارت‌ها
+          با تأخیرِ ۱۱۰ms یکی‌یکی بالا می‌آیند. جزئیات در `Podium.tsx`. */}
+      {podiumRows.length > 0 && q.length === 0 ? <Podium rows={podiumRows} /> : null}
 
-      {/* ── پیامِ پیشتاز/تعقیب — یک جمله، نه جدول ── */}
-      {leader && q.length === 0 ? (
-        <p className="border-gold/30 bg-gold-soft/70 text-text mt-4 flex items-start gap-2 rounded-xl border px-3 py-2.5 text-[11.5px] leading-6 sm:items-center">
-          <span aria-hidden="true" className="mt-1.5 shrink-0 sm:mt-0">
-            <Girih size={14} className="text-gold-strong" />
-          </span>
-          <span>
-            پیشتاز: <strong className="font-extrabold">{leader.name}</strong> با{" "}
-            {toFa(leader.completed)} شرکت‌کننده
-            {runnerUp && runnerUp.completed > 0 ? (
-              <>
-                {" · "}
-                {leader.completed === runnerUp.completed ? (
-                  <>با {strongName(runnerUp.name)} در صدر شریک است</>
-                ) : (
-                  <>
-                    {" "}
-                    با اختلافِ {toFa(leader.completed - runnerUp.completed)} نفر از{" "}
-                    {strongName(runnerUp.name)}
-                  </>
-                )}
-              </>
-            ) : null}
-          </span>
-        </p>
-      ) : null}
+      {/* ── پیامِ پیشتاز — یک جمله، با احترام به تساوی ── */}
+      {leader && q.length === 0 ? <LeaderLine leader={leader} runnerUp={runnerUp} /> : null}
 
       {/* ── کلیدِ رتبه‌بندی ────────────────────────────────────────────────
           کاربر لازم نیست «طرزِ محاسبهٔ جدول» را بخواند؛ این نوار در موبایل
@@ -357,7 +320,12 @@ export function MosquesDirectory() {
         {/* سرستون — فقط از lg به بالا (جایی که جدول واقعاً جا دارد) */}
         <div className="border-border text-text-subtle hidden border-b px-4 py-2.5 text-[10.5px] font-bold lg:grid lg:grid-cols-[56px_1fr_132px_92px_110px] lg:items-center lg:gap-3">
           <span className="text-center">رتبه</span>
-          <span>مسجد</span>
+          <span className="flex items-center gap-2">
+            مسجد
+            <span className="border-gold/40 bg-gold-soft/60 text-gold-strong rounded border px-1 text-[9px] leading-4 font-bold">
+              ۱ تا ۳ رویِ سکو
+            </span>
+          </span>
           <span className="text-center">شرکت‌کنندهٔ کامل</span>
           <span className="text-center">ثبت‌نامی</span>
           <span className="text-center">سهم از مشارکت‌ها</span>
@@ -424,83 +392,6 @@ export function MosquesDirectory() {
   );
 }
 
-/**
- * یک کارتِ سکو. `hero` = قهرمانِ تمام‌عرض در موبایل یا کارتِ مرکزی در دسکتاپ.
- */
-function PodiumCard({
-  place,
-  row,
-  hero = false,
-}: {
-  place: 1 | 2 | 3;
-  row: Ranked;
-  hero?: boolean;
-}) {
-  const tone = TONE_BY_PLACE[place];
-  return (
-    <div
-      className={`relative flex rounded-2xl border ${tone.surface} ${
-        hero
-          ? "items-center gap-3 px-3.5 pt-5 pb-4 text-start sm:flex-col sm:items-center sm:gap-0 sm:px-3 sm:pt-6 sm:pb-4 sm:text-center"
-          : "flex-col items-center px-2 pt-3.5 pb-2.5 text-center max-[359px]:flex-row max-[359px]:items-center max-[359px]:gap-2.5 max-[359px]:px-3 max-[359px]:py-2.5 max-[359px]:text-start sm:px-3 sm:pt-5 sm:pb-3"
-      } ${hero && place === 1 ? "sm:-translate-y-2" : ""}`}
-    >
-      {/* مدال — روی لبهٔ بالا، وسطِ کارت (در فولدبلِ باریک کنارِ نشان می‌نشیند) */}
-      <span className="absolute -top-4 right-1/2 translate-x-1/2 drop-shadow-[0_2px_4px_oklch(30%_0.04_70/0.28)] max-[359px]:hidden">
-        <Medal place={place} size={hero ? 32 : 26} />
-      </span>
-
-      {/* نشانِ مسجد — بی‌شمارهٔ رتبه، چون مدال و جایگاه همین را می‌گویند */}
-      <div className="relative shrink-0">
-        {/* در فولدبلِ خیلی باریک، کارت افقی می‌شود؛ مدال روی گوشهٔ نشان می‌نشیند
-            تا نه روی حرفِ نشان بیفتد و نه ارتفاعِ کارت را زیاد کند. */}
-        <span className="absolute -top-2 -left-2 z-10 hidden drop-shadow-[0_2px_4px_oklch(30%_0.04_70/0.28)] max-[359px]:block">
-          <Medal place={place} size={22} />
-        </span>
-        <MosqueMark
-          name={row.name}
-          initialOverride={row.initial || mosqueInitial(row.name)}
-          size={hero ? 54 : 36}
-        />
-      </div>
-
-      <div className={hero ? "min-w-0 flex-1 sm:flex-none" : "min-w-0"}>
-        <p
-          className={`text-text mt-0 leading-tight font-extrabold ${
-            hero
-              ? "line-clamp-3 text-[13.5px] sm:mt-2 sm:line-clamp-2 sm:min-h-[2.4em] sm:text-[12.5px]"
-              : "line-clamp-1 text-[11px] sm:text-[12px]"
-          }`}
-        >
-          {row.name}
-        </p>
-
-        <p
-          className={`text-text flex items-baseline gap-1 tabular-nums ${
-            hero ? "mt-1 justify-start sm:justify-center" : "mt-1.5 justify-center"
-          }`}
-        >
-          <span className={hero ? "text-[20px] font-extrabold" : "text-[15px] font-extrabold"}>
-            {toFa(row.completed)}
-          </span>
-          <span className="text-text-subtle text-[9.5px]">شرکت‌کننده</span>
-        </p>
-
-        <span className="text-text-subtle mt-0.5 block text-[9.5px] tabular-nums max-[359px]:hidden">
-          {faPercent(row.share, 0)} از مشارکت‌ها
-        </span>
-      </div>
-
-      {hero ? (
-        <span className="border-gold/40 text-gold-strong ms-auto flex shrink-0 items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-extrabold sm:absolute sm:top-3 sm:left-3 sm:ms-0">
-          <Girih size={11} />
-          پیشتاز
-        </span>
-      ) : null}
-    </div>
-  );
-}
-
 /** رنگِ نوارِ سهم بر اساسِ جایگاه (طلا/نقره/برنز/عادی). */
 function barTone(place: 0 | 1 | 2 | 3): string {
   if (place === 1) return "from-gold to-gold-strong";
@@ -512,10 +403,6 @@ function barTone(place: 0 | 1 | 2 | 3): string {
 /** پهنای نوار: صفر = بدونِ نوار، بقیه حداقلِ ۴٪ تا دیده شود. */
 function barWidth(row: Ranked): number {
   return row.completed > 0 ? Math.max(4, Math.min(100, row.share)) : 0;
-}
-
-function strongName(name: string) {
-  return <strong className="font-extrabold">{name}</strong>;
 }
 
 /**

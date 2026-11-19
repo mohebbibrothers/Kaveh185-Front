@@ -719,6 +719,224 @@
     }
   }
 
+  /* ══════════════════════════════════════════════════════════════════════
+     سکوی افتخار — «تختِ سه‌نفره» جدولِ رتبه‌بندی مساجد (دورِ ۲۴)
+     ──────────────────────────────────────────────────────────────────────
+     کاربر خواست سکو به «قلهٔ جذابیت» برسد. اما این سایت کلاسیک است: پر زدن
+     و رنگ‌بازی و کانفتی، هویتِ سرمه‌ای/طلایی را ارزان می‌کند. پس زبانِ
+     حرکت این‌جا همان زبانِ کاشی و گره است:
+
+       • `monument` — ستونِ سنگیِ زیرِ هر کارت با نقشِ گره؛ ارتفاعش از
+         ۱۵۰px (نفرِ سوم) تا ۲۱۰px (قهرمان) می‌رود، پس «بلندیِ جایگاه» خودش
+         رتبه را می‌گوید، نه فقط عدد.
+       • `sweep` — نوری که هر ۹ ثانیه یک‌بار از روی کارتِ قهرمان می‌گذرد؛
+         آرام، بی‌صدا، فقط برای زنده‌بودن.
+       • `float` — مدالِ قهرمان ۲px بالا/پایین می‌رود (۳.۵ ثانیه، نفس‌کشیدن).
+       • `rise-podium` — کارت‌ها با ۱۲۰ms فاصله از پایین بالا می‌آیند.
+       • `crown-spark` — چهار جرقهٔ گره‌ای دورِ تاجِ نفرِ اول.
+
+     همه با `transform`/`opacity`/`filter` کار می‌کنند (بی‌layout)، روی
+     `prefers-reduced-motion` خاموش می‌شوند، و رنگ‌ها نوترین توکن‌های تم‌اند
+     تا در شب هم درست بمانند.
+     ══════════════════════════════════════════════════════════════════════ */
+  @keyframes k185-podium-rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes k185-podium-sweep {
+    0% {
+      transform: translateX(-130%) skewX(-14deg);
+      opacity: 0;
+    }
+    12% {
+      opacity: 0.7;
+    }
+    36% {
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(430%) skewX(-14deg);
+      opacity: 0;
+    }
+  }
+  @keyframes k185-medal-float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-3px) rotate(-1.5deg);
+    }
+  }
+  @keyframes k185-spark {
+    0%,
+    100% {
+      opacity: 0.15;
+      transform: scale(0.72);
+    }
+    50% {
+      opacity: 0.9;
+      transform: scale(1);
+    }
+  }
+  @keyframes k185-monument-glow {
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 0.85;
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     ستونِ سکو (پلینت) — سه لایهٔ دیداری تا «پایه» خوانده شود، نه «کادرِ خالی»:
+       ۱) بدنهٔ سنگی با گرادیانِ ملایم و خطوطِ افقیِ سنگ‌تراش (بافتِ پله)
+       ۲) نقشِ گرهِ محو در پایین (امضای پروژه)
+       ۳) سرستونِ باریک و کمی پهن‌تر رویِ بدنه — همان «صفحهٔ» سکوی واقعی
+     ══════════════════════════════════════════════════════════════════════ */
+  .k185-podium-monument {
+    position: relative;
+    border-start-start-radius: 10px;
+    border-start-end-radius: 10px;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        transparent 0 17px,
+        color-mix(in oklab, var(--c-text) 7%, transparent) 17px 18px
+      ),
+      linear-gradient(
+        to top,
+        color-mix(in oklab, var(--c-text) 14%, transparent),
+        color-mix(in oklab, var(--c-text) 5%, transparent) 70%,
+        color-mix(in oklab, var(--c-text) 2%, transparent)
+      ),
+      var(--c-surface);
+    border: 1px solid color-mix(in oklab, var(--c-border-strong) 45%, transparent);
+    border-bottom: 0;
+    overflow: hidden;
+    box-shadow:
+      inset 0 8px 12px -9px oklch(30% 0.04 260 / 0.55),
+      inset 0 -1px 0 color-mix(in oklab, var(--c-border-strong) 40%, transparent);
+  }
+  /* سرستون — صفحهٔ کوچکِ رویِ بدنه. */
+  .k185-podium-monument > .k185-plinth-cap {
+    position: absolute;
+    inset-inline: -7%;
+    top: 0;
+    height: 7px;
+    border-end-start-radius: 3px;
+    border-end-end-radius: 3px;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--c-surface) 92%, var(--c-text)),
+      color-mix(in oklab, var(--c-surface) 70%, var(--c-text) 8%)
+    );
+    border: 1px solid color-mix(in oklab, var(--c-border-strong) 55%, transparent);
+    border-top: 0;
+    box-shadow: 0 2px 4px -2px oklch(30% 0.04 260 / 0.4);
+  }
+  /* نقشِ گره — تکرارِ محوِ همان طرحِ نشانِ سایت، فقط بافت. */
+  .k185-podium-monument::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(
+        45deg,
+        color-mix(in oklab, var(--c-border-strong) 26%, transparent) 25%,
+        transparent 25%,
+        transparent 75%,
+        color-mix(in oklab, var(--c-border-strong) 26%, transparent) 75%
+      ),
+      linear-gradient(
+        45deg,
+        color-mix(in oklab, var(--c-border-strong) 26%, transparent) 25%,
+        transparent 25%,
+        transparent 75%,
+        color-mix(in oklab, var(--c-border-strong) 26%, transparent) 75%
+      );
+    background-size: 12px 12px;
+    background-position:
+      0 0,
+      6px 6px;
+    opacity: 0.26;
+    mask-image: linear-gradient(to top, black, transparent 82%);
+    -webkit-mask-image: linear-gradient(to top, black, transparent 82%);
+  }
+  /* خطِ رنگیِ لبهٔ بالا — نشانهٔ جایگاه (طلا/نقره/برنز). */
+  .k185-podium-monument::after {
+    content: "";
+    position: absolute;
+    inset-inline: 18%;
+    top: 0;
+    height: 2px;
+    background: var(--podium-accent, var(--c-gold));
+    opacity: 0.75;
+  }
+
+  /* تاجِ قهرمان — سه‌گوشِ گره‌ای با هاله. */
+  .k185-podium-crown {
+    filter: drop-shadow(0 2px 6px oklch(62% 0.12 80 / 0.35));
+  }
+
+  .k185-podium-card {
+    position: relative;
+    isolation: isolate;
+  }
+  /* درخششِ دوره‌ای رویِ کارتِ قهرمان. */
+  .k185-podium-sheen {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 42%;
+    pointer-events: none;
+    background: linear-gradient(
+      to left,
+      transparent,
+      color-mix(in oklab, white 62%, transparent),
+      transparent
+    );
+    opacity: 0;
+    z-index: 2;
+    mix-blend-mode: soft-light;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .k185-podium-card {
+      animation: k185-podium-rise 620ms var(--ease-decelerate) both;
+      animation-delay: var(--podium-delay, 0ms);
+    }
+    .k185-podium-hero .k185-podium-medal {
+      animation: k185-medal-float 3.6s ease-in-out infinite;
+    }
+    .k185-podium-hero .k185-podium-sheen {
+      animation: k185-podium-sweep 9s ease-in-out infinite;
+      animation-delay: 1.6s;
+    }
+    .k185-podium-halo {
+      animation: k185-monument-glow 5.2s ease-in-out infinite;
+    }
+    .k185-spark {
+      animation: k185-spark 3.2s ease-in-out infinite;
+    }
+    .k185-spark:nth-child(2) {
+      animation-delay: 0.7s;
+    }
+    .k185-spark:nth-child(3) {
+      animation-delay: 1.4s;
+    }
+    .k185-spark:nth-child(4) {
+      animation-delay: 2.1s;
+    }
+  }
+
   .k185-martyr-card img {
     transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }

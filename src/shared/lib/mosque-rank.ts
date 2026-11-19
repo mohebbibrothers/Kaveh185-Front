@@ -223,3 +223,39 @@ export function assignRanks<T extends Rankable>(
   });
   return out;
 }
+
+/**
+ * «رتبهٔ مشترک» را از دادهٔ موجود استخراج می‌کند.
+ *
+ * چرا لازم است؟ `rank` با قاعدهٔ ۱۲۲۴ ساخته می‌شود (۱، ۱، ۳ …) و عددِ رتبه
+ * به‌تنهایی نمی‌گوید «هم‌رتبه دارم یا نه»: مسجدِ اول هم `rank=1` است، هم
+ * دو مسجدِ هم‌امتیاز. پس یک بار می‌شماریم هر رتبه چند مسجد دارد؛ هر عضوِ
+ * گروهِ چندنفره `tied: true` می‌گیرد — هم رویِ سکو، هم در جدول.
+ *
+ * اگر سرور صریح `is_tied` فرستاده باشد، حرفِ او مقدم است (منبعِ واحد).
+ */
+export function markTies<T extends { rank: number; serverTied?: boolean }>(
+  rows: T[],
+): (T & { tied: boolean })[] {
+  const usage = new Map<number, number>();
+  for (const row of rows) {
+    if (row.rank > 0) usage.set(row.rank, (usage.get(row.rank) ?? 0) + 1);
+  }
+  return rows.map((row) => ({
+    ...row,
+    tied: row.rank > 0 && (row.serverTied ?? (usage.get(row.rank) ?? 0) > 1),
+  }));
+}
+
+/**
+ * نفراتِ سکو: هر کسی که **رتبهٔ رسمی‌اش ۱ تا ۳** است — نه «سه ردیفِ اولِ
+ * فهرست». تفاوت وقتی دیده می‌شود که رتبهٔ مشترک هست: با ۱۴ و ۱۱ و ۱۱، دو
+ * مسجدِ هم‌امتیاز هر دو رتبهٔ ۲ دارند و هر دو باید رویِ سکو بیایند؛ انتخابِ
+ * «سه ردیفِ اول» نفرِ رتبهٔ ۴ را رویِ سکو می‌نشاند.
+ *
+ * سکو سه جایگاه دارد، پس سقفِ `size` رعایت می‌شود؛ بقیهٔ هم‌رتبه‌ها در جدول
+ * دیده می‌شوند. مسجدِ بی‌مشارکت (رتبهٔ ۰) هرگز رویِ سکو نمی‌رود.
+ */
+export function selectPodium<T extends { rank: number }>(rows: T[], size = 3): T[] {
+  return rows.filter((r) => r.rank > 0 && r.rank <= size).slice(0, size);
+}
