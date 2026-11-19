@@ -52,6 +52,9 @@ export const leaderboardEntrySchema = z.object({
   mosque_id: z.number(),
   code: z.string(),
   name: z.string(),
+  /** حرفِ نشان و «نامِ هسته» — از سرور می‌آید تا نمایش و رتبه‌بندی یکی باشد. */
+  initial: z.string().optional(),
+  name_core: z.string().optional(),
   neighborhood: z.string(),
   tier: z.string().optional(),
   tier_label: z.string().optional(),

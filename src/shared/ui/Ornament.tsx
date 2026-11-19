@@ -134,15 +134,22 @@ export function MosqueMark({
   name,
   order,
   size = 34,
+  initialOverride,
+  rank,
 }: {
   name: string;
   order?: number;
   size?: number;
+  /** حرفِ نشان را بیرون محاسبه کن (جدولِ رقابتی از نامِ هسته استفاده می‌کند). */
+  initialOverride?: string;
+  /** اگر داده شود، به‌جای شمارهٔ ترتیب، همین رتبه نشان داده می‌شود. */
+  rank?: number;
 }) {
   const first = (name.trim().match(/[^\s(]+/) ?? ["م"])[0].replace(/^ال/, "");
-  const initial = first.slice(0, 1) || "م";
+  const initial = initialOverride ?? (first.slice(0, 1) || "م");
   const seed = Array.from(name).reduce((acc, ch) => acc + (ch.codePointAt(0) ?? 0), 0);
   const tone = TILE_TONES[seed % TILE_TONES.length];
+  const badge = rank && rank > 0 ? rank : order;
 
   return (
     <span
@@ -158,14 +165,73 @@ export function MosqueMark({
       <span className="leading-none font-extrabold" style={{ fontSize: Math.round(size * 0.42) }}>
         {initial}
       </span>
-      {order ? (
+      {badge ? (
         <span
           className="bg-canvas absolute -top-1 -left-1 grid min-w-[16px] place-items-center rounded-full px-1 text-[9px] font-extrabold tabular-nums ring-1 ring-current/25"
           style={{ lineHeight: "15px" }}
         >
-          {new Intl.NumberFormat("fa-IR", { useGrouping: false }).format(order)}
+          {new Intl.NumberFormat("fa-IR", { useGrouping: false }).format(badge)}
         </span>
       ) : null}
     </span>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   مدالِ رقابتی — طلا / نقره / برنز
+   ───────────────────────────────────────────────────────────────────────────
+   چرا SVG و نه ایموجی یا تصویر؟ سه دلیل:
+     ۱) **تم‌پذیر:** گرادیان‌ها از `currentColor` و توکن‌های سایت ساخته
+        می‌شوند، پس در تمِ شب هم درست دیده می‌شوند (ایموجی رنگِ ثابت دارد).
+     ۲) **مقیاس‌پذیر و بی‌رستر:** در هر اندازه‌ای تیز است و در چاپ هم سالم.
+     ۳) **بی‌صدا:** یک مدالِ کوچک روی نشان؛ نه استیکرِ بزرگ. کلاسیک‌بودنِ
+        سایت حفظ می‌شود و «حسِ رقابت» از نظم و طلاکاری می‌آید، نه از شلوغی.
+   فرم: سپر/ستارهٔ هشت‌پرِ گره‌ای با روبان — همان زبانِ نقش‌مایه‌های پروژه.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const MEDAL_TONES = {
+  1: { from: "oklch(88% 0.13 92)", to: "oklch(66% 0.14 74)", ring: "oklch(96% 0.10 96)" },
+  2: { from: "oklch(94% 0.006 250)", to: "oklch(74% 0.012 254)", ring: "oklch(99% 0 0)" },
+  3: { from: "oklch(80% 0.09 58)", to: "oklch(58% 0.10 46)", ring: "oklch(88% 0.07 66)" },
+} as const;
+
+export function Medal({
+  place,
+  size = 20,
+  className = "",
+}: {
+  place: 1 | 2 | 3;
+  size?: number;
+  className?: string;
+}) {
+  const tone = MEDAL_TONES[place];
+  const id = `medal-${place}`;
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      className={className}
+      aria-hidden="true"
+      focusable="false"
+    >
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0.4" y2="1">
+          <stop offset="0%" stopColor={tone.from} />
+          <stop offset="100%" stopColor={tone.to} />
+        </linearGradient>
+      </defs>
+      {/* روبان‌ها — دو نوارِ مورب زیر مدال */}
+      <path d="M8.4 13.2 5.6 21l3.6-1.6 1.7 3.1 2-4.6z" fill={tone.to} opacity="0.55" />
+      <path d="M15.6 13.2 18.4 21 14.8 19.4l-1.7 3.1-2-4.6z" fill={tone.to} opacity="0.55" />
+      {/* حلقهٔ بیرونی */}
+      <circle cx="12" cy="9.6" r="7.6" fill={`url(#${id})`} />
+      <circle cx="12" cy="9.6" r="7.6" fill="none" stroke={tone.ring} strokeWidth="0.9" />
+      {/* گرهٔ هشت‌پر درونِ مدال — امضای بصریِ پروژه */}
+      <g fill="none" stroke="oklch(28% 0.03 70 / 0.55)" strokeWidth="0.85" strokeLinejoin="round">
+        <rect x="8.6" y="6.2" width="6.8" height="6.8" />
+        <rect x="8.6" y="6.2" width="6.8" height="6.8" transform="rotate(45 12 9.6)" />
+      </g>
+      <circle cx="12" cy="9.6" r="1.1" fill="oklch(28% 0.03 70 / 0.6)" />
+    </svg>
   );
 }
