@@ -28,7 +28,7 @@ import { assignRanks, mosqueCoreName, mosqueInitial } from "@/shared/lib/mosque-
  *     فولدبل را ساختاراً حذف می‌کند، نه با فونتِ کوچک‌تر.
  *
  *  ۴) **حسِ رقابت:** سکوی سه‌نفرهٔ افتخار (پودیومِ ۲-۱-۳) + مدالِ طلا/نقره/
- *     برنز روی نشانِ سه رتبهٔ اول + نوارِ سهم از کل + «رتبهٔ مشترک» برای
+ *     برنز روی نشانِ سه رتبهٔ اول + نوارِ سهم از مشارکت‌ها + «رتبهٔ مشترک» برای
  *     تساوی + نشانِ «پیشتاز» و «در تعقیب». همه با توکن‌های تم، پس در شب هم
  *     کلاسیک می‌ماند.
  *
@@ -77,6 +77,11 @@ export function MosquesDirectory() {
   const rows = useMemo<Row[]>(() => {
     if (state.phase !== "ready") return [];
     const byId = new Map(state.data.leaderboard.leaderboard.map((e) => [e.mosque_id, e]));
+    /* سهم از کل = «سهمِ این مسجد از مجموعِ شرکت‌کنندگانِ کاملِ همهٔ مساجد».
+       منبعِ اول: `participation_share_percent` از سرور (همان عددی که API
+       می‌دهد)؛ اگر بک‌اندِ قدیمی آن را نداشت، همان فرمول محلی محاسبه می‌شود.
+       ⚠️ این عدد با `target_progress_percent` (درصدِ رسیدن به هدفِ ۵۰۰ نفری)
+       یکی نیست — آن معیارِ دیگری است و در این جدول استفاده نمی‌شود. */
     const total = state.data.leaderboard.total_completed_participants;
     return state.data.mosques.map((m, i) => {
       const e = byId.get(m.id);
@@ -89,7 +94,7 @@ export function MosquesDirectory() {
         order: m.display_order ?? i + 1,
         completed,
         registered: e?.registered_users_count ?? 0,
-        share: total > 0 ? (completed / total) * 100 : 0,
+        share: e?.participation_share_percent ?? (total > 0 ? (completed / total) * 100 : 0),
         initial: e?.initial,
       };
     });
@@ -252,6 +257,11 @@ export function MosquesDirectory() {
           <span aria-hidden="true" className="bg-gold-strong size-1.5 rounded-full" />
           در تساوی: ترتیب الفبای نام مسجد ↑
         </span>
+        <span aria-hidden="true" className="bg-border-strong hidden h-3 w-px sm:block" />
+        <span className="inline-flex items-center gap-1.5">
+          <span aria-hidden="true" className="bg-brand size-1.5 rounded-full" />
+          «سهم از مشارکت‌ها» = شرکت‌کنندگانِ این مسجد ÷ مجموعِ شرکت‌کنندگانِ همهٔ مساجد
+        </span>
       </div>
 
       {/* ── فهرست ── */}
@@ -262,7 +272,7 @@ export function MosquesDirectory() {
           <span>مسجد</span>
           <span className="text-center">شرکت‌کنندهٔ کامل</span>
           <span className="text-center">ثبت‌نامی</span>
-          <span className="text-center">سهم از کل</span>
+          <span className="text-center">سهم از مشارکت‌ها</span>
         </div>
 
         {rows.length === 0 ? (
@@ -325,6 +335,8 @@ export function MosquesDirectory() {
       <p className="text-text-subtle mt-3 text-[11px] leading-6">
         «شرکت‌کنندهٔ کامل» یعنی کسی که آزمونش را تا انتها فرستاده است؛ ثبت‌نامِ بدون شرکت در شمارشِ
         کامل نمی‌آید. مساجدِ بی‌مشارکت با رتبهٔ «—» در پایانِ فهرست می‌آیند و به‌ترتیبِ الفبا مرتب‌اند.
+        «سهم از مشارکت‌ها» می‌گوید هر مسجد چه بخشی از کلِ شرکت‌کنندگانِ حوزه را به خود اختصاص داده است
+        (مجموعِ همهٔ مساجد دقیقاً ۱۰۰٪ می‌شود) و با «درصدِ رسیدن به هدف» کاملاً متفاوت است.
       </p>
     </div>
   );
@@ -393,7 +405,7 @@ function PodiumCard({
         </p>
 
         <span className="text-text-subtle mt-0.5 block text-[9.5px] tabular-nums max-[359px]:hidden">
-          {faPercent(row.share, 0)} از کل
+          {faPercent(row.share, 0)} از مشارکت‌ها
         </span>
       </div>
 
@@ -516,7 +528,7 @@ function RowItem({ row }: { row: Ranked }) {
               />
             </span>
             <span className="text-text-subtle shrink-0 text-[10px] tabular-nums">
-              {faPercent(row.share, 0)} از کل
+              {faPercent(row.share, 0)} از مشارکت‌ها
             </span>
           </div>
         </div>
