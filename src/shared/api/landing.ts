@@ -49,7 +49,7 @@ export const mosqueSchema = z.object({
 
 export const leaderboardEntrySchema = z.object({
   rank: z.number(),
-  /** «رتبهٔ مشترک» از سرور — با قاعدهٔ ۱۲۲۴ سازگار است (۱، ۱، ۳ …). */
+  /** «جایگاهِ مشترک» از سرور — با قاعدهٔ جایگاه سازگار است (۱، ۲، ۲، ۳ …). */
   is_tied: z.boolean().optional(),
   tied_count: z.number().optional(),
   mosque_id: z.number(),

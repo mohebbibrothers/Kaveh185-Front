@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   assignRanks,
+  groupPlaces,
   compareFaName,
   markTies,
   mosqueCoreName,
@@ -51,14 +52,15 @@ describe("assignRanks", () => {
     expect(ranked.map((r) => r.rank)).toEqual([1, 2, 2]);
   });
 
-  it("تساوی را رتبهٔ مشترک می‌دهد (۱۲۲۴)", () => {
+  it("تساوی را جایگاهِ مشترک می‌دهد (۱، ۱، ۲)", () => {
     const ranked = assignRanks([
       { name: "مسجد الف", completed: 3 },
       { name: "مسجد ب", completed: 3 },
       { name: "مسجد پ", completed: 1 },
     ]);
-    expect(ranked.map((r) => r.rank)).toEqual([1, 1, 3]);
-    expect(ranked[1]?.tied).toBe(true);
+    expect(ranked.map((r) => r.rank)).toEqual([1, 1, 2]);
+    // `tied` فقط از `markTies` می‌آید (assignRanks تنها جایگاه را می‌دهد)
+    expect(markTies(ranked)[1]?.tied).toBe(true);
   });
 
   it("صفرها رتبه نمی‌گیرند", () => {
@@ -97,7 +99,8 @@ describe("markTies و selectPodium (سکوی افتخار)", () => {
     expect(at(tied, 2).rank).toBe(2);
     expect(at(tied, 1).tied).toBe(true);
     expect(at(tied, 2).tied).toBe(true);
-    expect(at(tied, 3).rank).toBe(4);
+    // بعد از گروهِ دوتاییِ جایگاهِ ۲، مسجدِ بعدی جایگاهِ ۳ می‌گیرد
+    expect(at(tied, 3).rank).toBe(3);
     expect(at(tied, 3).tied).toBe(true);
   });
 
@@ -108,11 +111,27 @@ describe("markTies و selectPodium (سکوی افتخار)", () => {
     expect(selectPodium(tied).some((r) => r.completed === 0)).toBe(false);
   });
 
-  it("سکو رتبه‌های ۱ تا ۳ را می‌گیرد، نه سه ردیفِ اول را", () => {
-    // رتبه‌ها: ۱، ۲، ۲، ۴، ۴، ۰ → سکو باید ۱ و دو مسجدِ رتبهٔ ۲ باشد
+  it("کارت‌های صدر جایگاه‌های ۱ تا ۳ را می‌گیرند، نه سه ردیفِ اول را", () => {
+    // جایگاه‌ها: ۱، ۲، ۲، ۳، ۳، ۰ → کارت‌ها: قهرمان + دو هم‌امتیازِ دوم
     const podium = selectPodium(tied);
     expect(podium.map((r) => r.rank)).toEqual([1, 2, 2]);
     expect(podium.map((r) => r.completed)).toEqual([14, 11, 11]);
+  });
+
+  it("اگر جایگاهِ ۱ و ۳ پر باشند و ۲ دو نفره باشد، جایگاهِ ۳ هم کارت می‌گیرد", () => {
+    const ranked2 = markTies(
+      assignRanks(
+        [
+          { name: "مسجد الف", completed: 9 },
+          { name: "مسجد ب", completed: 6 },
+          { name: "مسجد پ", completed: 6 },
+          { name: "مسجد ت", completed: 4 },
+        ].map((r, i) => ({ ...r, id: i + 1 })),
+      ),
+    );
+    expect(ranked2.map((r) => r.rank)).toEqual([1, 2, 2, 3]);
+    // سکو سه جایگاه دارد: رتبه‌های ۱ و ۲ در کارت‌ها، رتبهٔ ۳ در جدول
+    expect(selectPodium(ranked2).map((r) => r.rank)).toEqual([1, 2, 2]);
   });
 
   it("حرفِ سرور (serverTied) بر شمارشِ محلی مقدم است", () => {
@@ -120,10 +139,43 @@ describe("markTies و selectPodium (سکوی افتخار)", () => {
     expect(fromServer[0]?.tied).toBe(true);
   });
 
-  it("سقفِ سه‌نفره رعایت می‌شود حتی اگر چهار مسجد رتبهٔ ۱ داشته باشند", () => {
+  it("سقفِ سه کارت رعایت می‌شود حتی اگر چهار مسجد یک جایگاه داشته باشند", () => {
     const four = markTies(
       [1, 1, 1, 1].map((completed, i) => ({ name: `مسجد ${i}`, completed, rank: 1 })),
     );
     expect(selectPodium(four)).toHaveLength(3);
+  });
+});
+
+describe("groupPlaces (سه جایگاهِ صدر با هم‌رتبه‌ها)", () => {
+  it("با ۱۴/۱۱/۱۱/۸ سه جایگاه می‌سازد و جایگاهِ دوم را مشترک نگه می‌دارد", () => {
+    const ranked = markTies(
+      assignRanks(
+        [
+          { name: "مسجد الف", completed: 14 },
+          { name: "مسجد ب", completed: 11 },
+          { name: "مسجد پ", completed: 11 },
+          { name: "مسجد ت", completed: 8 },
+          { name: "مسجد ث", completed: 0 },
+        ].map((r, i) => ({ ...r, id: i + 1 })),
+      ),
+    );
+    const groups = groupPlaces(ranked);
+    expect(groups.map((g) => g.place)).toEqual([1, 2, 3]);
+    expect(groups.map((g) => g.rows.length)).toEqual([1, 2, 1]);
+    // جایگاهِ سوم همیشه کارت دارد، حتی وقتی دوم مشترک است
+    expect(groups[2]?.rows[0]?.completed).toBe(8);
+  });
+
+  it("صفرها و جایگاه‌های بالاتر از سه را کنار می‌گذارد", () => {
+    const ranked = assignRanks(
+      [
+        { name: "مسجد الف", completed: 5 },
+        { name: "مسجد ب", completed: 4 },
+        { name: "مسجد پ", completed: 3 },
+        { name: "مسجد ت", completed: 2 },
+      ].map((r, i) => ({ ...r, id: i + 1 })),
+    );
+    expect(groupPlaces(ranked).map((g) => g.place)).toEqual([1, 2, 3]);
   });
 });

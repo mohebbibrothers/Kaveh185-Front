@@ -3,14 +3,14 @@
 import { useMemo, useState } from "react";
 import { useBootstrap } from "@/shared/api/use-bootstrap";
 import { MosqueMark, Girih, Medal } from "@/shared/ui/Ornament";
-import { Podium, LeaderLine, type PodiumRow } from "./Podium";
+import { TopCards, LeaderLine, type PodiumRow } from "./TopCards";
 import { toEn, toFa, toSearch, faPercent } from "@/shared/lib/fa";
 import {
   assignRanks,
+  groupPlaces,
   markTies,
   mosqueCoreName,
   mosqueInitial,
-  selectPodium,
 } from "@/shared/lib/mosque-rank";
 
 /**
@@ -128,25 +128,21 @@ export function MosquesDirectory() {
   const totalCompleted = rows.reduce((s, r) => s + r.completed, 0);
   const activeCount = rows.filter((r) => r.completed > 0).length;
 
-  /* ═══ چه کسی «مشترک» است و چه کسی رویِ سکو می‌رود؟ ═════════════════
-     `rank` از قاعدهٔ ۱۲۲۴ می‌آید (۱، ۱، ۳ …) ولی عددِ رتبه نمی‌گوید
-     «هم‌رتبه دارم یا نه»؛ پس نشانه‌گذاریِ تساوی و انتخابِ نفراتِ سکو هر دو
-     در `mosque-rank.ts` انجام و تست می‌شوند (یک منبعِ حقیقت برای فرانت).
-     • «مشترک» = عضویت در گروهِ چندنفرهٔ یک رتبه (اول حرفِ سرور، بعد شمارش).
-     • سکو = رتبه‌های ۱ تا ۳، نه «سه ردیفِ اول» — تا با ۱۴/۱۱/۱۱ هر دو
-       مسجدِ رتبهٔ ۲ رویِ سکو بیایند و رتبهٔ ۴ جایش را نگیرد. */
+  /* ═══ چه کسی «مشترک» است و کدام جایگاه‌ها بالای صفحه می‌آیند؟ ═════════
+     `rank` حالا «جایگاه» است (۱، ۲، ۲، ۳ …)، پس «سوم» همیشه وجود دارد و
+     مدالِ برنز از صفحه غایب نمی‌شود. نشانه‌گذاریِ تساوی (`markTies`) و
+     ساختِ سه جایگاهِ صدر (`groupPlaces`) در `mosque-rank.ts` تست شده‌اند.
+     • «مشترک» = عضویت در گروهِ چندنفرهٔ یک جایگاه (اول حرفِ سرور، بعد شمارش).
+     • هر جایگاه یک کارت است: قهرمان تنها، جایگاهِ دوم/سوم با همهٔ هم‌رتبه‌ها. */
   const tiedRows = useMemo(() => markTies(ranked), [ranked]);
-  const podiumRows: PodiumRow[] = useMemo(
-    () => (anyParticipation ? (selectPodium(tiedRows) as PodiumRow[]) : []),
+  const placeGroups = useMemo(
+    () => (anyParticipation ? groupPlaces(tiedRows) : []),
     [anyParticipation, tiedRows],
   );
-  const leader = podiumRows[0];
-  const runnerUp = podiumRows[1];
+  const topRows: PodiumRow[] = useMemo(() => placeGroups.flatMap((g) => g.rows), [placeGroups]);
+  const leader = topRows[0];
+  const runnerUp = placeGroups.find((g) => g.place > 1)?.rows[0];
 
-  /* ═══ جدول، **همه** را دارد ═══════════════════════════════════════════
-     رتبه‌های ۱ تا ۳ هم رویِ سکو هستند و هم در جدول — چون جدول «فهرستِ
-     کاملِ رقابت» است و کاربر باید بتواند مسجدِ برنده را کنارِ عددها و
-     نوارِ سهمش ببیند؛ سکو فقط تجلیل است، نه جایگزینِ ردیف. */
   /* جدول **همه** را دارد — رتبه‌های ۱ تا ۳ هم رویِ سکو هستند و هم این‌جا؛
      سکو تجلیل است، نه جایگزینِ ردیف. با جست‌وجو هم فهرست کامل فیلتر می‌شود. */
   const rest = useMemo(() => markTies(shown), [shown]);
@@ -269,34 +265,25 @@ export function MosquesDirectory() {
       ) : null}
 
       {/* ── سکوی افتخار ────────────────────────────────────────────────────
-          سه جایگاه، با قدمگاهِ سنگی و ارتفاعِ متفاوت (قهرمان بلندترین).
-          در موبایل قهرمان تمام‌عرض می‌شود و نفرِ دوم/سوم زیرش؛ کارت‌ها
-          با تأخیرِ ۱۱۰ms یکی‌یکی بالا می‌آیند. جزئیات در `Podium.tsx`. */}
-      {podiumRows.length > 0 && q.length === 0 ? <Podium rows={podiumRows} /> : null}
+          سه کارت، بدونِ هیچ سازه یا پایهٔ زیرین: جایگاه را خودِ کارت می‌گوید
+          (قاب، مدال و رنگ). در موبایل قهرمان تمام‌عرض و بقیه زیرش؛ کارت‌ها
+          با تأخیرِ ۱۱۰ms یکی‌یکی بالا می‌آیند. جزئیات در `TopCards.tsx`. */}
+      {placeGroups.length > 0 && q.length === 0 ? <TopCards groups={placeGroups} /> : null}
 
       {/* ── پیامِ پیشتاز — یک جمله، با احترام به تساوی ── */}
       {leader && q.length === 0 ? <LeaderLine leader={leader} runnerUp={runnerUp} /> : null}
 
       {/* ── کلیدِ رتبه‌بندی ────────────────────────────────────────────────
-          کاربر لازم نیست «طرزِ محاسبهٔ جدول» را بخواند؛ این نوار در موبایل
-          شلوغی می‌ساخت و فضای تیترها را می‌خورد، پس فقط از `sm` نمایش داده
-          می‌شود. در وبِ دسکتاپ همان‌جا می‌ماند تا شفافیتِ رقابت حفظ شود. */}
-      <div className="text-text-subtle mt-4 hidden flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] sm:flex">
-        <span className="inline-flex items-center gap-1.5">
-          <span aria-hidden="true" className="bg-verde size-1.5 rounded-full" />
-          رتبه‌بندی: تعداد شرکت‌کنندهٔ کامل ↓
-        </span>
-        <span aria-hidden="true" className="bg-border-strong hidden h-3 w-px sm:block" />
-        <span className="inline-flex items-center gap-1.5">
-          <span aria-hidden="true" className="bg-gold-strong size-1.5 rounded-full" />
-          در تساوی: ترتیب الفبای نام مسجد ↑
-        </span>
-        <span aria-hidden="true" className="bg-border-strong hidden h-3 w-px sm:block" />
-        <span className="inline-flex items-center gap-1.5">
-          <span aria-hidden="true" className="bg-brand size-1.5 rounded-full" />
-          «سهم از مشارکت‌ها» = شرکت‌کنندگانِ این مسجد ÷ مجموعِ شرکت‌کنندگانِ همهٔ مساجد
-        </span>
-      </div>
+          یک خط، نه سه چیپ: قاعدهٔ قبلی فرمولِ «سهم از مشارکت‌ها» را هم توضیح
+          می‌داد و در دسکتاپ به دو خط می‌شکست. قاعده یک جمله است و همان کافی
+          است؛ فرمول‌ها جای کاربر نیستند. */}
+      <p className="text-text-subtle mt-4 flex items-start gap-1.5 text-[10.5px] leading-5 sm:items-center">
+        <span
+          aria-hidden="true"
+          className="bg-verde mt-1.5 size-1.5 shrink-0 rounded-full sm:mt-0"
+        />
+        رتبه‌بندی با تعدادِ شرکت‌کنندهٔ کامل است؛ در تساوی، الفبای نامِ مسجد تعیین می‌کند.
+      </p>
 
       {/* ── فهرست ── */}
       <div
@@ -323,7 +310,7 @@ export function MosquesDirectory() {
           <span className="flex items-center gap-2">
             مسجد
             <span className="border-gold/40 bg-gold-soft/60 text-gold-strong rounded border px-1 text-[9px] leading-4 font-bold">
-              ۱ تا ۳ رویِ سکو
+              جایگاه‌های ۱ تا ۳ بالا هم آمده‌اند
             </span>
           </span>
           <span className="text-center">شرکت‌کنندهٔ کامل</span>
@@ -412,16 +399,22 @@ function barWidth(row: Ranked): number {
  * با این کار در موبایل/فولدبل هیچ ستونی فشرده یا بریده نمی‌شود.
  */
 function RowItem({ row }: { row: Ranked }) {
+  /* ═══ رنگِ ردیف = رنگِ **جایگاه**، نه شمارهٔ ردیف ══════════════════════
+     اگر دو مسجد در جایگاهِ دوم هم‌امتیاز باشند، هر دو باید کاملاً هم‌شکل
+     دیده شوند — همان قاعدهٔ «قهرمان‌های مشترک» در جدول‌های ورزشی. پس جایگاه
+     از `rank` می‌آید (که خودش گروهی است) و هرگز از شمارهٔ حلقه. نتیجه: با
+     ۱۴/۱۱/۱۱/۸، هر دو مسجدِ ۱۱ نفره نقره‌ای‌اند و مسجدِ ۸ نفره برنزِ کامل
+     (مدال + رنگ) می‌گیرد — «سوم» دیگر گم نمی‌شود. */
   const place: 1 | 2 | 3 | 0 = row.rank === 1 ? 1 : row.rank === 2 ? 2 : row.rank === 3 ? 3 : 0;
   const tone = place > 0 ? TONE_BY_PLACE[place as 1 | 2 | 3] : null;
 
   const rowTint =
     place === 1
-      ? "bg-gold-soft/35"
+      ? "bg-gold-soft/40"
       : place === 2
-        ? "bg-surface-2/60"
+        ? "bg-surface-2/70"
         : place === 3
-          ? "bg-brick-soft/30"
+          ? "bg-brick-soft/40"
           : "";
 
   return (
@@ -510,8 +503,15 @@ function RowItem({ row }: { row: Ranked }) {
       <div className="hidden items-center gap-3 px-4 py-2.5 lg:grid lg:grid-cols-[56px_1fr_132px_92px_110px]">
         <div className="flex justify-center">
           {place > 0 ? (
-            <span className={`grid size-7 place-items-center rounded-lg ${tone?.chip ?? ""}`}>
-              <Medal place={place === 1 ? 1 : place === 2 ? 2 : 3} size={19} />
+            <span
+              className={`relative grid size-8 place-items-center rounded-lg ${tone?.chip ?? ""}`}
+              title={`${place === 1 ? "جایگاه نخست" : place === 2 ? "جایگاه دوم" : "جایگاه سوم"}${row.tied ? " (مشترک)" : ""}`}
+            >
+              <Medal place={place === 1 ? 1 : place === 2 ? 2 : 3} size={20} />
+              {/* شمارهٔ جایگاه، کنارِ مدال — تا «سوم» با «۲» اشتباه نشود */}
+              <span className="bg-canvas absolute -bottom-1 -left-1 grid min-w-[13px] place-items-center rounded-full px-0.5 text-[8.5px] leading-[12px] font-extrabold tabular-nums ring-1 ring-current/25">
+                {toFa(place)}
+              </span>
             </span>
           ) : (
             <span

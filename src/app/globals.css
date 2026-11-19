@@ -720,15 +720,16 @@
   }
 
   /* ══════════════════════════════════════════════════════════════════════
-     سکوی افتخار — «تختِ سه‌نفره» جدولِ رتبه‌بندی مساجد (دورِ ۲۴)
+     کارت‌های صدر (سه جایگاهِ نخست) — جدولِ رتبه‌بندی مساجد
      ──────────────────────────────────────────────────────────────────────
      کاربر خواست سکو به «قلهٔ جذابیت» برسد. اما این سایت کلاسیک است: پر زدن
      و رنگ‌بازی و کانفتی، هویتِ سرمه‌ای/طلایی را ارزان می‌کند. پس زبانِ
      حرکت این‌جا همان زبانِ کاشی و گره است:
 
-       • `monument` — ستونِ سنگیِ زیرِ هر کارت با نقشِ گره؛ ارتفاعش از
-         ۱۵۰px (نفرِ سوم) تا ۲۱۰px (قهرمان) می‌رود، پس «بلندیِ جایگاه» خودش
-         رتبه را می‌گوید، نه فقط عدد.
+        ⚠️ در نسخهٔ اول زیرِ هر کارت یک «پلینتِ سنگی» با بافتِ تراش بود تا
+       ارتفاعِ جایگاه را نشان دهد. حذف شد: سه مستطیلِ خاکستریِ خالی زیرِ
+       کارت‌ها، صفحه را نیمه‌کاره نشان می‌داد. جایگاه را حالا خودِ کارت
+       می‌گوید — قاب، مدال، رنگِ قاب و درخشش.
        • `sweep` — نوری که هر ۹ ثانیه یک‌بار از روی کارتِ قهرمان می‌گذرد؛
          آرام، بی‌صدا، فقط برای زنده‌بودن.
        • `float` — مدالِ قهرمان ۲px بالا/پایین می‌رود (۳.۵ ثانیه، نفس‌کشیدن).
@@ -793,92 +794,6 @@
     50% {
       opacity: 0.85;
     }
-  }
-
-  /* ══════════════════════════════════════════════════════════════════════
-     ستونِ سکو (پلینت) — سه لایهٔ دیداری تا «پایه» خوانده شود، نه «کادرِ خالی»:
-       ۱) بدنهٔ سنگی با گرادیانِ ملایم و خطوطِ افقیِ سنگ‌تراش (بافتِ پله)
-       ۲) نقشِ گرهِ محو در پایین (امضای پروژه)
-       ۳) سرستونِ باریک و کمی پهن‌تر رویِ بدنه — همان «صفحهٔ» سکوی واقعی
-     ══════════════════════════════════════════════════════════════════════ */
-  .k185-podium-monument {
-    position: relative;
-    border-start-start-radius: 10px;
-    border-start-end-radius: 10px;
-    background:
-      repeating-linear-gradient(
-        to bottom,
-        transparent 0 17px,
-        color-mix(in oklab, var(--c-text) 7%, transparent) 17px 18px
-      ),
-      linear-gradient(
-        to top,
-        color-mix(in oklab, var(--c-text) 14%, transparent),
-        color-mix(in oklab, var(--c-text) 5%, transparent) 70%,
-        color-mix(in oklab, var(--c-text) 2%, transparent)
-      ),
-      var(--c-surface);
-    border: 1px solid color-mix(in oklab, var(--c-border-strong) 45%, transparent);
-    border-bottom: 0;
-    overflow: hidden;
-    box-shadow:
-      inset 0 8px 12px -9px oklch(30% 0.04 260 / 0.55),
-      inset 0 -1px 0 color-mix(in oklab, var(--c-border-strong) 40%, transparent);
-  }
-  /* سرستون — صفحهٔ کوچکِ رویِ بدنه. */
-  .k185-podium-monument > .k185-plinth-cap {
-    position: absolute;
-    inset-inline: -7%;
-    top: 0;
-    height: 7px;
-    border-end-start-radius: 3px;
-    border-end-end-radius: 3px;
-    background: linear-gradient(
-      to bottom,
-      color-mix(in oklab, var(--c-surface) 92%, var(--c-text)),
-      color-mix(in oklab, var(--c-surface) 70%, var(--c-text) 8%)
-    );
-    border: 1px solid color-mix(in oklab, var(--c-border-strong) 55%, transparent);
-    border-top: 0;
-    box-shadow: 0 2px 4px -2px oklch(30% 0.04 260 / 0.4);
-  }
-  /* نقشِ گره — تکرارِ محوِ همان طرحِ نشانِ سایت، فقط بافت. */
-  .k185-podium-monument::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(
-        45deg,
-        color-mix(in oklab, var(--c-border-strong) 26%, transparent) 25%,
-        transparent 25%,
-        transparent 75%,
-        color-mix(in oklab, var(--c-border-strong) 26%, transparent) 75%
-      ),
-      linear-gradient(
-        45deg,
-        color-mix(in oklab, var(--c-border-strong) 26%, transparent) 25%,
-        transparent 25%,
-        transparent 75%,
-        color-mix(in oklab, var(--c-border-strong) 26%, transparent) 75%
-      );
-    background-size: 12px 12px;
-    background-position:
-      0 0,
-      6px 6px;
-    opacity: 0.26;
-    mask-image: linear-gradient(to top, black, transparent 82%);
-    -webkit-mask-image: linear-gradient(to top, black, transparent 82%);
-  }
-  /* خطِ رنگیِ لبهٔ بالا — نشانهٔ جایگاه (طلا/نقره/برنز). */
-  .k185-podium-monument::after {
-    content: "";
-    position: absolute;
-    inset-inline: 18%;
-    top: 0;
-    height: 2px;
-    background: var(--podium-accent, var(--c-gold));
-    opacity: 0.75;
   }
 
   /* تاجِ قهرمان — سه‌گوشِ گره‌ای با هاله. */
