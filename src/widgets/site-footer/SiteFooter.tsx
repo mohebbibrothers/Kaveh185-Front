@@ -236,17 +236,31 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
             </div>
           </div>
 
-          {/* ── نوار پایانی ── */}
-          <div className="border-on-band/12 mt-7 flex flex-col items-center justify-between gap-3 border-t pt-4 sm:flex-row">
-            <p className="text-on-band-muted order-2 text-center text-[10.5px] sm:order-1 sm:text-start">
-              © {year} — {SITE.organizer}
-            </p>
-            <div className="order-1 flex items-center gap-3 sm:order-2">
-              <span className="text-on-band-muted hidden items-center gap-1.5 text-[10.5px] font-semibold sm:flex">
+          {/* ── نوارِ پایانی (نکتهٔ ۲، دورِ ۲۰) ────────────────────────────
+              ایرادِ کاربر: محتوای این نوار نسبت به **خطِ خاکستریِ بالای خودش**
+              راست‌چین دیده می‌شد (کپی‌رایت در راست، نشان‌ها در چپ) و وسطِ خط
+              خالی می‌ماند؛ در تبلت/لپ‌تاپ ناتراز به‌نظر می‌رسید.
+              راهکار: به‌جای `justify-between`، یک **گریدِ سه‌ناحیه‌ایِ هم‌عرض**
+                [ راست: کپی‌رایت ]  [ وسط: سامانهٔ رسمی ]  [ چپ: بازگشت به بالا ]
+              با `grid-cols-[1fr_auto_1fr]`. ناحیهٔ وسط دقیقاً روی **مرکزِ**
+              خطِ خاکستری می‌نشیند — و چون دو ستونِ کناری `1fr` و هم‌عرض‌اند،
+              مرکزِ ناحیهٔ وسط با مرکزِ نوار یکی است، مستقل از طولِ متنِ
+              کپی‌رایت (اگر متن عوض شود، تراز به‌هم نمی‌ریزد).
+              در موبایل همان ستونیِ وسط‌چین می‌مانَد، اما ترتیبِ DOM حفظ
+              می‌شود (کپی‌رایت بالا، سپس نشان و دکمه) تا برای screen-reader
+              منطقی بماند؛ دکمهٔ «بازگشت به بالا» تمام‌عرضِ ملایم می‌شود. */}
+          <div className="border-on-band/12 mt-7 border-t pt-4">
+            <div className="flex flex-col items-center gap-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4">
+              <p className="text-on-band-muted order-2 text-center text-[10.5px] sm:order-none sm:justify-self-start sm:text-start">
+                © {year} — {SITE.organizer}
+              </p>
+              <span className="text-on-band-muted order-1 flex items-center justify-center gap-1.5 text-[10.5px] font-semibold sm:order-none sm:justify-self-center">
                 <span aria-hidden="true" className="bg-verde size-1.5 rounded-full" />
                 سامانهٔ رسمی برگزاری
               </span>
-              <BackToTop />
+              <div className="order-3 flex items-center justify-center sm:order-none sm:justify-self-end">
+                <BackToTop />
+              </div>
             </div>
           </div>
         </div>

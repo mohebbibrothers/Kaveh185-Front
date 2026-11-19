@@ -124,7 +124,7 @@ export function ReadingSection({ bookStories }: { bookStories: number }) {
         </div>
 
         {/* نوارِ پایین: دکمه + توضیح — در هر دو حالت یکسان */}
-        <div className="border-border/70 relative border-t px-4 py-3 sm:px-7 md:px-8 lg:px-10">
+        <div className="border-border/70 relative border-t px-4 py-3.5 sm:px-7 sm:py-3 md:px-8 lg:px-10">
           <BookFacts bookStories={bookStories} inline />
         </div>
       </div>
@@ -145,7 +145,7 @@ function BookFacts({
   const button = (
     <Link
       href="/book"
-      className="bg-brand text-on-brand hover:bg-brand-hover inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-[12.5px] font-extrabold transition-colors sm:h-11 sm:px-5 sm:text-[13.5px]"
+      className="bg-brand text-on-brand hover:bg-brand-hover inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-[12.5px] font-extrabold transition-colors active:scale-[0.99] max-sm:h-12 max-sm:w-full max-sm:rounded-2xl max-sm:px-6 max-sm:text-[14px] max-sm:shadow-[0_10px_24px_-12px_var(--c-brand)] sm:h-11 sm:px-5 sm:text-[13.5px]"
     >
       مطالعهٔ کتاب
       <svg
@@ -163,9 +163,23 @@ function BookFacts({
   );
 
   if (inline) {
+    /* ── چیدمانِ سه‌پله‌ایِ نوارِ پایانیِ باکسِ کتاب (نکتهٔ ۱، دورِ ۲۰) ──────
+       کاربر: در موبایل/فولدبل دکمه «راست‌چین» و لَنگ می‌زند؛ یا چپ‌چین یا
+       بزرگ و وسط‌چین. انتخابِ حرفه‌ای: **در موبایل دکمهٔ اصلیِ تمام‌عرض و
+       وسط‌چین** (الگویِ «CTAِ اصلیِ کارت» در اپ‌های موبایل: ناحیهٔ لمسِ بزرگ،
+       مرکزِ ثقلِ بصریِ کارت، زیرِ متنِ توضیح)، و از `sm` به بالا همان
+       چیدمانِ افقیِ راست‌چینِ قبلی که در تبلت/دسکتاپ درست است.
+
+       چرا وسط‌چین و بزرگ، نه چپ‌چین؟ سه دلیلِ استاندارد:
+         ۱) چپ‌چین‌کردن در چیدمانِ RTL، دکمه را از «نقطهٔ شروعِ خواندن» جدا
+            می‌کند و یک گرهٔ بصریِ بی‌ریشه در گوشهٔ دور از متن می‌سازد؛
+         ۲) دکمهٔ تمام‌عرضِ وسط‌چین «هدفِ لمس» را از ۱۲۸px به کلِ عرضِ کارت
+            می‌برد (استانداردِ ۴۴px در ارتفاع هم رعایت می‌شود: ۴۸px)؛
+         ۳) در فولدبل با عرضِ ۲۸۰px، دکمهٔ کوچکِ گوشه‌نشین بیش از حد ریز
+            دیده می‌شد؛ تمام‌عرض همان وزنِ بصریِ عنوانِ کارت را می‌گیرد. */
     return (
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <span className="text-text-subtle text-[11px] font-semibold">
+      <div className="flex flex-col items-stretch gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
+        <span className="text-text-subtle text-center text-[11px] font-semibold sm:text-start">
           {toFa(bookStories)} داستان کوتاه · مطالعهٔ آنلاین، بدون دانلود
         </span>
         {button}
