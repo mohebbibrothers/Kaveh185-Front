@@ -130,20 +130,9 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
               با `clamp` کاهشی‌اند؛ در تبلت هم ردیف می‌مانَد، فقط فشرده‌تر.
               در موبایل (زیرِ `md`) مثل قبل ستونی می‌شود — همان‌جا هم
               «کانال» کنارِ چیپ‌ها می‌نشیند، نه در ته فوتر. */}
-          {/* ═══ توزیعِ فاصله (نکتهٔ ۱، دورِ ۱۹) ═══════════════════════════
-              ایرادِ کاربر: فاصلهٔ سه شیءِ سمت چپ از برند (آیکون + نوشته) زیاد بود.
-              ریشه: ستونِ هویت `md:flex-1` داشت، ولی متنش با `max-w-[46ch]`
-              کوتاه بود و به لبهٔ راست می‌چسبید ⇒ یک «حفرهٔ» خالی داخلِ خودِ
-              ستونِ هویت می‌ماند (۲۶۰px در ۱۴۴۰) در حالی که فاصلهٔ خودِ سه
-              ستونِ لینک فقط ۲۰px بود: یعنی فاصله‌ها ناهمگون بودند، نه فقط زیاد.
-              راهکارِ استاندارد: ستونِ هویت با پهنای محتواییِ محدود
-              (`max-w-[30rem]`) + پاراگرافی که همان پهنا را پر می‌کند (حفره حذف)
-              + **یک بازهٔ فاصلهٔ یکسان** (`gap-x`) بین هر سه همسایگی؛ و
-              `max-w-[46ch]` فقط تا موبایل. نتیجه: سه فاصلهٔ دقیقاً برابر در
-              همهٔ عرض‌ها (۱۴۴۰: ۴۸/۴۸ — ۹۰۰: ۳۲/۳۲) و ردیفِ تک‌خطی از ۷۶۸ به بالا. */}
-          <div className="k185-footer-row flex flex-col flex-wrap items-center text-center md:flex-row md:flex-nowrap md:items-start md:justify-start md:gap-x-8 md:text-start lg:gap-x-12">
+          <div className="k185-footer-row flex flex-col flex-wrap items-center text-center md:flex-row md:flex-nowrap md:items-start md:gap-x-6 md:text-start lg:gap-x-9">
             {/* ── ستونِ هویت ── */}
-            <div className="k185-footer-anim w-full md:max-w-[30rem] md:min-w-0">
+            <div className="k185-footer-anim w-full md:min-w-0 md:flex-[1.75]">
               <div className="flex flex-col items-center gap-2.5 md:flex-row md:items-center md:gap-3">
                 <span className="k185-footer-badge block shrink-0 transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-rotate-3">
                   <Logo size={56} variant="emblem" />
@@ -156,7 +145,7 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
                 </span>
               </div>
 
-              <p className="text-on-band-muted mx-auto mt-3 max-w-[46ch] text-[12px] leading-[1.9] text-pretty md:mx-0 md:max-w-none">
+              <p className="text-on-band-muted mx-auto mt-3 max-w-[46ch] text-[12px] leading-[1.9] md:mx-0 md:max-w-none">
                 مسابقهٔ کتاب‌خوانی {SITE.bookTitle} به مناسبت هفتهٔ بسیج، میان مساجد حوزهٔ مقاومت بسیج
                 ۱۸۵ شهید کاوه.
               </p>
@@ -174,27 +163,22 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
             </div>
 
             {/* ── دو ستونِ کوتاه ── */}
-            {/* ستونِ لینک‌ها: در موبایل گریدِ ۲ستونیِ تمام‌عرض، از `md` به بالا
-                دو ستونِ جدا در ردیفِ اصلی. `md:contents` باعث می‌شد ناوبری‌ها
-                به‌عنوانِ «فرزندِ flex» شناخته نشوند و فاصله‌ها اشتباه
-                اندازه‌گیری/توزیع شوند؛ پس در حالتِ دسکتاپ هیچ گرهٔ میانی
-                نمی‌گذاریم و خودِ ناوبری‌ها ستون می‌شوند. */}
-            <div className="mt-6 grid w-full grid-cols-2 gap-4 md:mt-0 md:flex md:w-auto md:shrink-0 md:gap-x-8 lg:gap-x-11">
+            <div className="mt-6 grid w-full grid-cols-2 gap-4 md:mt-0 md:flex md:min-w-0 md:flex-[2] md:gap-x-6 lg:gap-x-10">
               <nav
                 aria-label="دسترسی سریع"
-                className="k185-footer-col"
+                className="k185-footer-col md:min-w-0 md:flex-1"
                 style={{ animationDelay: "70ms" }}
               >
-                <h2 className="text-on-band mb-2 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide whitespace-nowrap md:justify-start">
+                <h2 className="text-on-band mb-2 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide whitespace-nowrap">
                   <span aria-hidden="true" className="bg-band-accent/70 h-3 w-[2px] rounded-full" />
                   دسترسی سریع
                 </h2>
                 <ul className="space-y-0.5">
                   {quick.map((l) => (
-                    <li key={l.href} className="text-center md:text-start">
+                    <li key={l.href} className="text-center">
                       <Link
                         href={l.href}
-                        className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[36px] items-center px-1 text-[12px] whitespace-nowrap transition-colors"
+                        className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[36px] items-center justify-center px-1 text-[12px] whitespace-nowrap transition-colors"
                       >
                         <span className="k185-footer-link-text relative">{l.label}</span>
                       </Link>
@@ -205,19 +189,19 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
 
               <nav
                 aria-label="قوانین و حساب"
-                className="k185-footer-col"
+                className="k185-footer-col md:min-w-0 md:flex-1"
                 style={{ animationDelay: "120ms" }}
               >
-                <h2 className="text-on-band mb-2 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide whitespace-nowrap md:justify-start">
+                <h2 className="text-on-band mb-2 flex items-center justify-center gap-2 text-[11.5px] font-extrabold tracking-wide whitespace-nowrap">
                   <span aria-hidden="true" className="bg-band-accent/70 h-3 w-[2px] rounded-full" />
                   قوانین و حساب
                 </h2>
                 <ul className="space-y-0.5">
                   {legal.map((l) => (
-                    <li key={l.href} className="text-center md:text-start">
+                    <li key={l.href} className="text-center">
                       <Link
                         href={l.href}
-                        className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[36px] items-center px-1 text-[12px] whitespace-nowrap transition-colors"
+                        className="k185-footer-link text-on-band-muted hover:text-on-band inline-flex min-h-[36px] items-center justify-center px-1 text-[12px] whitespace-nowrap transition-colors"
                       >
                         <span className="k185-footer-link-text relative">{l.label}</span>
                       </Link>
@@ -229,38 +213,24 @@ export function SiteFooter({ martyrs = [] }: { martyrs?: Martyr[] }) {
 
             {/* ── کانالِ رسمی: ستونِ چهارم، در همان **یک ردیف** ── */}
             <div
-              className="mt-6 w-full border-t border-[color-mix(in_oklab,var(--c-on-band)_10%,transparent)] pt-4 md:mt-0 md:w-auto md:shrink-0 md:border-s md:border-t-0 md:ps-5 md:pt-0 lg:ps-7"
+              className="mt-6 w-full border-t border-[color-mix(in_oklab,var(--c-on-band)_10%,transparent)] pt-4 md:mt-0 md:min-w-0 md:flex-1 md:border-s md:border-t-0 md:ps-6 md:pt-0"
               style={{ animationDelay: "170ms" }}
             >
               <ChannelCard />
             </div>
           </div>
 
-          {/* ── نوارِ پایانی (نکتهٔ ۲، دورِ ۲۰) ────────────────────────────
-              ایرادِ کاربر: محتوای این نوار نسبت به **خطِ خاکستریِ بالای خودش**
-              راست‌چین دیده می‌شد (کپی‌رایت در راست، نشان‌ها در چپ) و وسطِ خط
-              خالی می‌ماند؛ در تبلت/لپ‌تاپ ناتراز به‌نظر می‌رسید.
-              راهکار: به‌جای `justify-between`، یک **گریدِ سه‌ناحیه‌ایِ هم‌عرض**
-                [ راست: کپی‌رایت ]  [ وسط: سامانهٔ رسمی ]  [ چپ: بازگشت به بالا ]
-              با `grid-cols-[1fr_auto_1fr]`. ناحیهٔ وسط دقیقاً روی **مرکزِ**
-              خطِ خاکستری می‌نشیند — و چون دو ستونِ کناری `1fr` و هم‌عرض‌اند،
-              مرکزِ ناحیهٔ وسط با مرکزِ نوار یکی است، مستقل از طولِ متنِ
-              کپی‌رایت (اگر متن عوض شود، تراز به‌هم نمی‌ریزد).
-              در موبایل همان ستونیِ وسط‌چین می‌مانَد، اما ترتیبِ DOM حفظ
-              می‌شود (کپی‌رایت بالا، سپس نشان و دکمه) تا برای screen-reader
-              منطقی بماند؛ دکمهٔ «بازگشت به بالا» تمام‌عرضِ ملایم می‌شود. */}
-          <div className="border-on-band/12 mt-7 border-t pt-4">
-            <div className="flex flex-col items-center gap-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4">
-              <p className="text-on-band-muted order-2 text-center text-[10.5px] sm:order-none sm:justify-self-start sm:text-start">
-                © {year} — {SITE.organizer}
-              </p>
-              <span className="text-on-band-muted order-1 flex items-center justify-center gap-1.5 text-[10.5px] font-semibold sm:order-none sm:justify-self-center">
+          {/* ── نوار پایانی ── */}
+          <div className="border-on-band/12 mt-7 flex flex-col items-center justify-between gap-3 border-t pt-4 sm:flex-row">
+            <p className="text-on-band-muted order-2 text-center text-[10.5px] sm:order-1 sm:text-start">
+              © {year} — {SITE.organizer}
+            </p>
+            <div className="order-1 flex items-center gap-3 sm:order-2">
+              <span className="text-on-band-muted hidden items-center gap-1.5 text-[10.5px] font-semibold sm:flex">
                 <span aria-hidden="true" className="bg-verde size-1.5 rounded-full" />
                 سامانهٔ رسمی برگزاری
               </span>
-              <div className="order-3 flex items-center justify-center sm:order-none sm:justify-self-end">
-                <BackToTop />
-              </div>
+              <BackToTop />
             </div>
           </div>
         </div>
