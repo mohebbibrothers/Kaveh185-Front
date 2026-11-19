@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   assignRanks,
+  faList,
   groupPlaces,
+  leadSummary,
   compareFaName,
   markTies,
   mosqueCoreName,
@@ -177,5 +179,69 @@ describe("groupPlaces (سه جایگاهِ صدر با هم‌رتبه‌ها)",
       ].map((r, i) => ({ ...r, id: i + 1 })),
     );
     expect(groupPlaces(ranked).map((g) => g.place)).toEqual([1, 2, 3]);
+  });
+});
+
+describe("leadSummary (جملهٔ صدر برای هر تعداد مسجدِ هم‌امتیاز)", () => {
+  const rank = (rows: { name: string; completed: number }[]) => markTies(assignRanks(rows));
+
+  it("صدرِ تنها با چند رقیبِ مساوی: همهٔ رقیبان برمی‌گردند", () => {
+    // ۱۴ / ۱۱ / ۱۱ / ۸ — ایرادِ اصلی: قبلاً فقط یکی از دو رقیب نام برده می‌شد
+    const lead = leadSummary(
+      rank([
+        { name: "مسجد ابوالفضل", completed: 14 },
+        { name: "مسجد الجلیل", completed: 11 },
+        { name: "مسجد امیرالمؤمنین", completed: 11 },
+        { name: "مسجد حسن مجتبی", completed: 8 },
+      ]),
+    );
+    expect(lead).not.toBeNull();
+    expect(lead?.shared).toBe(false);
+    expect(lead?.leaders).toEqual(["مسجد ابوالفضل"]);
+    expect(lead?.gap).toBe(3);
+    expect(lead?.chasers).toEqual(["مسجد الجلیل", "مسجد امیرالمؤمنین"]);
+  });
+
+  it("صدرِ مشترکِ دو نفره: «پیشتازان» با هر دو نام", () => {
+    const lead = leadSummary(
+      rank([
+        { name: "مسجد الف", completed: 9 },
+        { name: "مسجد ب", completed: 9 },
+        { name: "مسجد پ", completed: 5 },
+      ]),
+    );
+    expect(lead?.shared).toBe(true);
+    expect(lead?.leaders).toEqual(["مسجد الف", "مسجد ب"]);
+    expect(lead?.leaderCompleted).toBe(9);
+    expect(lead?.chasers).toEqual(["مسجد پ"]);
+  });
+
+  it("صدرِ مشترکِ سه‌نفره: هر سه نام، نه فقط دو تا", () => {
+    const lead = leadSummary(
+      rank([
+        { name: "مسجد الف", completed: 7 },
+        { name: "مسجد ب", completed: 7 },
+        { name: "مسجد پ", completed: 7 },
+        { name: "مسجد ت", completed: 1 },
+      ]),
+    );
+    expect(lead?.leaders).toHaveLength(3);
+    expect(lead?.shared).toBe(true);
+  });
+
+  it("بدونِ رقیب: chasers خالی و gap صفر می‌ماند (بی‌ساختگی)", () => {
+    const lead = leadSummary(rank([{ name: "مسجد تنها", completed: 4 }]));
+    expect(lead?.chasers).toEqual([]);
+    expect(lead?.gap).toBe(0);
+  });
+
+  it("مساجدِ بی‌مشارکت هرگز «پیشتاز» نمی‌شوند", () => {
+    expect(leadSummary(rank([{ name: "مسجد الف", completed: 0 }]))).toBeNull();
+  });
+
+  it("فهرستِ فارسی درست وصل می‌شود", () => {
+    expect(faList(["الف"])).toBe("الف");
+    expect(faList(["الف", "ب"])).toBe("الف و ب");
+    expect(faList(["الف", "ب", "پ"])).toBe("الف، ب و پ");
   });
 });

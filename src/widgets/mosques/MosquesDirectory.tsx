@@ -3,11 +3,12 @@
 import { useMemo, useState } from "react";
 import { useBootstrap } from "@/shared/api/use-bootstrap";
 import { MosqueMark, Girih, Medal } from "@/shared/ui/Ornament";
-import { TopCards, LeaderLine, type PodiumRow } from "./TopCards";
 import { toEn, toFa, toSearch, faPercent } from "@/shared/lib/fa";
 import {
   assignRanks,
-  groupPlaces,
+  faList,
+  leadSummary,
+  type LeadSummary,
   markTies,
   mosqueCoreName,
   mosqueInitial,
@@ -18,7 +19,13 @@ import {
  *
  * ═══ چرا این صفحه بازنویسی شد؟ (نکته‌های ۱ تا ۴ دورِ ۲۲) ═══════════════════
  *
- *  ۱) **فیلترِ ترتیب حذف شد.** سه دکمهٔ «ترتیب حوزه / بیشترین مشارکت / الفبا»
+ *  ۰) **کارت‌های جداگانهٔ سه نفرِ اول حذف شدند.** جدول خودش گویاست: مدال،
+     رنگِ ردیف و قابِ رتبه جایگاه را می‌گویند؛ یک نسخهٔ تکراری از همان داده
+     بالای صفحه هم ارتفاع اضافه می‌کرد و هم چشم را از جدول می‌دزدید. تنها
+     چیزی که بالای جدول می‌ماند یک جملهٔ صدر است که **همهٔ** مساجدِ هم‌امتیاز
+     را نام می‌برد (منطقش در `leadSummary` با تست).
+
+  ۱) **فیلترِ ترتیب حذف شد.** سه دکمهٔ «ترتیب حوزه / بیشترین مشارکت / الفبا»
  *     سه چیدمانِ متفاوت برای یک داده بود و کاربر را مجبور می‌کرد انتخاب کند
  *     که کدام «رتبه‌بندیِ رسمی» است. یک جدولِ رقابتی باید **یک** ترتیبِ
  *     قطعی داشته باشد: تعدادِ شرکت‌کنندهٔ کامل (نزولی) و در تساوی، الفبای
@@ -34,9 +41,9 @@ import {
  *     `lg` به بالا (جایی که واقعاً جا دارد) ظاهر می‌شود. این کار «در‌هم‌ریختگی»
  *     فولدبل را ساختاراً حذف می‌کند، نه با فونتِ کوچک‌تر.
  *
- *  ۴) **حسِ رقابت:** سکوی سه‌نفرهٔ افتخار (پودیومِ ۲-۱-۳) + مدالِ طلا/نقره/
- *     برنز روی نشانِ سه رتبهٔ اول + نوارِ سهم از مشارکت‌ها + «رتبهٔ مشترک» برای
- *     تساوی + نشانِ «پیشتاز» و «در تعقیب». همه با توکن‌های تم، پس در شب هم
+ *  ۴) **حسِ رقابت:** مدالِ طلا/نقره/برنز و رنگِ ردیف برای سه جایگاهِ اول +
+ *     نوارِ سهم از مشارکت‌ها + برچسبِ «مشترک» برای هم‌رتبه‌ها + یک جملهٔ صدر
+ *     که همهٔ مساجدِ هم‌امتیاز را نام می‌برد. همه با توکن‌های تم، پس در شب هم
  *     کلاسیک می‌ماند.
  *
  * ── اصلِ صداقتِ داده (بی‌تغییر) ─────────────────────────────────────────────
@@ -128,20 +135,18 @@ export function MosquesDirectory() {
   const totalCompleted = rows.reduce((s, r) => s + r.completed, 0);
   const activeCount = rows.filter((r) => r.completed > 0).length;
 
-  /* ═══ چه کسی «مشترک» است و کدام جایگاه‌ها بالای صفحه می‌آیند؟ ═════════
-     `rank` حالا «جایگاه» است (۱، ۲، ۲، ۳ …)، پس «سوم» همیشه وجود دارد و
-     مدالِ برنز از صفحه غایب نمی‌شود. نشانه‌گذاریِ تساوی (`markTies`) و
-     ساختِ سه جایگاهِ صدر (`groupPlaces`) در `mosque-rank.ts` تست شده‌اند.
+  /* ═══ چه کسی «مشترک» است و جملهٔ صدر چه باید بگوید؟ ═════════════════
+     کارت‌های جداگانهٔ نفراتِ اول تا سوم حذف شدند (کاربر خواست فقط خودِ جدول
+     بماند و جایگاه‌ها از رنگ و مدالِ ردیف خوانده شوند). چیزی که می‌ماند یک
+     جملهٔ کوتاهِ صدر است و آن باید **دقیق** باشد: هر تعداد مسجدِ هم‌امتیاز
+     باید در جمله بیاید، نه فقط یکی.
      • «مشترک» = عضویت در گروهِ چندنفرهٔ یک جایگاه (اول حرفِ سرور، بعد شمارش).
-     • هر جایگاه یک کارت است: قهرمان تنها، جایگاهِ دوم/سوم با همهٔ هم‌رتبه‌ها. */
+     • جملهٔ صدر از `leadSummary` می‌آید (تست‌شده: صدرِ تنها/مشترک/بی‌رقیب). */
   const tiedRows = useMemo(() => markTies(ranked), [ranked]);
-  const placeGroups = useMemo(
-    () => (anyParticipation ? groupPlaces(tiedRows) : []),
+  const lead = useMemo(
+    () => (anyParticipation ? leadSummary(tiedRows) : null),
     [anyParticipation, tiedRows],
   );
-  const topRows: PodiumRow[] = useMemo(() => placeGroups.flatMap((g) => g.rows), [placeGroups]);
-  const leader = topRows[0];
-  const runnerUp = placeGroups.find((g) => g.place > 1)?.rows[0];
 
   /* جدول **همه** را دارد — رتبه‌های ۱ تا ۳ هم رویِ سکو هستند و هم این‌جا؛
      سکو تجلیل است، نه جایگزینِ ردیف. با جست‌وجو هم فهرست کامل فیلتر می‌شود. */
@@ -264,26 +269,10 @@ export function MosquesDirectory() {
         </div>
       ) : null}
 
-      {/* ── سکوی افتخار ────────────────────────────────────────────────────
-          سه کارت، بدونِ هیچ سازه یا پایهٔ زیرین: جایگاه را خودِ کارت می‌گوید
-          (قاب، مدال و رنگ). در موبایل قهرمان تمام‌عرض و بقیه زیرش؛ کارت‌ها
-          با تأخیرِ ۱۱۰ms یکی‌یکی بالا می‌آیند. جزئیات در `TopCards.tsx`. */}
-      {placeGroups.length > 0 && q.length === 0 ? <TopCards groups={placeGroups} /> : null}
-
-      {/* ── پیامِ پیشتاز — یک جمله، با احترام به تساوی ── */}
-      {leader && q.length === 0 ? <LeaderLine leader={leader} runnerUp={runnerUp} /> : null}
-
-      {/* ── کلیدِ رتبه‌بندی ────────────────────────────────────────────────
-          یک خط، نه سه چیپ: قاعدهٔ قبلی فرمولِ «سهم از مشارکت‌ها» را هم توضیح
-          می‌داد و در دسکتاپ به دو خط می‌شکست. قاعده یک جمله است و همان کافی
-          است؛ فرمول‌ها جای کاربر نیستند. */}
-      <p className="text-text-subtle mt-4 flex items-start gap-1.5 text-[10.5px] leading-5 sm:items-center">
-        <span
-          aria-hidden="true"
-          className="bg-verde mt-1.5 size-1.5 shrink-0 rounded-full sm:mt-0"
-        />
-        رتبه‌بندی با تعدادِ شرکت‌کنندهٔ کامل است؛ در تساوی، الفبای نامِ مسجد تعیین می‌کند.
-      </p>
+      {/* ── جملهٔ صدر ───────────────────────────────────────────────────────
+          یک جمله، بی‌شلوغی: هر تعداد مسجدِ هم‌امتیاز در صدر یا در جایگاهِ بعد
+          با نام می‌آید (از `leadSummary`)؛ هیچ نام یا عددی ساخته نمی‌شود. */}
+      {lead && q.length === 0 ? <LeaderLine lead={lead} /> : null}
 
       {/* ── فهرست ── */}
       <div
@@ -307,12 +296,7 @@ export function MosquesDirectory() {
         {/* سرستون — فقط از lg به بالا (جایی که جدول واقعاً جا دارد) */}
         <div className="border-border text-text-subtle hidden border-b px-4 py-2.5 text-[10.5px] font-bold lg:grid lg:grid-cols-[56px_1fr_132px_92px_110px] lg:items-center lg:gap-3">
           <span className="text-center">رتبه</span>
-          <span className="flex items-center gap-2">
-            مسجد
-            <span className="border-gold/40 bg-gold-soft/60 text-gold-strong rounded border px-1 text-[9px] leading-4 font-bold">
-              جایگاه‌های ۱ تا ۳ بالا هم آمده‌اند
-            </span>
-          </span>
+          <span>مسجد</span>
           <span className="text-center">شرکت‌کنندهٔ کامل</span>
           <span className="text-center">ثبت‌نامی</span>
           <span className="text-center">سهم از مشارکت‌ها</span>
@@ -428,11 +412,12 @@ function RowItem({ row }: { row: Ranked }) {
       {/* ═══ موبایل/تبلت ═══ */}
       <div className="flex items-start gap-3 px-3.5 py-3 lg:hidden">
         <div className="relative shrink-0">
+          {/* بدونِ شمارهٔ رتبه رویِ نشان: شماره در چیپِ کنارِ نام و در ستونِ
+              «رتبه» هست؛ تکرارِ آن رویِ کاشی، عدد را ارزان می‌کرد. */}
           <MosqueMark
             name={row.name}
             initialOverride={row.initial || mosqueInitial(row.name)}
             size={38}
-            rank={row.rank > 0 ? row.rank : undefined}
           />
           {place > 0 ? (
             <span className="absolute -bottom-1.5 -left-1.5">
@@ -530,7 +515,6 @@ function RowItem({ row }: { row: Ranked }) {
               name={row.name}
               initialOverride={row.initial || mosqueInitial(row.name)}
               size={34}
-              rank={row.rank > 0 ? row.rank : undefined}
             />
           </div>
           <div className="min-w-0">
@@ -603,6 +587,66 @@ function EmptyRow({ phase }: { phase: "loading" | "ready" | "error" }) {
           ? "اتصال اینترنت را بررسی کنید و صفحه را دوباره باز کنید."
           : "فهرست از سامانهٔ برگزاری خوانده می‌شود و همین‌جا نمایش داده خواهد شد."}
       </p>
+    </div>
+  );
+}
+
+/**
+ * جملهٔ صدر — یک خط، دقیق، بدونِ ادعای ساختگی.
+ *
+ * چرا 컴포넌트 جدا؟ چون متن حالت‌های زیادی دارد (صدرِ تنها، صدرِ مشترکِ دو
+ * نفره، سه‌نفره و بیشتر، و حالتِ «رقیبی نیست») و منطقش در `leadSummary`
+ * تست می‌شود؛ این‌جا فقط نمایش است.
+ */
+function LeaderLine({ lead }: { lead: LeadSummary }) {
+  const { shared, leaders, leaderCompleted, chasers, gap } = lead;
+  /* «هر دو / هر سه / N مسجد» — به تعدادِ واقعیِ هم‌رتبه‌ها، نه فرضِ دو نفر. */
+  const sharedCount =
+    leaders.length === 2
+      ? "هر دو"
+      : leaders.length === 3
+        ? "هر سه"
+        : `${toFa(leaders.length)} مسجد`;
+
+  return (
+    <div className="border-gold/30 bg-gold-soft/70 text-text mt-4 rounded-xl border px-3 py-2.5 text-[11.5px] leading-6">
+      {/* خطِ اول: صدر — همهٔ نام‌ها، هر تعداد که باشند */}
+      <p className="flex items-start gap-2 sm:items-center">
+        <span aria-hidden="true" className="mt-1.5 shrink-0 sm:mt-0">
+          <Girih size={14} className="text-gold-strong" />
+        </span>
+        <span className="min-w-0">
+          {shared ? "پیشتازان: " : "پیشتاز: "}
+          <strong className="font-extrabold">{faList(leaders)}</strong>
+          {shared ? (
+            <>
+              {" — "}
+              {sharedCount} با {toFa(leaderCompleted)} شرکت‌کننده
+            </>
+          ) : (
+            <> با {toFa(leaderCompleted)} شرکت‌کننده</>
+          )}
+        </span>
+      </p>
+
+      {/* خطِ دوم: فاصله یا هم‌امتیازی با **همهٔ** اعضای جایگاهِ بعد */}
+      {chasers.length > 0 ? (
+        <p className="text-text-muted mt-0.5 flex items-start gap-2 sm:items-center">
+          <span aria-hidden="true" className="w-[14px] shrink-0" />
+          <span className="min-w-0">
+            {gap > 0 ? (
+              <>
+                <strong className="text-gold-strong font-extrabold">{toFa(gap)} نفر</strong> جلوتر
+                از <span className="font-bold">{faList(chasers)}</span>
+              </>
+            ) : (
+              <>
+                هم‌امتیاز با <span className="font-bold">{faList(chasers)}</span> در جایگاهِ بعد
+              </>
+            )}
+          </span>
+        </p>
+      ) : null}
     </div>
   );
 }

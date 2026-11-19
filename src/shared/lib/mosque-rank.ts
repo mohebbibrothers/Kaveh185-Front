@@ -285,3 +285,63 @@ export function groupPlaces<T extends { rank: number }>(
   }
   return groups;
 }
+
+/**
+ * جملهٔ «پیشتاز» — با احترامِ کامل به هر تعدادِ مسجدِ هم‌امتیاز.
+ *
+ * ── چه ایرادی داشت؟ ──────────────────────────────────────────────────────
+ * نسخهٔ قبل فقط **یک** نفرِ دوم را اسم می‌برد و اگر دو مسجد در جایگاهِ دوم
+ * هم‌امتیاز بودند، جمله یک رقیب را حذف می‌کرد («با اختلافِ ۳ نفر از مسجد
+ * الجلیل» درحالی‌که مسجدِ امیرالمؤمنین هم همان ۱۱ نفر را داشت). همچنین اگر
+ * خودِ صدر مشترک بود، «پیشتاز: الف» جملهٔ نادرستی بود.
+ *
+ * این ماژول همهٔ حالت‌ها را پوشش می‌دهد:
+ *   • صدرِ تنها + یک رقیب        → «پیشتاز: الف با ۱۴ شرکت‌کننده · ۳ نفر جلوتر از ب.»
+ *   • صدرِ تنها + چند رقیبِ مساوی → «… · ۳ نفر جلوتر از ب و پ.»
+ *   • صدرِ مشترک (۲ مسجد)        → «پیشتازان: الف و ب، هر دو با ۹ شرکت‌کننده.»
+ *   • صدرِ مشترک (۳+)            → «پیشتازان: الف، ب و پ — هر سه با ۹ شرکت‌کننده.»
+ *   • بدونِ رقیب                  → «پیشتاز: الف با ۱۴ شرکت‌کننده؛ رقیبی ندارد.»
+ *
+ * متن عمداً کوتاه و رقابتی است (نه توضیحِ فنی) و همهٔ اسمها از دادهٔ واقعی
+ * می‌آید؛ هیچ عدد یا نامی ساخته نمی‌شود.
+ */
+export type LeadSummary = {
+  /** آیا صدر مشترک است؟ (۲ نفر یا بیشتر) */
+  shared: boolean;
+  /** همهٔ مساجدِ جایگاهِ اول، به ترتیبِ الفبا/رتبه */
+  leaders: string[];
+  /** تعدادِ شرکت‌کنندهٔ صدر (همه یکسان‌اند) */
+  leaderCompleted: number;
+  /** نزدیک‌ترین رقیبان (همهٔ اعضای جایگاهِ بعدی)، اگر وجود داشته باشند */
+  chasers: string[];
+  /** اختلافِ صدر با نزدیک‌ترین رقیب (۰ اگر مساوی یا رقیبی نباشد) */
+  gap: number;
+};
+
+export function leadSummary(
+  rows: { rank: number; name: string; completed: number }[],
+): LeadSummary | null {
+  const leaders = rows.filter((r) => r.rank === 1);
+  const first = leaders[0];
+  if (!first) return null;
+  const nextPlace = rows.find((r) => r.rank > 1);
+  const chasers = nextPlace ? rows.filter((r) => r.rank === nextPlace.rank).map((r) => r.name) : [];
+  const chaserCompleted = nextPlace?.completed ?? 0;
+  return {
+    shared: leaders.length > 1,
+    leaders: leaders.map((r) => r.name),
+    leaderCompleted: first.completed,
+    chasers,
+    gap:
+      chasers.length > 0 && chaserCompleted < first.completed
+        ? first.completed - chaserCompleted
+        : 0,
+  };
+}
+
+/** فهرستِ فارسیِ طبیعی: «الف، ب و پ». */
+export function faList(items: string[]): string {
+  if (items.length === 0) return "";
+  if (items.length === 1) return items[0] ?? "";
+  return `${items.slice(0, -1).join("، ")} و ${items[items.length - 1] ?? ""}`;
+}

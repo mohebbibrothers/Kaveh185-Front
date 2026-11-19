@@ -32,24 +32,23 @@ export default function Page() {
         </nav>
 
         {/* ═══ هدر ══════════════════════════════════════════════════════════
-            ایرادِ دیداریِ نسخهٔ قبل: تیتر راست‌چین بود ولی متنِ معرفی هم راست‌چین
-            و در یک ستونِ باریکِ چپ‌چسبیده جمع می‌شد؛ نتیجه این بود که پاراگراف
-            «وسطِ صفحه معلق» دیده می‌شد و از تیتر جدا می‌افتاد.
-            راهِ درست برای یک هدرِ کلاسیک: سه عنصر رویِ **یک محورِ مرکزی**
-            (برچسب، تیتر، معرفی) با پهنای خوانای بیشتر (`62ch`) و ترازِ متعادل.
-            متن همچنان راست‌به‌چپ و طبیعی است، ولی بلوکِ متن وسطِ صفحه می‌نشیند
-            و از دو طرف هوا می‌گیرد؛ رویِ موبایل هم عرضِ کامل و ترازِ راست
-            می‌ماند (چون وسط‌چینِ متنِ بلند در عرضِ کم خواندن را کند می‌کند). */}
-        <header className="border-border border-b pb-6 text-center">
-          <p className="text-verde inline-flex items-center gap-2 text-[11.5px] font-extrabold tracking-wide">
+            نسخهٔ وسط‌چین بدتر شد (کاربر گفت): تیتر و متن رویِ محورِ مرکزی
+            می‌نشستند و بلوکِ متن از تیتر جدا می‌افتاد. به ترازِ راست و
+            چیدمانِ کلاسیک برگشت — همان که با بقیهٔ صفحه‌های سایت یکی است —
+            ولی دو ایرادِ واقعیِ نسخهٔ قبلی هم اصلاح شد:
+              ۱) متن دیگر در ستونِ باریکِ راست جمع نمی‌شود؛ تا `72ch` باز
+                 می‌شود (در دسکتاپ دو خطِ متعادل، نه یک ستونِ بلند).
+              ۲) فاصلهٔ تیتر/متن و خطِ جداکننده یک پله بازتر شد و `text-pretty`
+                 از پرشِ تک‌کلمه در خطِ آخر جلوگیری می‌کند. */}
+        <header className="border-border border-b pb-6">
+          <p className="text-verde flex items-center gap-2 text-[11.5px] font-extrabold tracking-wide">
             <span aria-hidden="true" className="bg-verde inline-block h-[2px] w-4 rounded-full" />
             پهنهٔ رقابت
-            <span aria-hidden="true" className="bg-verde inline-block h-[2px] w-4 rounded-full" />
           </p>
-          <h1 className="text-text mt-2 text-[clamp(23px,3.4vw,32px)] font-extrabold">
+          <h1 className="text-text mt-2 text-[clamp(23px,3.4vw,31px)] font-extrabold">
             جدول رتبه‌بندی مساجد
           </h1>
-          <p className="text-text-muted mx-auto mt-3 max-w-[62ch] text-[13px] leading-[2.05] text-pretty max-sm:text-right">
+          <p className="text-text-muted mt-3 max-w-[72ch] text-[13px] leading-[2.05] text-pretty">
             {LEADS.mosques.lead}
           </p>
         </header>
