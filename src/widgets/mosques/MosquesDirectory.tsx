@@ -177,6 +177,74 @@ export function MosquesDirectory() {
         </p>
       </div>
 
+      {/* ═══ حالتِ «خطِ شروع» ════════════════════════════════════════════════
+          وقتی هیچ کارنامه‌ای ثبت نشده، ۱۷ ردیفِ صفر با رتبهٔ «—» نه اطلاعاتی
+          دارد نه حسِ رقابت؛ صفحه «خالیِ شلوغ» می‌شود. جای آن یک کارتِ
+          انگیزشی + فهرستِ فشردهٔ مساجدِ حاضر در خطِ شروع می‌آید: کاربر
+          می‌بیند چه مساجدی در رقابت‌اند و اولین حرکت را خودش می‌زند. */}
+      {!anyParticipation && rows.length > 0 ? (
+        <div className="mt-4">
+          <div className="border-gold/35 from-gold/[0.10] to-gold/[0.03] relative overflow-hidden rounded-2xl border bg-gradient-to-bl px-4 py-5 text-center sm:px-6 sm:py-6">
+            <span aria-hidden="true" className="text-gold/25 absolute -top-4 -left-4">
+              <Girih size={72} />
+            </span>
+            <span className="border-gold/40 text-gold-strong mx-auto grid size-11 place-items-center rounded-full border">
+              <Girih size={19} />
+            </span>
+            <p className="text-text mt-3 text-[14px] font-extrabold sm:text-[15.5px]">
+              جدول منتظرِ اولین کارنامه است
+            </p>
+            <p className="text-text-muted mx-auto mt-1.5 max-w-[46ch] text-[11.5px] leading-6">
+              هنوز هیچ آزمونی کامل نشده؛ صندلیِ اولِ جدول خالی است. مسجدِ محلهٔ خودت را انتخاب کن و
+              اولین افتخارِ این دوره را برایش ثبت کن.
+            </p>
+            <a
+              href="/register"
+              className="bg-brand text-on-brand hover:bg-brand-hover mx-auto mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-xl px-5 text-[12.5px] font-extrabold transition-colors"
+            >
+              ثبت‌نام در مسابقه
+              <svg
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                aria-hidden="true"
+              >
+                <path d="M14 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </a>
+          </div>
+
+          <p className="text-text-subtle mt-4 flex items-center gap-2 text-[11px] font-bold">
+            <span aria-hidden="true" className="bg-verde size-1.5 rounded-full" />
+            {toFa(rows.length)} مسجد در خطِ شروع
+            {q.length > 0 ? ` · ${toFa(shown.length)} نتیجه` : ""}
+          </p>
+          <ul className="mt-2 grid gap-1.5 sm:grid-cols-2">
+            {shown.map((r) => (
+              <li
+                key={r.id}
+                className="border-border bg-surface flex items-center gap-2.5 rounded-xl border px-3 py-2"
+              >
+                <MosqueMark
+                  name={r.name}
+                  initialOverride={r.initial || mosqueInitial(r.name)}
+                  size={30}
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="text-text block truncate text-[12px] font-bold">{r.name}</span>
+                  <span className="text-text-subtle block text-[10px] tabular-nums" dir="ltr">
+                    {r.code}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       {/* ── سکوی افتخار ────────────────────────────────────────────────────
           دو چیدمان از یک داده:
             • زیرِ `sm`: سه کارتِ ۹۰ پیکسلی به هم می‌چسبند؛ پس **قهرمان**
@@ -246,8 +314,11 @@ export function MosquesDirectory() {
         </p>
       ) : null}
 
-      {/* ── کلیدِ رتبه‌بندی — شفاف و یک‌خطی ── */}
-      <div className="text-text-subtle mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px]">
+      {/* ── کلیدِ رتبه‌بندی ────────────────────────────────────────────────
+          کاربر لازم نیست «طرزِ محاسبهٔ جدول» را بخواند؛ این نوار در موبایل
+          شلوغی می‌ساخت و فضای تیترها را می‌خورد، پس فقط از `sm` نمایش داده
+          می‌شود. در وبِ دسکتاپ همان‌جا می‌ماند تا شفافیتِ رقابت حفظ شود. */}
+      <div className="text-text-subtle mt-4 hidden flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] sm:flex">
         <span className="inline-flex items-center gap-1.5">
           <span aria-hidden="true" className="bg-verde size-1.5 rounded-full" />
           رتبه‌بندی: تعداد شرکت‌کنندهٔ کامل ↓
@@ -265,7 +336,24 @@ export function MosquesDirectory() {
       </div>
 
       {/* ── فهرست ── */}
-      <div className="border-border bg-surface mt-2.5 overflow-hidden rounded-2xl border">
+      <div
+        className={`border-border bg-surface mt-2.5 overflow-hidden rounded-2xl border ${
+          !anyParticipation ? "hidden" : ""
+        }`}
+      >
+        {/* سرستونِ کارت‌ها — زیرِ `lg` جدولِ کلاسیک نداریم، ولی تیترها نباید
+            «ناپدید» شوند: یک سرستونِ سبک با سه برچسبِ همان ستون‌ها. */}
+        <div className="border-border text-text-subtle flex items-center justify-between border-b px-3.5 py-2 text-[10px] font-bold lg:hidden">
+          <span className="flex items-center gap-1.5">
+            <span aria-hidden="true" className="bg-gold-strong size-1.5 rounded-full" />
+            رتبه و مسجد
+          </span>
+          <span className="flex items-center gap-3">
+            <span>شرکت‌کننده</span>
+            <span aria-hidden="true" className="bg-border-strong h-3 w-px" />
+            <span>سهم</span>
+          </span>
+        </div>
         {/* سرستون — فقط از lg به بالا (جایی که جدول واقعاً جا دارد) */}
         <div className="border-border text-text-subtle hidden border-b px-4 py-2.5 text-[10.5px] font-bold lg:grid lg:grid-cols-[56px_1fr_132px_92px_110px] lg:items-center lg:gap-3">
           <span className="text-center">رتبه</span>
@@ -295,7 +383,7 @@ export function MosquesDirectory() {
             </button>
           </div>
         ) : (
-          <ul className="divide-border divide-y">
+          <ul className="divide-border divide-y py-1">
             {rest.map((r) => (
               <RowItem key={r.id} row={r} />
             ))}
@@ -306,7 +394,9 @@ export function MosquesDirectory() {
       {/* ── فراخوانِ رقابتی (دادهٔ واقعی، بدونِ ادعای ساختگی) ── */}
       <a
         href="/register"
-        className="group border-brand/25 bg-brand/[0.045] hover:border-brand/45 hover:bg-brand/[0.08] mt-4 flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 transition-colors"
+        className={`group border-brand/25 bg-brand/[0.045] hover:border-brand/45 hover:bg-brand/[0.08] mt-4 items-center justify-between gap-3 rounded-2xl border px-4 py-3 transition-colors ${
+          anyParticipation ? "flex" : "hidden"
+        }`}
       >
         <span className="min-w-0">
           <span className="text-text block text-[12.5px] font-extrabold">
@@ -330,14 +420,6 @@ export function MosquesDirectory() {
           </svg>
         </span>
       </a>
-
-      {/* ── پانویسِ صادقانه ── */}
-      <p className="text-text-subtle mt-3 text-[11px] leading-6">
-        «شرکت‌کنندهٔ کامل» یعنی کسی که آزمونش را تا انتها فرستاده است؛ ثبت‌نامِ بدون شرکت در شمارشِ
-        کامل نمی‌آید. مساجدِ بی‌مشارکت با رتبهٔ «—» در پایانِ فهرست می‌آیند و به‌ترتیبِ الفبا مرتب‌اند.
-        «سهم از مشارکت‌ها» می‌گوید هر مسجد چه بخشی از کلِ شرکت‌کنندگانِ حوزه را به خود اختصاص داده است
-        (مجموعِ همهٔ مساجد دقیقاً ۱۰۰٪ می‌شود) و با «درصدِ رسیدن به هدف» کاملاً متفاوت است.
-      </p>
     </div>
   );
 }
@@ -424,7 +506,7 @@ function barTone(place: 0 | 1 | 2 | 3): string {
   if (place === 1) return "from-gold to-gold-strong";
   if (place === 2) return "from-border-strong to-text-subtle";
   if (place === 3) return "from-brick to-brick-soft";
-  return "from-brand/70 to-brand/35";
+  return "from-brand to-brand/55";
 }
 
 /** پهنای نوار: صفر = بدونِ نوار، بقیه حداقلِ ۴٪ تا دیده شود. */
@@ -515,20 +597,23 @@ function RowItem({ row }: { row: Ranked }) {
                 {toFa(row.completed)}
               </strong>{" "}
               شرکت‌کننده
-              <span
-                aria-hidden="true"
-                className="bg-border-strong mx-1 inline-block size-1 rounded-full align-middle"
-              />
-              {toFa(row.registered)} ثبت‌نامی
+              <span className="hidden min-[380px]:inline">
+                <span
+                  aria-hidden="true"
+                  className="bg-border-strong mx-1 inline-block size-1 rounded-full align-middle"
+                />
+                {toFa(row.registered)} ثبت‌نامی
+              </span>
             </span>
-            <span className="bg-surface-2 h-1.5 min-w-6 flex-1 overflow-hidden rounded-full">
+            <span className="h-2 min-w-6 flex-1 overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--c-text)_13%,transparent)]">
               <span
-                className={`block h-full rounded-full bg-gradient-to-l ${barTone(place)}`}
+                className={`block h-full rounded-full bg-gradient-to-l shadow-[0_0_0_1px_oklch(100%_0_0/0.18)_inset] ${barTone(place)}`}
                 style={{ width: `${barWidth(row)}%` }}
               />
             </span>
             <span className="text-text-subtle shrink-0 text-[10px] tabular-nums">
-              {faPercent(row.share, 0)} از مشارکت‌ها
+              {faPercent(row.share, 0)}
+              <span className="hidden min-[330px]:inline"> از مشارکت‌ها</span>
             </span>
           </div>
         </div>
@@ -600,9 +685,9 @@ function RowItem({ row }: { row: Ranked }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="bg-surface-2 h-1.5 flex-1 overflow-hidden rounded-full">
+          <span className="h-2 flex-1 overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--c-text)_13%,transparent)]">
             <span
-              className={`block h-full rounded-full bg-gradient-to-l ${barTone(place)}`}
+              className={`block h-full rounded-full bg-gradient-to-l shadow-[0_0_0_1px_oklch(100%_0_0/0.18)_inset] ${barTone(place)}`}
               style={{ width: `${barWidth(row)}%` }}
             />
           </span>

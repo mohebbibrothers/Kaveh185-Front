@@ -3,8 +3,8 @@ import Link from "next/link";
 import { SiteHeader } from "@/widgets/site-header/SiteHeader";
 import { SiteFooterWithMartyrs as SiteFooter } from "@/widgets/site-footer/SiteFooterWithMartyrs";
 import { BookReader } from "@/widgets/book/BookReader";
+import { LEADS } from "@/shared/config/leads";
 import { SITE } from "@/shared/config/site";
-import { toFa } from "@/shared/lib/fa";
 
 export const metadata: Metadata = {
   title: "مطالعهٔ کتاب مسابقه",
@@ -51,8 +51,7 @@ export default function Page() {
             {SITE.bookTitle}
           </h1>
           <p className="text-text-muted mt-2.5 max-w-[64ch] text-[13px] leading-[2]">
-            این کتاب مجموعه‌ای از {toFa(SITE.bookStories)} داستان کوتاه است. پرسش‌های آزمون از همین
-            داستان‌ها انتخاب می‌شوند؛ خواندن دقیق داستان‌ها کافی است و حفظ‌کردن لازم نیست.
+            {LEADS.book.lead}
           </p>
         </header>
 

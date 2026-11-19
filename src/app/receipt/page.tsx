@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LEADS } from "@/shared/config/leads";
 import { Suspense } from "react";
 import Link from "next/link";
 import { SiteHeader } from "@/widgets/site-header/SiteHeader";
@@ -38,8 +39,7 @@ export default function Page() {
             کارنامه و استعلام
           </h1>
           <p className="text-text-muted mt-2 max-w-[62ch] text-[13px] leading-[2]">
-            هر کارنامه یک کد رهگیری یکتا دارد و هر کسی می‌تواند با آن، اصالتش را بررسی کند. نتیجهٔ
-            درست یا نادرست پرسش‌ها اعلام نمی‌شود؛ فقط شمارش کلی.
+            {LEADS.receipt.lead}
           </p>
         </header>
 

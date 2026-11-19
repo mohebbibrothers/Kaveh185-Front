@@ -3,6 +3,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/widgets/site-header/SiteHeader";
 import { SiteFooterWithMartyrs as SiteFooter } from "@/widgets/site-footer/SiteFooterWithMartyrs";
 import { RulesContent } from "@/widgets/rules/RulesContent";
+import { LEADS } from "@/shared/config/leads";
 import { SITE } from "@/shared/config/site";
 
 export const metadata: Metadata = {
@@ -42,9 +43,8 @@ export default function Page() {
           <h1 className="text-text mt-1.5 text-[clamp(22px,3.4vw,30px)] font-extrabold">
             چهار قاعده، برای رقابتی که عادلانه بماند
           </h1>
-          <p className="text-text-muted mt-2.5 max-w-[64ch] text-[13px] leading-[2]">
-            این صفحه همان قواعدی است که هنگام ثبت‌نام می‌پذیرید — با دلیل هر قاعده. اگر پرسشی
-            داشتید، پاسخ‌های رایج پایین‌تر آمده است.
+          <p className="text-text-muted mt-2.5 max-w-[64ch] text-[13px] leading-[2] text-pretty">
+            {LEADS.rules.lead}
           </p>
         </header>
 

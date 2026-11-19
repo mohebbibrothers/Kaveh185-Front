@@ -4,10 +4,11 @@ import { SiteHeader } from "@/widgets/site-header/SiteHeader";
 import { SiteFooterWithMartyrs as SiteFooter } from "@/widgets/site-footer/SiteFooterWithMartyrs";
 import { MosquesDirectory } from "@/widgets/mosques/MosquesDirectory";
 import { SITE } from "@/shared/config/site";
+import { LEADS } from "@/shared/config/leads";
 
 export const metadata: Metadata = {
-  title: "مساجد حوزه",
-  description: `فهرست مساجد حوزهٔ مقاومت بسیج ۱۸۵ شهید کاوه و جدول مشارکت هر مسجد در مسابقهٔ ${SITE.bookTitle}.`,
+  title: "جدول رتبه‌بندی مساجد",
+  description: `جدول زندهٔ رتبه‌بندی مساجد حوزهٔ مقاومت بسیج ۱۸۵ شهید کاوه در مسابقهٔ ${SITE.bookTitle} — کدام مسجد پیشتاز است؟`,
   alternates: { canonical: "/mosques" },
 };
 
@@ -31,14 +32,18 @@ export default function Page() {
         </nav>
 
         <header className="border-border border-b pb-5">
-          <p className="text-verde text-[11.5px] font-extrabold tracking-wide">پهنهٔ رقابت</p>
+          <p className="text-verde flex items-center gap-2 text-[11.5px] font-extrabold tracking-wide">
+            <span aria-hidden="true" className="bg-verde inline-block h-[2px] w-4 rounded-full" />
+            پهنهٔ رقابت
+          </p>
           <h1 className="text-text mt-1.5 text-[clamp(22px,3.4vw,30px)] font-extrabold">
-            مساجد حوزه
+            جدول رتبه‌بندی مساجد
           </h1>
-          <p className="text-text-muted mt-2.5 max-w-[64ch] text-[13px] leading-[2]">
-            جدولِ زندهٔ رقابتِ مساجد: رتبهٔ هر مسجد بر اساسِ تعداد شرکت‌کنندهٔ کامل، و در تساوی بر اساسِ
-            ترتیب الفبای نامِ مسجد. هنگام ثبت‌نام، مسجد محلهٔ خود را انتخاب می‌کنید و نتیجهٔ آزمون به
-            نامِ همان مسجد ثبت می‌شود.
+          {/* متنِ معرفی: کوتاه، رقابتی و کاربرپسند — بدونِ توضیحِ فنیِ ساختار
+              جدول یا فرمولِ محاسبه. عرضِ کاملِ ستون و ترازِ راست حفظ می‌شود
+              (`max-w`ِ ثابت حذف شد تا در دسکتاپ وسطِ صفحه جمع نشود). */}
+          <p className="text-text-muted mt-2.5 max-w-[68ch] text-[13px] leading-[2.05] text-pretty">
+            {LEADS.mosques.lead}
           </p>
         </header>
 
