@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/widgets/site-header/SiteHeader";
 import { SiteFooterWithMartyrs as SiteFooter } from "@/widgets/site-footer/SiteFooterWithMartyrs";
-import { RegisterForm } from "@/widgets/register/RegisterForm";
+import { RegisterScreen } from "@/widgets/register/RegisterScreen";
 import { SITE } from "@/shared/config/site";
 
 export const metadata: Metadata = {
@@ -37,21 +37,7 @@ export default function Page() {
         </nav>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-10">
-          <div className="order-2 lg:order-1">
-            <header className="mb-5">
-              <p className="text-brand text-[11.5px] font-extrabold tracking-wide">گام ۱ از ۲</p>
-              <h1 className="text-text mt-1.5 text-[clamp(21px,3.2vw,28px)] font-extrabold">
-                ثبت‌نام و ورود به آزمون
-              </h1>
-              <p className="text-text-muted mt-2 max-w-[60ch] text-[13px] leading-[2]">
-                پنج پرسش چهارگزینه‌ای از کتاب «{SITE.bookTitle}»، پنج دقیقه فرصت پاسخ. همین‌جا
-                ثبت‌نام کنید و آزمون را آغاز کنید — بدون نصب هیچ برنامه‌ای، بدون عضویت در جایی.
-              </p>
-            </header>
-            <div className="border-border bg-surface rounded-2xl border p-4 sm:p-6">
-              <RegisterForm />
-            </div>
-          </div>
+          <RegisterScreen />
 
           <aside className="order-1 space-y-3 lg:order-2">
             <div className="border-border bg-surface-2 rounded-2xl border p-4">

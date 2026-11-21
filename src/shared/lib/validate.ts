@@ -36,6 +36,19 @@ export function isValidPhone(raw: string): boolean {
  * بک‌اند هم شمسی می‌پذیرد، ولی ما برای نمایشِ سن و اعتبارسنجی محلی، تبدیل را
  * همین‌جا انجام می‌دهیم تا کاربر پیام خطای فوری ببیند.
  */
+/**
+ * پوشاندنِ بخشِ میانیِ شماره برای نمایش — «۰۹۱۲***۴۵۶۷».
+ *
+ * چرا؟ در گامِ تأیید می‌خواهیم کاربر مطمئن شود شمارهٔ درست را وارد کرده، ولی
+ * صفحه ممکن است روی گوشیِ مشترک یا صفحهٔ نمایشِ حوزه باز باشد. شش رقمِ اول و
+ * آخر کافی است تا «همان شمارهٔ من» را بشناسد و کافی نیست تا کسی سوءاستفاده کند.
+ */
+export function maskPhone(raw: string): string {
+  const digits = normalizePhone(raw);
+  if (digits.length < 11) return raw;
+  return `${digits.slice(0, 4)}***${digits.slice(-4)}`;
+}
+
 export function isValidJalaliDate(raw: string): boolean {
   const s = toEn(raw).trim().replace(/[-.]/g, "/");
   const m = /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/.exec(s);

@@ -37,9 +37,34 @@ export const examEligibilitySchema = z.object({
   message: z.string().optional(),
 });
 
+/**
+ * کدِ اتصالِ بله — فقط وقتی می‌آید که کانالِ بله در دسترس است ولی این شماره
+ * هنوز به ربات وصل نیست. کاربر همین کد را در بله برای ربات می‌فرستد و از آن
+ * پس کدهای تأیید در همان گفتگو می‌آید (بدونِ پیامک، بدونِ هزینه).
+ */
+export const baleLinkSchema = z.object({
+  code: z.string(),
+  bot_username: z.string().optional(),
+  deep_link: z.string().optional(),
+  expires_in_seconds: z.number().optional(),
+});
+
+/** اطلاعاتِ چالشِ کدِ تأیید که بک‌اند در پاسخِ ثبت‌نام/درخواست برمی‌گرداند. */
+export const otpInfoSchema = z.object({
+  challenge_id: z.number().optional(),
+  phone_number: z.string().optional(),
+  expires_in_seconds: z.number().optional(),
+  /** «bale» یعنی کد در بله رفت · «sms» پیامک · «none» هیچ‌کدام (صادقانه) */
+  delivery: z.enum(["bale", "sms", "none"]).optional(),
+  bale_link: baleLinkSchema.optional().nullable(),
+  debug_code: z.string().optional(),
+  debug_otp_code: z.string().optional(),
+});
+
 export const registerResultSchema = z.object({
   is_new_user: z.boolean(),
   otp_required: z.boolean(),
+  otp: otpInfoSchema.optional().nullable(),
   tokens: tokensSchema.optional().nullable(),
   access: z.string().optional().nullable(),
   user: participantProfileSchema,
@@ -75,6 +100,14 @@ export const attemptSchema = z.object({
   can_finish_now: z.boolean(),
   current_question_number: z.number(),
   questions: z.array(attemptQuestionSchema),
+});
+
+/** پاسخِ تأییدِ کد: توکن‌ها + پروفایل + وضعیتِ آزمون (همان شکلِ ورودِ مستقیم). */
+export const otpVerifyResultSchema = z.object({
+  tokens: tokensSchema,
+  access: z.string(),
+  user: participantProfileSchema,
+  exam_eligibility: examEligibilitySchema.optional(),
 });
 
 export const reportCardSchema = z.object({
@@ -115,6 +148,9 @@ export const reportCardSchema = z.object({
     .optional(),
 });
 
+export type OtpInfo = z.infer<typeof otpInfoSchema>;
+export type BaleLink = z.infer<typeof baleLinkSchema>;
+export type OtpVerifyResult = z.infer<typeof otpVerifyResultSchema>;
 export type RegisterResult = z.infer<typeof registerResultSchema>;
 export type Attempt = z.infer<typeof attemptSchema>;
 export type AttemptQuestion = z.infer<typeof attemptQuestionSchema>;

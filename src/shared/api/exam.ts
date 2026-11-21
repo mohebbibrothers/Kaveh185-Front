@@ -3,9 +3,13 @@
 import { ApiError, apiGet, apiPost } from "./client";
 import {
   attemptSchema,
+  otpInfoSchema,
+  otpVerifyResultSchema,
   registerResultSchema,
   reportCardSchema,
   type Attempt,
+  type OtpInfo,
+  type OtpVerifyResult,
   type RegisterResult,
   type ReportCard,
 } from "./participant";
@@ -52,6 +56,32 @@ export async function registerParticipant(input: {
       headers: { "Content-Type": "application/json" },
     });
     return registerResultSchema.parse(raw);
+  } catch (err) {
+    normalizeError(err);
+  }
+}
+
+/**
+ * درخواستِ دوبارهٔ کدِ تأیید.
+ *
+ * چرا این مسیر و نه ثبت‌نامِ دوباره؟ اگر کاربر کد را دیر ببیند یا کد منقضی
+ * شود، ثبت‌نامِ دوباره او را به «شما قبلاً ثبت‌نام کرده‌اید» می‌بَرد. این مسیر
+ * فقط چالشِ تازه می‌سازد و همان پاسخِ ثبت‌نام را برمی‌گرداند.
+ */
+export async function requestOtp(phoneNumber: string): Promise<OtpInfo> {
+  try {
+    const raw = await apiPost("/api/v1/auth/otp/request/", { phone_number: phoneNumber });
+    return otpInfoSchema.parse(raw);
+  } catch (err) {
+    normalizeError(err);
+  }
+}
+
+/** تأییدِ کدِ ۶ رقمی و گرفتنِ نشست — همان توکنی که مسیرِ ورودِ مستقیم می‌داد. */
+export async function verifyOtp(phoneNumber: string, code: string): Promise<OtpVerifyResult> {
+  try {
+    const raw = await apiPost("/api/v1/auth/otp/verify/", { phone_number: phoneNumber, code });
+    return otpVerifyResultSchema.parse(raw);
   } catch (err) {
     normalizeError(err);
   }

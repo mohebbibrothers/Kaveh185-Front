@@ -4,6 +4,8 @@ import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { registerParticipant } from "@/shared/api/exam";
+import type { OtpInfo } from "@/shared/api/participant";
+import { OtpStep } from "./OtpStep";
 import { ApiError } from "@/shared/api/client";
 import { saveSession } from "@/shared/api/session";
 import { useBootstrap } from "@/shared/api/use-bootstrap";
@@ -34,6 +36,9 @@ import { SITE } from "@/shared/config/site";
  *    کاربر تازه است یا برمی‌گردد — پس دو دکمه فقط کاربر را مردد می‌کند.
  * ۴) **کاربر برمی‌گردد؟** اگر قبلاً آزمون داده باشد، سرور ۴۰۹ با کد رهگیری
  *    می‌دهد؛ همان را به پیوند کارنامه تبدیل می‌کنیم، نه به پیام بن‌بست.
+ * ۵) **کدِ تأیید گامِ دوم است، نه خطا.** اگر سرور بخواهد شماره را با کد تأیید
+ *    کند، همین فرم به `OtpStep` تبدیل می‌شود؛ اطلاعاتِ واردشده حفظ می‌شوند و
+ *    کاربر به صفحهٔ دیگری نمی‌رود (رفتن به صفحهٔ دیگر یعنی از دست دادنِ فرم).
  */
 type Values = {
   first: string;
@@ -48,7 +53,12 @@ type Values = {
 
 type Errors = Partial<Record<keyof Values | "form" | "mosque", string>>;
 
-export function RegisterForm() {
+export function RegisterForm({
+  onStepChange,
+}: {
+  /** گامِ جاری را به بیرون گزارش می‌دهد تا عنوانِ صفحه با کارت یکی بماند. */
+  onStepChange?: (step: 1 | 2) => void;
+}) {
   const router = useRouter();
   const boot = useBootstrap();
   const [v, setV] = useState<Values>({
@@ -66,6 +76,8 @@ export function RegisterForm() {
   const [submitting, setSubmitting] = useState(false);
   const [existingCode, setExistingCode] = useState<string | null>(null);
   const [mq, setMq] = useState("");
+  /** اگر سرور کدِ تأیید بخواهد، این‌جا نگه می‌داریم و فرم جای خود را به گام ۲ می‌دهد. */
+  const [otp, setOtp] = useState<{ info: OtpInfo | null; phone: string } | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   const mosques = useMemo(() => (boot.phase === "ready" ? boot.data.mosques : []), [boot]);
@@ -106,6 +118,24 @@ export function RegisterForm() {
     setTouched((p) => ({ ...p, [k]: true }));
   };
 
+  /**
+   * پایانِ مسیر (پس از تأییدِ کد): نشست را ذخیره و کاربر را جابه‌جا کن.
+   *
+   * ⚠️ نام و مسجد را از فرم برمی‌داریم، نه از پاسخِ تأیید؛ چون پاسخِ
+   * `otp/verify/` فقط توکن و پروفایلِ پایه دارد. اگر فرم خالی باشد (رفرشِ
+   * صفحه در گام ۲)، نامِ خالی ذخیره می‌شود ولی نشست سالم است — قفل‌کردنِ
+   * کاربر پشتِ یک عنوانِ خالی بدتر از یک عنوانِ ناقص است.
+   */
+  function finish(access: string) {
+    const fullName = `${v.first.trim()} ${v.last.trim()}`.trim();
+    saveSession({
+      access,
+      fullName: fullName || "شرکت‌کننده",
+      mosqueName: selected?.name ?? null,
+    });
+    router.push("/exam");
+  }
+
   async function onSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setExistingCode(null);
@@ -132,10 +162,10 @@ export function RegisterForm() {
       });
 
       if (res.otp_required || !res.access) {
-        // مسیر OTP در این نسخه فعال نیست؛ صادقانه می‌گوییم چه شده.
-        setServerErrors({
-          form: "برای ورود به آزمون باید شمارهٔ همراه شما تأیید شود. با پشتیبانی حوزه تماس بگیرید.",
-        });
+        // سرور شماره را تأیید‌نشده می‌داند ⇒ گامِ کد. اطلاعاتِ فرم دست‌نخورده
+        // می‌ماند تا اگر کاربر خواست برگردد، دوباره از صفر شروع نکند.
+        setOtp({ info: res.otp ?? null, phone: normalizePhone(v.phone) });
+        onStepChange?.(2);
         return;
       }
 
@@ -191,6 +221,20 @@ export function RegisterForm() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (otp) {
+    return (
+      <OtpStep
+        phoneNumber={otp.phone}
+        initial={otp.info}
+        onVerified={finish}
+        onBack={() => {
+          setOtp(null);
+          onStepChange?.(1);
+        }}
+      />
+    );
   }
 
   return (
