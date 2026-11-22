@@ -68,16 +68,11 @@ export function MosquePicker({
     return mosques.filter((m) => toSearch(`${m.name} ${m.neighborhood} ${m.code}`).includes(q));
   }, [mosques, query]);
 
-  // با هر تغییرِ جست‌وجو، مکان‌نما روی اولین نتیجه برمی‌گردد.
-  useEffect(() => {
-    setCursor(0);
-  }, [query]);
-
   // بستن با کلیکِ بیرون — ولی نه با کلیکِ داخلِ خودِ کامپوننت.
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!rootRef.current?.contains(e.target as Node)) setOpenBoth(false);
     };
     window.addEventListener("mousedown", onDown);
     return () => {
@@ -86,10 +81,12 @@ export function MosquePicker({
   }, [open]);
 
   const selected = mosques.find((m) => m.id === value) ?? null;
+  const active = filtered[cursor];
+  const activeId = open && active ? optId(active.id) : null;
 
   function choose(m: MosqueOption) {
     onChange(m.id);
-    setOpen(false);
+    setOpenBoth(false);
     setQuery("");
     // فوکوس به دکمهٔ «تغییر» می‌رود تا کاربرِ کیبورد جای خودش را گم نکند.
     window.setTimeout(() => {
@@ -98,19 +95,23 @@ export function MosquePicker({
   }
 
   /*
-   * کیبورد. نکتهٔ ظریف: `open` در همان رویداد به‌روز نمی‌شود (state در
-   * بستهٔ بعدی می‌نشیند)، پس «آیا فهرست باز است؟» را از یک ref می‌خوانیم —
-   * وگرنه اولین `Enter` بعد از باز شدن، به‌جای انتخاب، دوباره «باز کن»
-   * اجرا می‌کرد.
+   * کیبورد. نکتهٔ ظریف: `open` در همان رویداد به‌روز نمی‌شود (state در بستهٔ
+   * بعدی می‌نشیند)، پس در هندلر از یک ref می‌خوانیم. نوشتنِ ref داخلِ
+   * **هندلر** مجاز است؛ نوشتنش در بدنهٔ رندر نه (قاعدهٔ React Compiler:
+   * «Cannot access refs during render»).
    */
   const openRef = useRef(false);
-  openRef.current = open;
+
+  function setOpenBoth(next: boolean) {
+    openRef.current = next;
+    setOpen(next);
+  }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
       if (!openRef.current) {
-        setOpen(true);
+        setOpenBoth(true);
         return;
       }
       if (filtered.length === 0) return;
@@ -120,7 +121,7 @@ export function MosquePicker({
     }
     if (e.key === "Enter") {
       if (!openRef.current) {
-        setOpen(true);
+        setOpenBoth(true);
         e.preventDefault();
         return;
       }
@@ -134,13 +135,13 @@ export function MosquePicker({
     if (e.key === "Escape") {
       if (openRef.current) {
         e.preventDefault();
-        setOpen(false);
+        setOpenBoth(false);
       }
       return;
     }
     if (e.key === "Tab") {
       // خروجِ طبیعی: فهرست را می‌بندیم تا فوکوس روی چیزِ نامرئی نماند.
-      setOpen(false);
+      setOpenBoth(false);
     }
   }
 
@@ -164,7 +165,7 @@ export function MosquePicker({
           data-change
           onClick={() => {
             onChange(null);
-            setOpen(true);
+            setOpenBoth(true);
             window.setTimeout(() => {
               inputRef.current?.focus();
             }, 0);
@@ -204,15 +205,18 @@ export function MosquePicker({
           aria-expanded={open}
           aria-controls={listId}
           aria-autocomplete="list"
-          aria-activedescendant={open && filtered[cursor] ? optId(filtered[cursor]!.id) : undefined}
+          aria-activedescendant={activeId ?? undefined}
           aria-label="جست‌وجوی مسجد و انتخاب از فهرست"
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
-            setOpen(true);
+            // مکان‌نمای کیبورد با هر تغییرِ جست‌وجو به نتیجهٔ اول برمی‌گردد —
+            // در همان رویداد، نه در یک effect (که رندرِ آبشاری می‌سازد).
+            setCursor(0);
+            setOpenBoth(true);
           }}
           onFocus={() => {
-            setOpen(true);
+            setOpenBoth(true);
           }}
           onKeyDown={onKeyDown}
           placeholder={loading ? "در حال دریافت فهرست مساجد…" : "نام مسجد یا محله را بنویسید…"}
