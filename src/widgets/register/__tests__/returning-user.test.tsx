@@ -17,7 +17,7 @@ const lookupParticipant = vi.fn();
 const registerParticipant = vi.fn();
 
 vi.mock("@/shared/api/lookup", () => ({
-  lookupParticipant: (phone: string) => lookupParticipant(phone),
+  lookupParticipant: (phone: string, nid: string) => lookupParticipant(phone, nid),
 }));
 vi.mock("@/shared/api/exam", () => ({
   registerParticipant: (input: unknown) => registerParticipant(input),
@@ -50,11 +50,21 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-async function typePhone() {
-  const input = document.querySelector('input[data-k="phone"]') as HTMLInputElement;
-  fireEvent.change(input, { target: { value: PHONE } });
-  // تایمرِ ۶۰۰msِ «بررسیِ سابقه» را رد می‌کنیم
-  await vi.advanceTimersByTimeAsync(700);
+const NID = "0013542419";
+
+/**
+ * پر کردنِ **هر دو عامل** و رد کردنِ تایمرِ ۶۵۰msِ «بررسیِ پرونده».
+ *
+ * ⚠️ از دورِ ۵۰ این پرسش دو عامل می‌خواهد (شماره + کد ملی). تا وقتی کد ملی
+ * نیامده، هیچ درخواستی فرستاده نمی‌شود — و این خودش یک رفتارِ مورد انتظار
+ * است، نه یک تأخیرِ تصادفی.
+ */
+async function typeIdentity() {
+  const phone = document.querySelector('input[data-k="phone"]') as HTMLInputElement;
+  fireEvent.change(phone, { target: { value: PHONE } });
+  const nid = document.querySelector('input[data-k="nid"]') as HTMLInputElement;
+  fireEvent.change(nid, { target: { value: NID } });
+  await vi.advanceTimersByTimeAsync(800);
 }
 
 describe("ورودِ بازگشتی", () => {
@@ -78,7 +88,7 @@ describe("ورودِ بازگشتی", () => {
     });
 
     render(<RegisterForm />);
-    await typePhone();
+    await typeIdentity();
 
     await waitFor(() => {
       expect(screen.getByText(/پروندهٔ شما از قبل ثبت شده است/)).toBeTruthy();
@@ -90,17 +100,19 @@ describe("ورودِ بازگشتی", () => {
     const first = document.querySelector('input[data-k="first"]') as HTMLInputElement;
     const nid = document.querySelector('input[data-k="nid"]') as HTMLInputElement;
     expect(first.value).toBe("محمد");
-    expect(nid.value).toBe("0012345678");
+    // ⚠️ کد ملی همان می‌ماند که کاربر تایپ کرده — ما هیچ‌وقت کد ملیِ پرونده
+    // را روی فیلد نمی‌نویسیم، چون خودش یکی از دو عاملِ تأییدِ هویت است.
+    expect(nid.value).toBe(NID);
   });
 
   it("شمارهٔ ناشناس ⇒ فرمِ عادی و دکمهٔ ثبت‌نام دست‌نخورده", async () => {
     lookupParticipant.mockResolvedValue({ found: false, state: "not_found" });
 
     render(<RegisterForm />);
-    await typePhone();
+    await typeIdentity();
 
     await waitFor(() => {
-      expect(lookupParticipant).toHaveBeenCalledWith(PHONE);
+      expect(lookupParticipant).toHaveBeenCalledWith(PHONE, NID);
     });
     expect(screen.queryByText(/پروندهٔ شما از قبل ثبت شده است/)).toBeNull();
     expect(screen.getByRole("button", { name: /ثبت‌نام و ورود به آزمون/ })).toBeTruthy();
@@ -115,7 +127,7 @@ describe("ورودِ بازگشتی", () => {
     });
 
     render(<RegisterForm />);
-    await typePhone();
+    await typeIdentity();
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /ادامهٔ آزمون/ })).toBeTruthy();
     });
@@ -132,9 +144,29 @@ describe("ورودِ بازگشتی", () => {
     lookupParticipant.mockRejectedValue(new Error("network"));
 
     render(<RegisterForm />);
-    await typePhone();
+    await typeIdentity();
 
     // پس از خطا، فرم باید همان فرمِ عادی بماند و قابل ارسال باشد.
     expect(screen.getByRole("button", { name: /ثبت‌نام و ورود به آزمون/ })).toBeTruthy();
+  });
+});
+
+describe("قراردادِ دو عامل (دورِ ۵۰)", () => {
+  it("شمارهٔ تنها هیچ درخواستی نمی‌فرستد — حتی اگر شماره معتبر باشد", async () => {
+    lookupParticipant.mockResolvedValue({ found: true, state: "session_ready" });
+    render(<RegisterForm />);
+    const phone = document.querySelector('input[data-k="phone"]') as HTMLInputElement;
+    fireEvent.change(phone, { target: { value: PHONE } });
+    await vi.advanceTimersByTimeAsync(900);
+    expect(lookupParticipant).not.toHaveBeenCalled();
+  });
+
+  it("کد ملیِ تنها هم هیچ درخواستی نمی‌فرستد", async () => {
+    lookupParticipant.mockResolvedValue({ found: true, state: "session_ready" });
+    render(<RegisterForm />);
+    const nid = document.querySelector('input[data-k="nid"]') as HTMLInputElement;
+    fireEvent.change(nid, { target: { value: NID } });
+    await vi.advanceTimersByTimeAsync(900);
+    expect(lookupParticipant).not.toHaveBeenCalled();
   });
 });

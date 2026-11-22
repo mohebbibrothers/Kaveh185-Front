@@ -17,6 +17,13 @@ import { participantProfileSchema, examEligibilitySchema } from "./participant";
  *   • `exam_completed` ⇒ پیوندِ کارنامه، نه فرمِ تازه.
  *   • `not_found`      ⇒ هیچ‌چیز عوض نمی‌شود؛ ثبت‌نامِ تازه مثلِ قبل.
  *
+ * ── قراردادِ دورِ ۵۰: دو عامل، نه یکی ────────────────────────────────────
+ * تا امروز فقط شمارهٔ همراه لازم بود؛ یعنی هر کسی که شمارهٔ یک شرکت‌کننده
+ * را می‌دانست می‌توانست نشستِ او را بگیرد. حالا **کد ملی هم الزامی است** و
+ * سرور هر دو را با هم می‌سنجد. پارامترِ دوم عمداً اجباری است (نه اختیاری):
+ * یک پارامترِ اختیاری در عمل یعنی «می‌شود بدونِ کد ملی هم صدا زد» — همان
+ * باگ، فقط پنهان‌تر.
+ *
  * ── چرا zod؟ ──────────────────────────────────────────────────────────────
  * بک‌اند ممکن است فیلدی اضافه کند؛ ما فقط چیزی را می‌خوانیم که مطمئنیم.
  * `` عمدی است: داده‌ی ناشناخته دور ریخته نمی‌شود، ولی مصرف‌کننده
@@ -44,9 +51,15 @@ export type LookupResult = z.infer<typeof lookupResultSchema>;
  * داشت، باید فقط «نشناختم» برگردد تا کاربر بتواند ثبت‌نامِ عادی را ادامه دهد.
  * برعکسش (بلاک‌کردنِ فرم به‌خاطرِ خطای یک مسیرِ کمکی) بدترین حالت است.
  */
-export async function lookupParticipant(phoneNumber: string): Promise<LookupResult> {
+export async function lookupParticipant(
+  phoneNumber: string,
+  nationalId: string,
+): Promise<LookupResult> {
   try {
-    const raw = await apiPost("/api/v1/auth/lookup/", { phone_number: phoneNumber });
+    const raw = await apiPost("/api/v1/auth/lookup/", {
+      phone_number: phoneNumber,
+      national_id: nationalId,
+    });
     return lookupResultSchema.parse(raw);
   } catch {
     return { found: false, state: "not_found" };

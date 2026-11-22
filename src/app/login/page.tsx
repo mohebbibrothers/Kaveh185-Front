@@ -19,8 +19,9 @@ export default function Page() {
           <p className="text-brand text-[11.5px] font-extrabold tracking-wide">ورود و نشست</p>
           <h1 className="text-text mt-1.5 text-[clamp(21px,3.2vw,28px)] font-extrabold">نشست من</h1>
           <p className="text-text-muted mt-2 text-[13px] leading-[2]">
-            برای این مسابقه رمز عبوری لازم نیست: هویت شما با کد ملی و شمارهٔ همراه ثبت می‌شود و
-            کارنامه با کد رهگیری در دسترس است.
+            برای این مسابقه رمز عبوری لازم نیست: هویت شما با شمارهٔ همراه{" "}
+            <span className="font-extrabold">و</span> کد ملی ثبت می‌شود و کارنامه با کد رهگیری در
+            دسترس است.
           </p>
         </header>
 

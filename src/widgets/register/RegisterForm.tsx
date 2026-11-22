@@ -12,11 +12,10 @@ import { ApiError } from "@/shared/api/client";
 import { saveSession } from "@/shared/api/session";
 import { invalidateIdentity } from "@/shared/api/identity";
 import { useRegisterDraft } from "./use-draft";
+import { MosquePicker } from "./MosquePicker";
 import { useBootstrap } from "@/shared/api/use-bootstrap";
 import { resolveRoute } from "@/shared/lib/route";
 import { Field, FormAlert, PrimaryButton } from "@/shared/ui/Field";
-import { MosqueMark, Girih } from "@/shared/ui/Ornament";
-import { toSearch } from "@/shared/lib/fa";
 import { normalizePhone } from "@/shared/lib/validate";
 import {
   birthDateError,
@@ -80,7 +79,6 @@ export function RegisterForm({
   const [serverErrors, setServerErrors] = useState<Errors>({});
   const [submitting, setSubmitting] = useState(false);
   const [existingCode, setExistingCode] = useState<string | null>(null);
-  const [mq, setMq] = useState("");
   /** اگر سرور کدِ تأیید بخواهد، این‌جا نگه می‌داریم و فرم جای خود را به گام ۲ می‌دهد. */
   const [otp, setOtp] = useState<{ info: OtpInfo | null; phone: string } | null>(null);
   /**
@@ -104,6 +102,11 @@ export function RegisterForm({
    */
   const [known, setKnown] = useState<LookupResult | null>(null);
   const [looking, setLooking] = useState(false);
+  /*
+   * `setLooking` فقط در یک تایمرِ صفر صدا زده می‌شود: پرسشِ «این پرونده را
+   * می‌شناسیم؟» به دو عامل (شماره + کد ملی) وابسته است و تا هر دو کامل نشوند
+   * چیزی فرستاده نمی‌شود؛ ولی کاربر باید بداند سیستم مشغول است.
+   */
   const [resuming, setResuming] = useState(false);
   const lookupSeq = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
@@ -152,44 +155,79 @@ export function RegisterForm({
 
   /*
    * ── «شما وارد شده‌اید» ───────────────────────────────────────────────────
-   * اگر روی این دستگاه نشستی نیست ولی سرور برای این شماره پرونده‌ای
-   * می‌شناسد (مثلاً نشست روی دستگاهِ دیگری است)، همان اول به کاربر بگویید
-   * تا فرم را پر نکند. صدا زدنش فقط با شمارهٔ کامل و معتبر است.
+   * اگر روی این دستگاه نشستی نیست ولی سرور برای این «شماره + کد ملی»
+   * پرونده‌ای می‌شناسد، همان اول به کاربر بگویید تا فرم را پر نکند.
+   *
+   * ⚠️ از دورِ ۵۰ این پرسش **دو عامل** می‌خواهد. تا وقتی کد ملی نیامده،
+   * پرسشی فرستاده نمی‌شود — نه برای صرفه‌جویی، برای اینکه «شمارهٔ تنها»
+   * دوباره به یک کانالِ کشفِ پرونده تبدیل نشود.
    */
   useEffect(() => {
     const phone = normalizePhone(v.phone);
-    if (known || knownByName || phone.length !== 11) return;
-    if (!/^09\d{9}$/.test(phone)) return;
+    const nid = v.nid.replace(/\D/g, "");
+    if (known || knownByName) return;
+    if (!/^09\d{9}$/.test(phone) || nid.length !== 10) return;
     const seq = ++lookupSeq.current;
     const timer = window.setTimeout(() => {
-      void lookupParticipant(phone)
+      setLooking(true);
+      void lookupParticipant(phone, nid)
         .then((res) => {
           if (seq !== lookupSeq.current || !res.found) return;
+
           if (res.state === "exam_completed" && res.tracking_code) {
+            // آزمونش را داده ⇒ جای آزمونِ تازه، کارنامه. (فرم را پر نمی‌کنیم.)
             setKnownByName({
               label: "شما قبلاً در این آزمون شرکت کرده‌اید",
               path: `/receipt?code=${encodeURIComponent(res.tracking_code)}`,
             });
-          } else if (res.state === "session_ready") {
-            setKnownByName({ label: "پروندهٔ شما هست — ادامه دهید", path: "/login" });
+            return;
+          }
+
+          if (res.state === "session_ready") {
+            /*
+             * پرونده هست و آزمونش شروع نشده ⇒ **همین‌جا** ادامه می‌دهیم.
+             * نه پیوند به `/login`، نه فرمِ تازه: کارتِ «پروندهٔ شما از قبل
+             * ثبت شده است» با دکمهٔ «ادامهٔ آزمون با همین پرونده» — چون
+             * نشست را همین پاسخ همراه دارد و یک کلیکِ اضافه لازم نیست.
+             */
+            setKnown(res);
+            const u = res.user;
+            if (!u) return;
+            setV((prev) => ({
+              ...prev,
+              first: prev.first || u.first_name || "",
+              last: prev.last || u.last_name || "",
+              mosqueId: prev.mosqueId ?? u.mosque_id ?? null,
+            }));
           }
         })
         .catch(() => {
           /* مسیرِ کمکی: نباید فرم را بشکند. */
+        })
+        .finally(() => {
+          if (seq === lookupSeq.current) setLooking(false);
         });
-    }, 700);
+    }, 650);
     return () => {
       window.clearTimeout(timer);
     };
-  }, [v.phone, known, knownByName]);
+  }, [v.phone, v.nid, known, knownByName]);
+
+  /*
+   * تغییرِ شماره یا کد ملی ⇒ «پروندهٔ شناخته‌شدهٔ» قبلی دیگر معتبر نیست.
+   * عمداً با یک تایمرِ صفر (نه setState همگام در بدنهٔ effect) تا قاعدهٔ
+   * React Compiler رعایت شود.
+   */
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      setKnown(null);
+    }, 0);
+    return () => {
+      window.clearTimeout(id);
+    };
+  }, [v.phone, v.nid]);
 
   const mosques = useMemo(() => (boot.phase === "ready" ? boot.data.mosques : []), [boot]);
-  const filtered = useMemo(() => {
-    const n = toSearch(mq);
-    if (!n) return mosques;
-    return mosques.filter((m) => toSearch(`${m.name} ${m.neighborhood} ${m.code}`).includes(n));
-  }, [mosques, mq]);
-
   const selected = mosques.find((m) => m.id === v.mosqueId) ?? null;
 
   function localErrors(): Errors {
@@ -228,51 +266,6 @@ export function RegisterForm({
    * کاربر ممکن است پشتِ‌سرِ‌هم شماره را عوض کند؛ پاسخِ کندترِ شمارهٔ قبلی
    * نباید روی شمارهٔ فعلی بنشیند. شمارندهٔ نسخه، پاسخ‌های کهنه را دور می‌ریزد.
    */
-  useEffect(() => {
-    const phone = normalizePhone(v.phone);
-    // ⚠️ هیچ `setState`ی همگام در بدنهٔ effect نیست (قاعدهٔ React Compiler).
-    // پاک‌کردنِ «پروندهٔ شناخته‌شده» هم داخلِ همان تایمر انجام می‌شود، درست
-    // پیش از پرسشِ تازه — یعنی بعد از تکمیلِ شماره، نه با هر رقم.
-    if (phone.length !== 11) {
-      const t = window.setTimeout(() => {
-        setKnown(null);
-      }, 0);
-      return () => {
-        window.clearTimeout(t);
-      };
-    }
-    const seq = ++lookupSeq.current;
-    const timer = window.setTimeout(() => {
-      setLooking(true);
-      void lookupParticipant(phone)
-        .then((res) => {
-          if (seq !== lookupSeq.current) return; // پاسخِ کهنه
-          setKnown(res.found ? res : null);
-          if (!res.found) return;
-          // پرکردنِ خودکارِ فرم از پروندهٔ موجود — بی‌آنکه کاربر چیزی بزند.
-          const u = res.user;
-          if (!u) return;
-          setV((prev) => ({
-            ...prev,
-            first: prev.first || u.first_name || "",
-            last: prev.last || u.last_name || "",
-            nid: prev.nid || (u as { national_id?: string }).national_id || "",
-            mosqueId: prev.mosqueId ?? u.mosque_id ?? null,
-          }));
-        })
-        .catch(() => {
-          // مسیرِ کمکی هرگز نباید ثبت‌نام را بشکند: اگر این پرسش شکست،
-          // فقط «پروندهٔ شناخته‌شده» را پاک می‌کنیم و فرمِ عادی می‌ماند.
-          if (seq === lookupSeq.current) setKnown(null);
-        })
-        .finally(() => {
-          if (seq === lookupSeq.current) setLooking(false);
-        });
-    }, 600);
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [v.phone]);
 
   /** ادامهٔ آزمون با پروندهٔ موجود: نشستِ تازه، بعد ایستگاهِ «پرونده آماده است». */
   function resume() {
@@ -648,111 +641,16 @@ export function RegisterForm({
         <legend className="text-text-subtle mb-1 text-[11px] font-extrabold tracking-wide">
           ۲ · مسجد محلهٔ شما
         </legend>
-
-        {selected ? (
-          <div className="border-brand/25 bg-brand/[0.05] flex items-center gap-3 rounded-xl border px-3 py-2.5">
-            <MosqueMark name={selected.name} order={selected.display_order} size={36} />
-            <div className="min-w-0 flex-1">
-              <p className="text-text truncate text-[13px] font-extrabold">{selected.name}</p>
-              <p className="text-text-subtle text-[10.5px]">
-                {selected.neighborhood} · <span dir="ltr">{selected.code}</span>
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                set("mosqueId", null);
-                setMq("");
-              }}
-              className="text-brand shrink-0 text-[11.5px] font-bold underline underline-offset-4"
-            >
-              تغییر
-            </button>
-          </div>
-        ) : (
-          <>
-            <label className="relative block">
-              <span className="sr-only">جست‌وجوی مسجد</span>
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                width="15"
-                height="15"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                className="text-text-subtle pointer-events-none absolute top-1/2 right-3 -translate-y-1/2"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m20 20-3.6-3.6" strokeLinecap="round" />
-              </svg>
-              <input
-                value={mq}
-                onChange={(e) => {
-                  setMq(e.target.value);
-                }}
-                placeholder={
-                  boot.phase === "ready"
-                    ? "نام مسجد یا محله را بنویسید…"
-                    : "در حال دریافت فهرست مساجد…"
-                }
-                disabled={boot.phase !== "ready"}
-                className="border-border-strong bg-surface text-text placeholder:text-text-subtle focus:border-brand/55 focus:ring-brand/15 h-11 w-full rounded-xl border pr-9 pl-3 text-[12.5px] outline-none focus:ring-2 disabled:opacity-60"
-              />
-            </label>
-
-            <div
-              role="listbox"
-              aria-label="فهرست مساجد"
-              className="border-border bg-surface max-h-56 overflow-y-auto rounded-xl border"
-            >
-              {boot.phase === "error" ? (
-                <p className="text-text-muted px-3 py-5 text-center text-[12px]">
-                  فهرست مساجد خوانده نشد. صفحه را دوباره باز کنید.
-                </p>
-              ) : filtered.length === 0 ? (
-                <div className="px-3 py-5 text-center">
-                  <Girih size={18} className="text-text-subtle mx-auto" />
-                  <p className="text-text-muted mt-2 text-[12px]">مسجدی با این نام پیدا نشد.</p>
-                </div>
-              ) : (
-                <ul className="divide-border divide-y">
-                  {filtered.map((m) => (
-                    <li key={m.id}>
-                      <button
-                        type="button"
-                        role="option"
-                        aria-selected={false}
-                        onClick={() => {
-                          set("mosqueId", m.id);
-                        }}
-                        className="hover:bg-surface-2 focus-visible:bg-surface-2 flex w-full items-center gap-2.5 px-3 py-2 text-right transition-colors outline-none"
-                      >
-                        <MosqueMark name={m.name} order={m.display_order} size={30} />
-                        <span className="min-w-0 flex-1">
-                          <span className="text-text block truncate text-[12.5px] font-bold">
-                            {m.name}
-                          </span>
-                          <span className="text-text-subtle text-[10.5px]">{m.neighborhood}</span>
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            {err("mosque") ? (
-              <p role="alert" className="text-brick flex items-start gap-1 text-[11.5px]">
-                <span aria-hidden="true">▲</span>
-                {err("mosque")}
-              </p>
-            ) : (
-              <p className="text-text-subtle text-[11px] leading-5">
-                بعد از ثبت‌نام، مسجد انتخابی قفل می‌شود؛ نتیجهٔ آزمون به نام همین مسجد ثبت خواهد شد.
-              </p>
-            )}
-          </>
-        )}
+        <MosquePicker
+          mosques={mosques}
+          value={v.mosqueId}
+          onChange={(id) => {
+            set("mosqueId", id);
+          }}
+          loading={boot.phase === "loading"}
+          failed={boot.phase === "error"}
+          error={err("mosque")}
+        />
       </fieldset>
 
       <div className="border-border space-y-2.5 border-t pt-4">
@@ -778,7 +676,7 @@ export function RegisterForm({
         )}
         {looking ? (
           <p aria-live="polite" className="text-text-subtle text-center text-[10.5px]">
-            در حال بررسیِ سابقهٔ این شماره…
+            در حال بررسیِ پرونده…
           </p>
         ) : null}
         <p className="text-text-subtle text-center text-[11px] leading-6">
