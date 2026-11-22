@@ -10,6 +10,8 @@ import { Girih } from "@/shared/ui/Ornament";
 import { PrimaryButton, Field, FormAlert } from "@/shared/ui/Field";
 import { toFa } from "@/shared/lib/fa";
 import { AccountPanel } from "./AccountPanel";
+import { clearDraft } from "@/widgets/register/use-draft";
+import { invalidateIdentity } from "@/shared/api/identity";
 
 /**
  * صفحهٔ نشست («ورود»).
@@ -137,6 +139,10 @@ export function AccountView() {
             type="button"
             onClick={() => {
               clearSession();
+              // خروج باید هر سه لایهٔ حافظه را پاک کند: نشست، کشِ هویت و
+              // پیش‌نویسِ فرم. وگرنه دکمهٔ هدر «ادامهٔ آزمون» می‌ماند.
+              invalidateIdentity();
+              clearDraft();
               setSession(null);
               setAttempt(null);
               setPhase("anon");

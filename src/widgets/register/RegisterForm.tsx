@@ -10,6 +10,8 @@ import { OtpStep } from "./OtpStep";
 import { ExamEntryCard, type EntrySummary } from "./ExamEntryCard";
 import { ApiError } from "@/shared/api/client";
 import { saveSession } from "@/shared/api/session";
+import { invalidateIdentity } from "@/shared/api/identity";
+import { useRegisterDraft } from "./use-draft";
 import { useBootstrap } from "@/shared/api/use-bootstrap";
 import { Field, FormAlert, PrimaryButton } from "@/shared/ui/Field";
 import { MosqueMark, Girih } from "@/shared/ui/Ornament";
@@ -104,6 +106,73 @@ export function RegisterForm({
   const [resuming, setResuming] = useState(false);
   const lookupSeq = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
+  /**
+   * پیش‌نویس: کاربری که فرم را نیمه‌کاره رها می‌کند (برای خواندنِ قوانین یا
+   * دیدنِ مساجد) نباید تایپ‌هایش را از دست بدهد. کد ملی و تاریخ تولد عمداً
+   * ذخیره **نمی‌شوند** — روی دستگاهِ اشتراکی نباید بمانند.
+   */
+  const { restored, forget } = useRegisterDraft({
+    first: v.first,
+    last: v.last,
+    phone: v.phone,
+    mosqueId: v.mosqueId,
+  });
+  const [draftApplied, setDraftApplied] = useState(false);
+  /**
+   * «بررسیِ خودکارِ پرونده» برای نشستی که روی این دستگاه نیست ولی سرور
+   * می‌داند — همان بنرِ «شما وارد شده‌اید». هرگز تنها منبعِ تصمیم نیست؛
+   * فقط یک راهِ میان‌بُر است تا کاربر مجبور نشود فرم را پر کند.
+   */
+  const [knownByName, setKnownByName] = useState<{ label: string; path: string } | null>(null);
+
+  /*
+   * ── بازگرداندنِ پیش‌نویس (یک‌بار) ─────────────────────────────────────────
+   * فقط فیلدهایی که در پیش‌نویس هست و کاربر در همین نشست خالی‌شان نکرده.
+   */
+  useEffect(() => {
+    if (!restored || draftApplied) return;
+    setDraftApplied(true);
+    setV((prev) => ({
+      ...prev,
+      first: prev.first || restored.first,
+      last: prev.last || restored.last,
+      phone: prev.phone || restored.phone,
+      mosqueId: prev.mosqueId ?? restored.mosqueId,
+    }));
+  }, [restored, draftApplied]);
+
+  /*
+   * ── «شما وارد شده‌اید» ───────────────────────────────────────────────────
+   * اگر روی این دستگاه نشستی نیست ولی سرور برای این شماره پرونده‌ای
+   * می‌شناسد (مثلاً نشست روی دستگاهِ دیگری است)، همان اول به کاربر بگویید
+   * تا فرم را پر نکند. صدا زدنش فقط با شمارهٔ کامل و معتبر است.
+   */
+  useEffect(() => {
+    const phone = normalizePhone(v.phone);
+    if (known || knownByName || phone.length !== 11) return;
+    if (!/^09\d{9}$/.test(phone)) return;
+    const seq = ++lookupSeq.current;
+    const timer = window.setTimeout(() => {
+      void lookupParticipant(phone)
+        .then((res) => {
+          if (seq !== lookupSeq.current || !res.found) return;
+          if (res.state === "exam_completed" && res.tracking_code) {
+            setKnownByName({
+              label: "شما قبلاً در این آزمون شرکت کرده‌اید",
+              path: `/receipt?code=${encodeURIComponent(res.tracking_code)}`,
+            });
+          } else if (res.state === "session_ready") {
+            setKnownByName({ label: "پروندهٔ شما هست — ادامه دهید", path: "/login" });
+          }
+        })
+        .catch(() => {
+          /* مسیرِ کمکی: نباید فرم را بشکند. */
+        });
+    }, 700);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [v.phone, known, knownByName]);
 
   const mosques = useMemo(() => (boot.phase === "ready" ? boot.data.mosques : []), [boot]);
   const filtered = useMemo(() => {
@@ -207,6 +276,8 @@ export function RegisterForm({
       fullName: rec.user?.full_name || `${v.first} ${v.last}`.trim() || "شرکت‌کننده",
       mosqueName: rec.user?.mosque_name ?? null,
     });
+    invalidateIdentity();
+    forget();
     setEntry({
       summary: {
         fullName: rec.user?.full_name || `${v.first.trim()} ${v.last.trim()}`.trim(),
@@ -278,6 +349,11 @@ export function RegisterForm({
         fullName: res.user.full_name,
         mosqueName: res.user.mosque_name ?? null,
       });
+      // ⚠️ حیاتی برای باگِ «دکمهٔ هدر هنوز ثبت‌نام نشان می‌دهد»: کشِ هویت
+      // باید باطل شود تا CTAها همان لحظه به «ادامهٔ آزمون» تبدیل شوند،
+      // نه بعد از رفرش. پیش‌نویس هم دیگر لازم نیست.
+      invalidateIdentity();
+      forget();
 
       // قبلاً آزمون داده؟ کارنامه‌اش را نشان بده، نه یک ورودِ تکراری.
       const done =
@@ -411,6 +487,20 @@ export function RegisterForm({
         </div>
       ) : serverErrors.form ? (
         <FormAlert title="ثبت‌نام انجام نشد">{serverErrors.form}</FormAlert>
+      ) : knownByName ? (
+        // پرونده روی سرور هست ولی نشستی روی این دستگاه نیست.
+        <div className="border-verde/30 bg-verde/[0.07] rounded-xl border px-3.5 py-3">
+          <p className="text-verde text-[12.5px] font-extrabold">{knownByName.label}</p>
+          <p className="text-text-muted mt-1 text-[11.5px] leading-6">
+            لازم نیست فرم را دوباره پر کنید؛ پرونده‌تان روی سرور محفوظ است.
+          </p>
+          <Link
+            href={knownByName.path as never}
+            className="text-brand mt-2 inline-flex items-center gap-1 text-[12px] font-extrabold underline underline-offset-4"
+          >
+            ادامه دهید →
+          </Link>
+        </div>
       ) : known ? (
         // ── پروندهٔ موجود ─────────────────────────────────────────────────
         // کاربری که قبلاً ثبت‌نام کرده (ولی آزمون را شروع نکرده) نباید فرمِ
@@ -426,6 +516,13 @@ export function RegisterForm({
             لازم نیست دوباره فرم را پر کنید؛ با دکمهٔ پایین آزمون را ادامه دهید.
           </p>
         </div>
+      ) : null}
+
+      {restored && draftApplied && !known && !knownByName && !v.nid ? (
+        <p className="text-text-subtle text-[11px] leading-6">
+          پیش‌نویس قبلی‌تان بازیابی شد. برای امنیت، کد ملی و تاریخ تولد ذخیره نمی‌شوند — همان دو را
+          دوباره وارد کنید.
+        </p>
       ) : null}
 
       {/* ── هویت ── */}

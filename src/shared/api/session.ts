@@ -52,6 +52,14 @@ export function getSession(): Session | null {
   return read();
 }
 
+/** نامِ رویدادی که هر تغییرِ نشست را اعلام می‌کند (کشِ هویت به آن گوش می‌دهد). */
+export const SESSION_EVENT = "k185:session";
+
+function emit(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(SESSION_EVENT));
+}
+
 export function saveSession(next: Session): void {
   if (typeof window === "undefined") return;
   try {
@@ -60,6 +68,10 @@ export function saveSession(next: Session): void {
     // حالت پر شدن حافظه یا حالت ناشناس با ذخیره‌سازی مسدود — آزمون باید
     // در همان نشست جاری کار کند، پس خطا را بالا نمی‌دهیم.
   }
+  // ⚠️ اعلان عمدی است: هدر و همهٔ CTAها از کشِ هویت می‌خوانند. اگر
+  // ثبت‌نام نشست را ذخیره کند و اعلان ندهد، دکمه تا رفرشِ بعدی
+  // «ثبت‌نام و شرکت» می‌ماند — همان باگی که کاربر گزارش کرد.
+  emit();
 }
 
 export function patchSession(patch: Partial<Session>): Session | null {
@@ -77,6 +89,7 @@ export function clearSession(): void {
   } catch {
     /* بی‌اهمیت */
   }
+  emit();
 }
 
 export function hasSession(): boolean {

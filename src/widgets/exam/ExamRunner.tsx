@@ -12,6 +12,7 @@ import {
 } from "@/shared/api/exam";
 import { ApiError } from "@/shared/api/client";
 import { getSession, patchSession } from "@/shared/api/session";
+import { useIdentity } from "@/shared/api/use-identity";
 import type { Attempt, AttemptQuestion } from "@/shared/api/participant";
 import { FormAlert, PrimaryButton } from "@/shared/ui/Field";
 import { Girih } from "@/shared/ui/Ornament";
@@ -46,6 +47,12 @@ type Phase =
 
 export function ExamRunner() {
   const router = useRouter();
+  /*
+   * کشِ هویت این‌جا **فقط** برای حالتِ `no-session` است: تفکیکِ «توکنِ
+   * کهنه» از «کاربرِ تازه». برای همین `force` نمی‌زنیم و به کش بسنده
+   * می‌کنیم (یک درخواستِ اضافه در هر بار ورودِ به آزمون لازم نیست).
+   */
+  const { identity, refresh: refreshIdentity } = useIdentity();
   const [phase, setPhase] = useState<Phase>("loading");
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [active, setActive] = useState(0);
@@ -259,20 +266,54 @@ export function ExamRunner() {
       </>
     );
 
+  /*
+   * ── نشستِ کهنه ≠ کاربرِ تازه ─────────────────────────────────────────────
+   * اگر `fetchCurrentAttempt` ۴۰۱ داد، یعنی توکنِ دسترسی منقضی شده — نه
+   * اینکه کاربر هرگز ثبت‌نام نکرده. قبلاً همین‌جا مستقیم «ثبت‌نام کنید»
+   * نشان می‌دادیم و پروندهٔ سالمِ کاربر شبیهِ «پاک‌شده» می‌شد.
+   *
+   * حالا اول کشِ هویت را می‌پرسیم: اگر با refresh قابلِ احیا باشد، توکنِ
+   * تازه می‌نشیند و دکمهٔ «دوباره تلاش» کارِ واقعی می‌کند. فقط اگر سرور
+   * بگوید `no_session`، فرمِ ثبت‌نام پیشنهاد می‌شود.
+   */
   if (phase === "no-session")
     return (
       <>
         {heading}
         <StateCard
-          title="برای شرکت در آزمون ابتدا ثبت‌نام کنید"
-          body="نشست شما روی این دستگاه نیست. ثبت‌نام کمتر از دو دقیقه وقت می‌گیرد و همان مسیر، آزمون را هم آغاز می‌کند."
+          title={
+            identity.state === "no_session"
+              ? "برای شرکت در آزمون ابتدا ثبت‌نام کنید"
+              : "نشست این دستگاه تازه شد"
+          }
+          body={
+            identity.state === "no_session"
+              ? "نشست شما روی این دستگاه نیست. ثبت‌نام کمتر از دو دقیقه وقت می‌گیرد و همان مسیر، آزمون را هم آغاز می‌کند."
+              : "پروندهٔ شما هست؛ فقط توکن دسترسی کهنه بود و همان حالا تمدید شد. یک بار دیگر بزنید."
+          }
           action={
-            <Link
-              href="/register"
-              className="bg-brand text-on-brand inline-flex h-11 items-center rounded-xl px-5 text-[13px] font-extrabold"
-            >
-              ثبت‌نام و شرکت
-            </Link>
+            identity.state === "no_session" ? (
+              <Link
+                href="/register"
+                className="bg-brand text-on-brand inline-flex h-11 items-center rounded-xl px-5 text-[13px] font-extrabold"
+              >
+                ثبت‌نام و شرکت
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  refreshIdentity();
+                  setPhase("loading");
+                  window.setTimeout(() => {
+                    void enter();
+                  }, 120);
+                }}
+                className="bg-brand text-on-brand inline-flex h-11 items-center rounded-xl px-5 text-[13px] font-extrabold"
+              >
+                ادامهٔ آزمون
+              </button>
+            )
           }
         />
       </>
