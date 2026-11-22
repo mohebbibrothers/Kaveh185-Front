@@ -5,6 +5,7 @@ import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { SITE } from "@/shared/config/site";
+import { EntryCta } from "./EntryCta";
 import { Logo } from "@/shared/ui/Logo";
 
 /**
@@ -197,13 +198,9 @@ export function MobileMenu({
         {/* ردیف اقدام — همیشه پایین برگه، بی‌نیاز از اسکرول */}
         <div className="border-border/70 bg-surface/95 shrink-0 border-t px-3 py-3 backdrop-blur">
           <div className="flex items-center gap-2">
-            <Link
-              href="/register"
-              onClick={close}
-              className="bg-brand text-on-brand hover:bg-brand-hover inline-flex h-11 flex-1 items-center justify-center rounded-xl text-[13.5px] font-extrabold shadow-[0_1px_0_oklch(100%_0_0/0.16)_inset] transition-colors"
-            >
-              ثبت‌نام و شرکت
-            </Link>
+            <span onClick={close} className="flex flex-1">
+              <EntryCta variant="mobile" />
+            </span>
             <Link
               href="/login"
               onClick={close}

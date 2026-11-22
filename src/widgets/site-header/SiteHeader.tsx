@@ -5,6 +5,7 @@ import { ThemeToggle } from "@/shared/ui/ThemeToggle";
 import { ReadingProgress } from "@/shared/ui/ReadingProgress";
 import { ANCHORS, PRIMARY, SITE } from "@/shared/config/site";
 import { MobileMenu } from "./MobileMenu";
+import { EntryCta } from "./EntryCta";
 
 /**
  * هدر سایت — سه ناحیه، یک خط، بی‌شلوغی، و نوار پیشرفت زیرِ خودش.
@@ -68,14 +69,12 @@ export function SiteHeader() {
           >
             ورود
           </Link>
-          <Link
-            href="/register"
-            className="bg-brand text-on-brand hover:bg-brand-hover inline-flex h-9 shrink-0 items-center rounded-lg px-3 text-[13px] font-bold whitespace-nowrap shadow-[0_1px_0_oklch(100%_0_0/0.14)_inset] transition-colors sm:px-4"
-          >
-            {/* زیر ۳۸۰px متن کوتاه: «ثبت‌نام و شرکت» در ۳۲۰px می‌شکست. */}
-            <span className="min-[380px]:hidden">ثبت‌نام</span>
-            <span className="hidden min-[380px]:inline">ثبت‌نام و شرکت</span>
-          </Link>
+          {/*
+            دکمهٔ وضعیت‌آگاه: اگر روی این دستگاه نشست باشد، «ادامهٔ آزمون»
+            می‌شود و به `/exam` می‌رود — به‌جایِ برگرداندنِ کاربر به فرمِ
+            ثبت‌نام (شکایتِ واقعیِ «دوباره فرم می‌آید»).
+          */}
+          <EntryCta />
           <MobileMenu links={links} anchors={anchors} />
         </div>
       </div>

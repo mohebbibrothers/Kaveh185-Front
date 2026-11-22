@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/widgets/site-header/SiteHeader";
 import { SiteFooterWithMartyrs as SiteFooter } from "@/widgets/site-footer/SiteFooterWithMartyrs";
-import { RegisterScreen } from "@/widgets/register/RegisterScreen";
+import { RegisterGate } from "@/widgets/register/RegisterGate";
 import { SITE } from "@/shared/config/site";
 
 export const metadata: Metadata = {
@@ -37,7 +37,7 @@ export default function Page() {
         </nav>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-10">
-          <RegisterScreen />
+          <RegisterGate />
 
           <aside className="order-1 space-y-3 lg:order-2">
             <div className="border-border bg-surface-2 rounded-2xl border p-4">

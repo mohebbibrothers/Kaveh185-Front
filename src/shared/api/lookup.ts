@@ -23,18 +23,17 @@ import { participantProfileSchema, examEligibilitySchema } from "./participant";
  * به آن تکیه هم نمی‌کند.
  */
 
-export const lookupResultSchema = z
-  .looseObject({
-    found: z.boolean(),
-    state: z.enum(["not_found", "session_ready", "exam_completed"]).catch("not_found"),
-    access: z.string().optional(),
-    refresh: z.string().optional(),
-    session_uid: z.string().optional(),
-    is_phone_verified: z.boolean().optional(),
-    tracking_code: z.string().nullable().optional(),
-    user: participantProfileSchema.partial().optional(),
-    exam_eligibility: examEligibilitySchema.optional(),
-  });
+export const lookupResultSchema = z.looseObject({
+  found: z.boolean(),
+  state: z.enum(["not_found", "session_ready", "exam_completed"]).catch("not_found"),
+  access: z.string().optional(),
+  refresh: z.string().optional(),
+  session_uid: z.string().optional(),
+  is_phone_verified: z.boolean().optional(),
+  tracking_code: z.string().nullable().optional(),
+  user: participantProfileSchema.partial().optional(),
+  exam_eligibility: examEligibilitySchema.optional(),
+});
 
 export type LookupResult = z.infer<typeof lookupResultSchema>;
 
