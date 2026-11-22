@@ -30,6 +30,17 @@ export const participantProfileSchema = z.object({
 });
 
 export const examEligibilitySchema = z.object({
+  // شکلِ واقعیِ پاسخِ بک‌اند (بندِ `get_user_exam_eligibility`). فیلدهای زیر
+  // با `.optional()` می‌آیند تا اگر روزی سرور چیزی اضافه/کم کرد، کلِ نشست
+  // در مرورگر نشکند — اعتبارسنجیِ سخت این‌جا فقط ریسکِ «صفحهٔ سفید» است.
+  can_enter_exam: z.boolean().optional(),
+  reason_code: z.string().optional(),
+  reason_message: z.string().optional(),
+  profile_ready: z.boolean().optional(),
+  has_completed_exam: z.boolean().optional(),
+  has_in_progress_exam: z.boolean().optional(),
+  attempt_status: z.string().nullable().optional(),
+  tracking_code: z.string().nullable().optional(),
   can_start: z.boolean().optional(),
   has_active_attempt: z.boolean().optional(),
   has_completed_attempt: z.boolean().optional(),
@@ -66,6 +77,11 @@ export const registerResultSchema = z.object({
   otp_required: z.boolean(),
   /** «چرا کد لازم شد؟» — `phone_verification` یا `exam_policy` (متنِ پیام را تعیین می‌کند). */
   verification_reason: z.string().optional(),
+  /**
+   * آیا این نشست با کدِ تأیید ساخته شد؟ `false` یعنی سیاستِ فعلی «بدونِ کد» است
+   * و ما هم در متن همین را می‌گوییم — نه ادعای «کد فرستادیم» که پشتش چیزی نیست.
+   */
+  is_phone_verified: z.boolean().optional(),
   otp: otpInfoSchema.optional().nullable(),
   tokens: tokensSchema.optional().nullable(),
   access: z.string().optional().nullable(),

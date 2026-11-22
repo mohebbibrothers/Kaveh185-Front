@@ -16,6 +16,7 @@ import type { Attempt, AttemptQuestion } from "@/shared/api/participant";
 import { FormAlert, PrimaryButton } from "@/shared/ui/Field";
 import { Girih } from "@/shared/ui/Ornament";
 import { toFa } from "@/shared/lib/fa";
+import { Briefing } from "./Briefing";
 
 /**
  * اجرای آزمون — قلب مسابقه.
@@ -33,7 +34,15 @@ import { toFa } from "@/shared/lib/fa";
  *    برمی‌گرداند؛ پس رفرش = ادامه، نه شروع دوباره.
  * ۵) **زمان تمام شد؟** خودکار نهایی می‌کنیم و به کارنامه می‌رویم.
  */
-type Phase = "loading" | "ready" | "error" | "finishing" | "expired" | "no-session";
+type Phase =
+  | "loading"
+  | "ready"
+  | "error"
+  | "finishing"
+  | "expired"
+  | "no-session"
+  /** نشست هست ولی آزمون هنوز شروع نشده — «بریفینگ» پیش از شروع. */
+  | "briefing";
 
 export function ExamRunner() {
   const router = useRouter();
@@ -44,6 +53,15 @@ export function ExamRunner() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [fatal, setFatal] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number>(0);
+  /**
+   * اطلاعاتِ نشست برای بریفینگ. عمداً `useState`ِ مقدارِ اولیه است، نه
+   * `useEffect` + `setState`: خواندنِ `localStorage` در بدنهٔ رندر در محیطِ
+   * سرور معنا ندارد، پس با تابعِ سازنده فقط یک‌بار سمتِ کلاینت خوانده می‌شود.
+   */
+  const [sessionInfo] = useState<{ fullName: string; mosqueName?: string | null }>(() => {
+    const s = getSession();
+    return { fullName: s?.fullName ?? "", mosqueName: s?.mosqueName ?? null };
+  });
 
   /** لنگر زمان: `serverRemaining` در لحظهٔ `anchorMs` */
   const anchor = useRef<{ serverRemaining: number; at: number } | null>(null);
@@ -55,8 +73,41 @@ export function ExamRunner() {
       return;
     }
     try {
+      /*
+       * ── تصمیمِ تجربه ──────────────────────────────────────────────────
+       * اگر آزمونِ نیمه‌کاره‌ای هست، **مستقیم** ادامه می‌دهیم (کاربر وسطِ
+       * کار است و توقف یعنی از دست رفتنِ تمرکز و ثانیه‌ها). ولی اگر تازه
+       * وارد شده، آزمون را خودکار شروع **نمی‌کنیم**: اول بریفینگ می‌آید تا
+       * کاربر بداند ۵ پرسش، ۵ دقیقه، یک‌بار شرکت، و بعد با کلیکِ خودش
+       * ساعت را شروع کند. آزمونِ زمان‌دار بدونِ اجازهٔ کاربر شروع نمی‌شود.
+       */
       const resumed = await fetchCurrentAttempt();
-      const a = resumed ?? (await startExam());
+      if (!resumed) {
+        setPhase("briefing");
+        return;
+      }
+      setAttempt(resumed);
+      anchor.current = { serverRemaining: resumed.remaining_seconds, at: performance.now() };
+      setRemaining(resumed.remaining_seconds);
+      setActive(Math.max(0, resumed.current_question_number - 1));
+      setPhase("ready");
+    } catch (err) {
+      if (err instanceof SessionExpiredError) {
+        setPhase("no-session");
+        return;
+      }
+      setFatal(
+        err instanceof ApiError ? err.message : "آزمون آغاز نشد. اتصال اینترنت را بررسی کنید.",
+      );
+      setPhase("error");
+    }
+  }, []);
+
+  /** شروعِ آگاهانهٔ آزمون — فقط از دکمهٔ بریفینگ صدا زده می‌شود. */
+  const launch = useCallback(async () => {
+    setPhase("loading");
+    try {
+      const a = await startExam();
       setAttempt(a);
       anchor.current = { serverRemaining: a.remaining_seconds, at: performance.now() };
       setRemaining(a.remaining_seconds);
@@ -191,6 +242,20 @@ export function ExamRunner() {
       <>
         {heading}
         <Skeleton />
+      </>
+    );
+
+  if (phase === "briefing")
+    return (
+      <>
+        {heading}
+        <Briefing
+          fullName={sessionInfo.fullName}
+          mosqueName={sessionInfo.mosqueName ?? null}
+          onStart={() => {
+            void launch();
+          }}
+        />
       </>
     );
 

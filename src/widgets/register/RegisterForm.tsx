@@ -6,6 +6,7 @@ import Link from "next/link";
 import { registerParticipant } from "@/shared/api/exam";
 import type { OtpInfo } from "@/shared/api/participant";
 import { OtpStep } from "./OtpStep";
+import { ExamEntryCard, type EntrySummary } from "./ExamEntryCard";
 import { ApiError } from "@/shared/api/client";
 import { saveSession } from "@/shared/api/session";
 import { useBootstrap } from "@/shared/api/use-bootstrap";
@@ -78,6 +79,17 @@ export function RegisterForm({
   const [mq, setMq] = useState("");
   /** اگر سرور کدِ تأیید بخواهد، این‌جا نگه می‌داریم و فرم جای خود را به گام ۲ می‌دهد. */
   const [otp, setOtp] = useState<{ info: OtpInfo | null; phone: string } | null>(null);
+  /**
+   * بعد از ثبت‌نامِ موفق، این‌جا می‌ایستیم: پروندهٔ کاربر، اعتبارِ نشست و یک
+   * دکمهٔ روشن «ورود به آزمون». بدونِ این ایستگاه، کاربر بی‌مقدمه داخلِ آزمونِ
+   * زمان‌دار پرت می‌شد و هیچ‌جا نمی‌دید چه چیزی به نامش ثبت شده است.
+   */
+  const [entry, setEntry] = useState<{
+    summary: EntrySummary;
+    verified: boolean;
+    issuedAt: number;
+  } | null>(null);
+  const [starting, setStarting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   const mosques = useMemo(() => (boot.phase === "ready" ? boot.data.mosques : []), [boot]);
@@ -175,11 +187,32 @@ export function RegisterForm({
         mosqueName: res.user.mosque_name ?? null,
       });
 
-      if (res.exam_eligibility?.has_completed_attempt) {
+      // قبلاً آزمون داده؟ کارنامه‌اش را نشان بده، نه یک ورودِ تکراری.
+      const done =
+        res.exam_eligibility?.has_completed_exam ?? res.exam_eligibility?.has_completed_attempt;
+      if (done) {
         router.push("/receipt");
-      } else {
-        router.push("/exam");
+        return;
       }
+
+      /*
+       * ⚠️ تغییرِ مسیر (آزمونِ میدانی): این‌جا **مستقیم به /exam نمی‌رویم**.
+       * اول پرونده را نشان می‌دهیم و کاربر با یک کلیکِ آگاهانه آزمون را شروع
+       * می‌کند: بازبینیِ نام/مسجد پیش از شروع، دیدنِ بازهٔ زمانی، و اینکه
+       * آزمونِ زمان‌دار بدونِ هشدار آغاز نشود.
+       */
+      setEntry({
+        summary: {
+          fullName: res.user.full_name || `${v.first.trim()} ${v.last.trim()}`.trim(),
+          phoneNumber: normalizePhone(v.phone),
+          mosqueName: selected?.name ?? res.user.mosque_name ?? "—",
+          mosqueCode: res.user.mosque_code ?? selected?.code ?? undefined,
+          mosqueOrder: selected?.display_order,
+        },
+        verified: res.is_phone_verified === true,
+        issuedAt: Date.now(),
+      });
+      onStepChange?.(2);
     } catch (error) {
       if (error instanceof ApiError) {
         const map: Errors = {};
@@ -221,6 +254,29 @@ export function RegisterForm({
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (entry) {
+    return (
+      <ExamEntryCard
+        summary={entry.summary}
+        verified={entry.verified}
+        issuedAt={entry.issuedAt}
+        starting={starting}
+        onStart={() => {
+          setStarting(true);
+          // یک تیکِ کوتاه تا حالتِ «باز شدن» دیده شود و انتقال ناگهانی نباشد.
+          window.setTimeout(() => {
+            router.push("/exam");
+          }, 220);
+        }}
+        onEdit={() => {
+          setEntry(null);
+          setStarting(false);
+          onStepChange?.(1);
+        }}
+      />
+    );
   }
 
   if (otp) {

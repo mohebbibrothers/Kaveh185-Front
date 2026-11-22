@@ -25,7 +25,7 @@ export function RegisterScreen() {
           گام {toFa(step)} از {toFa(2)}
         </p>
         <h1 className="text-text mt-1.5 text-[clamp(21px,3.2vw,28px)] font-extrabold">
-          {step === 1 ? "ثبت‌نام و ورود به آزمون" : "تأیید شماره و ورود به آزمون"}
+          {step === 1 ? "ثبت‌نام و ورود به آزمون" : "پروندهٔ شما آماده است"}
         </h1>
         <p className="text-text-muted mt-2 max-w-[60ch] text-[13px] leading-[2]">
           {step === 1 ? (
@@ -35,8 +35,8 @@ export function RegisterScreen() {
             </>
           ) : (
             <>
-              یک کدِ ۶ رقمی برای تأییدِ شمارهٔ همراه شما فرستاده شد. آن را وارد کنید تا دفترچهٔ آزمون
-              باز شود؛ کمتر از یک دقیقه.
+              ثبت‌نام‌تان ثبت شد. یک بار اطلاعات را ببینید و با دکمهٔ پایین، آزمون را خودتان شروع
+              کنید — زمانِ آزمون تا وقتی دکمه را نزنید شروع نمی‌شود.
             </>
           )}
         </p>
@@ -45,7 +45,7 @@ export function RegisterScreen() {
         <RegisterForm onStepChange={setStep} />
       </div>
       <p className="text-text-subtle mt-3 text-[11px] leading-6">
-        مشکلی در دریافتِ کد دارید؟{" "}
+        سؤالی دارید؟{" "}
         <Link
           href="/rules"
           className="text-brand inline-flex min-h-[28px] items-center font-bold underline underline-offset-4"
