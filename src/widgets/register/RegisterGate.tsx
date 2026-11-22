@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import type { Route } from "next";
 import { useIdentity } from "@/shared/api/use-identity";
+import { resolveRoute } from "@/shared/lib/route";
 import { Girih } from "@/shared/ui/Ornament";
 import { RegisterScreen } from "./RegisterScreen";
 
@@ -35,9 +35,7 @@ export function RegisterGate() {
     if (status !== "ready") return;
     if (identity.state === "no_session") return;
     // مقصد را سرور تعیین کرده است؛ ما فقط اجرا می‌کنیم.
-    // مسیر از سرور می‌آید و در زمانِ کامپایل لیترال نیست؛ `typedRoutes`
-    // آن را نمی‌شناسد. تبدیل یک‌بار و با توضیح، بهتر از پراکندگیِ `as` است.
-    router.replace(identity.next.path as Route);
+    router.replace(resolveRoute(identity.next.path));
   }, [status, identity.state, identity.next.path, router]);
 
   if (status === "ready" && identity.state === "no_session") {
