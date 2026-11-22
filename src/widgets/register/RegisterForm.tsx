@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { registerParticipant } from "@/shared/api/exam";
+import { lookupParticipant, type LookupResult } from "@/shared/api/lookup";
 import type { OtpInfo } from "@/shared/api/participant";
 import { OtpStep } from "./OtpStep";
 import { ExamEntryCard, type EntrySummary } from "./ExamEntryCard";
@@ -90,6 +91,18 @@ export function RegisterForm({
     issuedAt: number;
   } | null>(null);
   const [starting, setStarting] = useState(false);
+  /**
+   * پروندهٔ ازقبل‌موجود (ورودِ بازگشتی).
+   *
+   * ⚠️ شکایتِ واقعی: «کاربر ثبت‌نام می‌کند، دکمهٔ ورود را نمی‌زند؛ بار بعد
+   * دوباره فرمِ خالی می‌بیند.» حالا به‌محضِ معتبر شدنِ شماره، فرم می‌پرسد
+   * «این شماره را می‌شناسیم؟» و اگر بشناسد: فیلدها را پر می‌کند و دکمه را
+   * به «ادامهٔ آزمون» تبدیل می‌کند — بدونِ اینکه کاربر یک حرف دوباره بزند.
+   */
+  const [known, setKnown] = useState<LookupResult | null>(null);
+  const [looking, setLooking] = useState(false);
+  const [resuming, setResuming] = useState(false);
+  const lookupSeq = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
 
   const mosques = useMemo(() => (boot.phase === "ready" ? boot.data.mosques : []), [boot]);
@@ -129,6 +142,85 @@ export function RegisterForm({
   const blur = (k: keyof Values) => () => {
     setTouched((p) => ({ ...p, [k]: true }));
   };
+
+  /**
+   * «این شماره را می‌شناسیم؟» — با تأخیرِ کوتاه تا با هر رقم درخواست نرود.
+   *
+   * ── چرا `seq`؟ ──────────────────────────────────────────────────────────
+   * کاربر ممکن است پشتِ‌سرِ‌هم شماره را عوض کند؛ پاسخِ کندترِ شمارهٔ قبلی
+   * نباید روی شمارهٔ فعلی بنشیند. شمارندهٔ نسخه، پاسخ‌های کهنه را دور می‌ریزد.
+   */
+  useEffect(() => {
+    const phone = normalizePhone(v.phone);
+    // ⚠️ هیچ `setState`ی همگام در بدنهٔ effect نیست (قاعدهٔ React Compiler).
+    // پاک‌کردنِ «پروندهٔ شناخته‌شده» هم داخلِ همان تایمر انجام می‌شود، درست
+    // پیش از پرسشِ تازه — یعنی بعد از تکمیلِ شماره، نه با هر رقم.
+    if (phone.length !== 11) {
+      const t = window.setTimeout(() => {
+        setKnown(null);
+      }, 0);
+      return () => {
+        window.clearTimeout(t);
+      };
+    }
+    const seq = ++lookupSeq.current;
+    const timer = window.setTimeout(() => {
+      setLooking(true);
+      void lookupParticipant(phone)
+        .then((res) => {
+          if (seq !== lookupSeq.current) return; // پاسخِ کهنه
+          setKnown(res.found ? res : null);
+          if (!res.found) return;
+          // پرکردنِ خودکارِ فرم از پروندهٔ موجود — بی‌آنکه کاربر چیزی بزند.
+          const u = res.user;
+          if (!u) return;
+          setV((prev) => ({
+            ...prev,
+            first: prev.first || u.first_name || "",
+            last: prev.last || u.last_name || "",
+            nid: prev.nid || (u as { national_id?: string }).national_id || "",
+            mosqueId: prev.mosqueId ?? u.mosque_id ?? null,
+          }));
+        })
+        .catch(() => {
+          // مسیرِ کمکی هرگز نباید ثبت‌نام را بشکند: اگر این پرسش شکست،
+          // فقط «پروندهٔ شناخته‌شده» را پاک می‌کنیم و فرمِ عادی می‌ماند.
+          if (seq === lookupSeq.current) setKnown(null);
+        })
+        .finally(() => {
+          if (seq === lookupSeq.current) setLooking(false);
+        });
+    }, 600);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [v.phone]);
+
+  /** ادامهٔ آزمون با پروندهٔ موجود: نشستِ تازه، بعد ایستگاهِ «پرونده آماده است». */
+  function resume() {
+    const rec = known;
+    if (!rec?.access || resuming) return;
+    setResuming(true);
+    const num = normalizePhone(v.phone);
+    saveSession({
+      access: rec.access,
+      fullName: rec.user?.full_name || `${v.first} ${v.last}`.trim() || "شرکت‌کننده",
+      mosqueName: rec.user?.mosque_name ?? null,
+    });
+    setEntry({
+      summary: {
+        fullName: rec.user?.full_name || `${v.first.trim()} ${v.last.trim()}`.trim(),
+        phoneNumber: num,
+        mosqueName: rec.user?.mosque_name ?? "—",
+        mosqueCode: rec.user?.mosque_code ?? undefined,
+        mosqueOrder: mosques.find((m) => m.id === rec.user?.mosque_id)?.display_order,
+      },
+      verified: rec.is_phone_verified === true,
+      issuedAt: Date.now(),
+    });
+    onStepChange?.(2);
+    setResuming(false);
+  }
 
   /**
    * پایانِ مسیر (پس از تأییدِ کد): نشست را ذخیره و کاربر را جابه‌جا کن.
@@ -319,6 +411,21 @@ export function RegisterForm({
         </div>
       ) : serverErrors.form ? (
         <FormAlert title="ثبت‌نام انجام نشد">{serverErrors.form}</FormAlert>
+      ) : known ? (
+        // ── پروندهٔ موجود ─────────────────────────────────────────────────
+        // کاربری که قبلاً ثبت‌نام کرده (ولی آزمون را شروع نکرده) نباید فرمِ
+        // خالی ببیند. این کارت می‌گوید «می‌شناسیمت» و دکمه را به «ادامه»
+        // تبدیل می‌کند؛ اطلاعات هم از پرونده پر شده است.
+        <div className="border-brand/30 bg-brand/[0.06] rounded-xl border px-3.5 py-3">
+          <p className="text-text text-[12.5px] font-extrabold">
+            {known.user?.full_name ? `${known.user.full_name}، خوش آمدید` : "خوش آمدید"}
+            {" — "}پروندهٔ شما از قبل ثبت شده است
+          </p>
+          <p className="text-text-muted mt-1 text-[11.5px] leading-6">
+            {known.user?.mosque_name ? `مسجدِ ثبت‌شده: ${known.user.mosque_name}. ` : ""}
+            لازم نیست دوباره فرم را پر کنید؛ با دکمهٔ پایین آزمون را ادامه دهید.
+          </p>
+        </div>
       ) : null}
 
       {/* ── هویت ── */}
@@ -543,14 +650,31 @@ export function RegisterForm({
       </fieldset>
 
       <div className="border-border space-y-2.5 border-t pt-4">
-        <PrimaryButton
-          type="submit"
-          loading={submitting}
-          loadingLabel="در حال ثبت…"
-          className="w-full"
-        >
-          ثبت‌نام و ورود به آزمون
-        </PrimaryButton>
+        {known ? (
+          <PrimaryButton
+            type="button"
+            onClick={resume}
+            loading={resuming}
+            loadingLabel="در حال بازیابیِ پرونده…"
+            className="w-full"
+          >
+            ادامهٔ آزمون با همین پرونده
+          </PrimaryButton>
+        ) : (
+          <PrimaryButton
+            type="submit"
+            loading={submitting}
+            loadingLabel="در حال ثبت…"
+            className="w-full"
+          >
+            ثبت‌نام و ورود به آزمون
+          </PrimaryButton>
+        )}
+        {looking ? (
+          <p aria-live="polite" className="text-text-subtle text-center text-[10.5px]">
+            در حال بررسیِ سابقهٔ این شماره…
+          </p>
+        ) : null}
         <p className="text-text-subtle text-center text-[11px] leading-6">
           با ثبت‌نام،{" "}
           <Link
