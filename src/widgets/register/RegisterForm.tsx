@@ -13,6 +13,7 @@ import { saveSession } from "@/shared/api/session";
 import { invalidateIdentity } from "@/shared/api/identity";
 import { useRegisterDraft } from "./use-draft";
 import { useBootstrap } from "@/shared/api/use-bootstrap";
+import { resolveRoute } from "@/shared/lib/route";
 import { Field, FormAlert, PrimaryButton } from "@/shared/ui/Field";
 import { MosqueMark, Girih } from "@/shared/ui/Ornament";
 import { toSearch } from "@/shared/lib/fa";
@@ -503,7 +504,7 @@ export function RegisterForm({
             لازم نیست فرم را دوباره پر کنید؛ پرونده‌تان روی سرور محفوظ است.
           </p>
           <Link
-            href={knownByName.path as never}
+            href={resolveRoute(knownByName.path)}
             className="text-brand mt-2 inline-flex items-center gap-1 text-[12px] font-extrabold underline underline-offset-4"
           >
             ادامه دهید →
