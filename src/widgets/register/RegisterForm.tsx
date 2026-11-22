@@ -131,14 +131,22 @@ export function RegisterForm({
    */
   useEffect(() => {
     if (!restored || draftApplied) return;
-    setDraftApplied(true);
-    setV((prev) => ({
-      ...prev,
-      first: prev.first || restored.first,
-      last: prev.last || restored.last,
-      phone: prev.phone || restored.phone,
-      mosqueId: prev.mosqueId ?? restored.mosqueId,
-    }));
+    // یک تیک صفر: مقداردهیِ state از حافظهٔ مرورگر «همگام‌سازی با سیستمِ
+    // بیرونی» است، ولی باید بیرون از بدنهٔ effect بنشیند تا رندرِ آبشاری
+    // (و هشدارِ `react-hooks/set-state-in-effect`) رخ ندهد.
+    const id = window.setTimeout(() => {
+      setDraftApplied(true);
+      setV((prev) => ({
+        ...prev,
+        first: prev.first || restored.first,
+        last: prev.last || restored.last,
+        phone: prev.phone || restored.phone,
+        mosqueId: prev.mosqueId ?? restored.mosqueId,
+      }));
+    }, 0);
+    return () => {
+      window.clearTimeout(id);
+    };
   }, [restored, draftApplied]);
 
   /*

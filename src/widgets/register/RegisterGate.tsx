@@ -35,6 +35,8 @@ export function RegisterGate() {
     if (status !== "ready") return;
     if (identity.state === "no_session") return;
     // مقصد را سرور تعیین کرده است؛ ما فقط اجرا می‌کنیم.
+    // مسیر از سرور می‌آید و در زمانِ کامپایل لیترال نیست؛ `typedRoutes`
+    // آن را نمی‌شناسد. تبدیل یک‌بار و با توضیح، بهتر از پراکندگیِ `as` است.
     router.replace(identity.next.path as Route);
   }, [status, identity.state, identity.next.path, router]);
 

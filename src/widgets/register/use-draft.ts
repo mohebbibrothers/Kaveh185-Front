@@ -70,11 +70,11 @@ export function writeDraft(draft: RegisterDraft): void {
      * اشتراکی (کتابخانه، کافی‌نت، گوشیِ امانی) همین‌جا حفظ می‌شود.
      */
     const safe: RegisterDraft = {
-      first: String(draft.first ?? "").slice(0, 80),
-      last: String(draft.last ?? "").slice(0, 100),
-      phone: String(draft.phone ?? "").slice(0, 15),
-      mosqueId: typeof draft.mosqueId === "number" ? draft.mosqueId : null,
-      savedAt: Number(draft.savedAt) || Date.now(),
+      first: draft.first.slice(0, 80),
+      last: draft.last.slice(0, 100),
+      phone: draft.phone.slice(0, 15),
+      mosqueId: draft.mosqueId,
+      savedAt: draft.savedAt,
     };
     window.localStorage.setItem(KEY, JSON.stringify(safe));
   } catch {
@@ -95,8 +95,8 @@ export function clearDraft(): void {
  * قلابِ پیش‌نویس: مقدارِ اولیه را از حافظه می‌دهد و تغییرات را با تأخیر
  * می‌نویسد (debounce) تا هر حرف یک نوشتنِ دیسک نسازد.
  */
-export function useRegisterDraft<T extends Omit<RegisterDraft, "savedAt">>(
-  value: T,
+export function useRegisterDraft(
+  value: Omit<RegisterDraft, "savedAt">,
   enabled = true,
 ): { restored: RegisterDraft | null; forget: () => void } {
   const [restored] = useState<RegisterDraft | null>(() =>

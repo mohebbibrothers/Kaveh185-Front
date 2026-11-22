@@ -24,6 +24,18 @@ import { useIdentity } from "@/shared/api/use-identity";
  *   • هر حالتِ دیگر: برچسبِ سرور («ادامهٔ آزمون»، «ورود به آزمون»،
  *     «دیدنِ کارنامه») + نشانگرِ کوچکِ «بازیابی» وقتی نتیجه `offline` است.
  */
+/**
+ * مقصد از سرور می‌آید، پس در زمانِ کامپایل یک لیترالِ ثابت نیست و
+ * `typedRoutes` آن را نمی‌شناسد. یک بار این‌جا به `Route` تبدیل می‌شود تا
+ * پایین‌تر کد تمیز بماند.
+ *
+ * نکته: در پیکربندیِ eslint این تبدیل «بی‌مصرف» شمرده نمی‌شود، چون
+ * eslint با `projectService` همان tsconfig را می‌بیند که `tsc` می‌بیند.
+ */
+function asRoute(path: string): Route {
+  return path as Route;
+}
+
 export function EntryCta({ variant = "desktop" }: { variant?: "desktop" | "mobile" }) {
   const { label, href, hasSession, status, identity } = useIdentity();
   const pending = status === "pending";
@@ -34,7 +46,7 @@ export function EntryCta({ variant = "desktop" }: { variant?: "desktop" | "mobil
   if (variant === "mobile") {
     return (
       <Link
-        href={href as Route}
+        href={asRoute(href)}
         aria-busy={pending || undefined}
         className="bg-brand text-on-brand hover:bg-brand-hover inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl text-[13.5px] font-extrabold shadow-[0_1px_0_oklch(100%_0_0/0.16)_inset] transition-colors"
       >
@@ -49,7 +61,7 @@ export function EntryCta({ variant = "desktop" }: { variant?: "desktop" | "mobil
 
   return (
     <Link
-      href={href as Route}
+      href={asRoute(href)}
       aria-busy={pending || undefined}
       aria-live={pending ? undefined : "polite"}
       // آفلاین: برچسب همان «آزمون» می‌ماند (کاربر نباید به فرم پرت شود)،
