@@ -64,6 +64,8 @@ export const otpInfoSchema = z.object({
 export const registerResultSchema = z.object({
   is_new_user: z.boolean(),
   otp_required: z.boolean(),
+  /** «چرا کد لازم شد؟» — `phone_verification` یا `exam_policy` (متنِ پیام را تعیین می‌کند). */
+  verification_reason: z.string().optional(),
   otp: otpInfoSchema.optional().nullable(),
   tokens: tokensSchema.optional().nullable(),
   access: z.string().optional().nullable(),

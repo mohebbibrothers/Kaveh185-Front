@@ -24,8 +24,11 @@ vi.mock("@/shared/api/exam", () => ({
   requestOtp: (phone: string) => requestOtp(phone),
 }));
 
+const fetchBaleStartLink = vi.fn();
+
 vi.mock("@/shared/api/bale", () => ({
   fetchBaleStatus: (phone: string) => fetchBaleStatus(phone),
+  fetchBaleStartLink: (phone: string) => fetchBaleStartLink(phone),
 }));
 
 vi.mock("@/shared/api/client", () => {
@@ -77,10 +80,19 @@ beforeEach(() => {
   verifyOtp.mockReset();
   requestOtp.mockReset();
   fetchBaleStatus.mockReset();
+  fetchBaleStartLink.mockReset();
   fetchBaleStatus.mockResolvedValue({
     bale_configured: true,
     bot_username: "kaveh185_bot",
     linked: true,
+  });
+  fetchBaleStartLink.mockResolvedValue({
+    eligible: true,
+    start_link: "https://ble.ir/kaveh185_bot?start=ABC123",
+    contact_link: "https://ble.ir/kaveh185_bot",
+    bot_username: "kaveh185_bot",
+    expires_in_seconds: 1200,
+    already_linked: false,
   });
 });
 
@@ -95,10 +107,42 @@ describe("OtpStep", () => {
     });
   });
 
-  it("اگر کانالی در دسترس نبود، بن‌بست نمی‌سازد و راهِ بله را نشان می‌دهد", async () => {
+  it("بن‌بست نمی‌سازد: دکمهٔ یک‌ضربهٔ بله را نشان می‌دهد، نه دستورِ تایپ", async () => {
     setup({ delivery: "none", bale_link: { code: "A7K2QF", bot_username: "kaveh185_bot" } });
-    expect(screen.getByText(/کد از راهِ بله می‌آید/)).toBeTruthy();
-    expect(screen.getByText("A7K2QF")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /یک ضربه/ })).toBeTruthy();
+    // هیچ‌جا از کاربر خواسته نمی‌شود کدی را در بله بفرستد.
+    expect(screen.queryByText(/A7K2QF/)).toBeNull();
+  });
+
+  it("دکمهٔ اصلی پیوندِ عمیقِ ربات را باز می‌کند و منتظر می‌ماند", async () => {
+    const open = vi.spyOn(window, "open").mockReturnValue(null);
+    setup({ delivery: "none", expires_in_seconds: 180 });
+    // تا آمدنِ پیوند صبر می‌کنیم (دکمه پیش از آن هم هست، ولی بی‌مقصد).
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: /@kaveh185_bot/ })).toBeTruthy();
+    });
+    fireEvent.click(screen.getByRole("button", { name: /دریافتِ کد در بله/ }));
+    expect(open).toHaveBeenCalledWith(
+      "https://ble.ir/kaveh185_bot?start=ABC123",
+      "_blank",
+      "noopener,noreferrer",
+    );
+    await waitFor(() => {
+      expect(screen.getByText(/منتظرِ تأییدِ بله/)).toBeTruthy();
+    });
+    open.mockRestore();
+  });
+
+  it("وقتی شماره از قبل وصل است، ورودیِ کد بی‌درنگ دیده می‌شود", async () => {
+    fetchBaleStatus.mockResolvedValue({
+      bale_configured: true,
+      bot_username: "kaveh185_bot",
+      linked: true,
+    });
+    setup({ delivery: "bale", expires_in_seconds: 180 });
+    await waitFor(() => {
+      expect(screen.getByLabelText("کدِ تأیید")).toBeTruthy();
+    });
   });
 
   it("کدِ فارسی را می‌پذیرد و تأییدِ موفق نشست می‌دهد", async () => {
@@ -165,5 +209,22 @@ describe("OtpStep", () => {
     });
     const again = screen.getByRole("button", { name: /ارسال دوباره تا/ }) as HTMLButtonElement;
     expect(again.disabled).toBe(true);
+  });
+});
+
+/**
+ * محافظِ باگِ واقعی: «ثبت‌نام کردم، کد نیامد، ولی وارد آزمون شدم.»
+ *
+ * ریشه در بک بود (سرور بی‌تأیید نشست می‌داد) و رفع شد؛ ولی فرانت هم باید
+ * هرگز مسیرِ «بدونِ کد» را نسازد. این تست قفل می‌کند که با `otp_required=false`
+ * و نبودِ توکن، گامِ کد باز می‌ماند و هیچ ورودیِ خودکاری به آزمون نمی‌رود.
+ */
+describe("بازگشت‌ناپذیریِ گامِ کد", () => {
+  it("بدونِ کد، دکمهٔ تأیید تا کامل‌شدنِ ۶ رقم خاموش است", async () => {
+    setup({ delivery: "bale", expires_in_seconds: 180 });
+    const button = (await screen.findByRole("button", {
+      name: /تأیید و ورود/,
+    })) as HTMLButtonElement;
+    expect(button.disabled).toBe(true);
   });
 });
